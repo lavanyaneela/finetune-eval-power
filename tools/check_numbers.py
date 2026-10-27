@@ -19,7 +19,10 @@ Every rule below was added after something got through. In order:
 - an anchor longer than four words straddles a line break in wrapped markdown and
   silently matches nothing;
 - every exemption in the reverse check must be used, and none may hide a measured
-  value.
+  value;
+- markdown emphasis is removed before matching, because a figure wrapped in bold
+  sits between the anchor's words and stops it matching while the prose is perfectly
+  correct, which is the same failure as a line break and just as invisible.
 """
 
 from __future__ import annotations
@@ -32,26 +35,28 @@ ROOT = Path(__file__).resolve().parents[1]
 METRICS_PATH = ROOT / "docs" / "metrics.json"
 MAX_ANCHOR_WORDS = 4
 NUMBER_PATTERN = re.compile(r"(?<![\w.])[-+]?\d[\d,]*(?:\.\d+)?(?![\w])")
+#: Numbers spelled as words are a real blind spot: the guard reads the digits and a
+#: sentence beside it says "forty" while the measurement says something else. These
+#: are matched in the placeholder so that spelling a guarded figure out fails the
+#: build rather than slipping past it.
+NUMBER_WORDS = (
+    "zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|"
+    "thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|"
+    "thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand"
+)
 
 #: Numbers allowed to appear in a checked document without matching a metric.
 #: Each one must actually occur, and none may collide with a measured value.
 REVERSE_EXEMPTIONS = {
-    "0": "exit code zero, and the zero in several ratios",
-    "1": "exit code one, ADR numbering, and 'one in N' phrasing",
-    "2": "exit code two, ADR numbering",
-    "3": "exit code three, ADR numbering",
-    "4": "ADR numbering, the four label classes",
-    "5": "ADR numbering, the five experiments",
-    "0.05": "the significance level",
-    "80": "the target power as a percentage",
-    "95": "the confidence level of the published intervals",
-    "1.96": "the normal quantile behind the noise floor",
-    "24": "the generator grid size and the sequence length",
-    "3.11": "the lowest supported Python version",
-    "3.13": "the highest supported Python version",
-    "3.12": "the middle Python version in the matrix",
-    "0.1": "the version of this package",
+    "80": "the target power, written as a percentage",
 }
+
+
+#: Bold, italic and code markers are removed before an anchor is matched. A figure
+#: written as **3.41** is still the figure the sentence is about.
+EMPHASIS = re.compile(r"[*_`]+")
+#: An ordered list marker is markdown, not a figure.
+LIST_MARKER = re.compile(r"(?m)^\s{0,3}\d+[.)]\s")
 
 
 def load_metrics() -> dict:
@@ -60,17 +65,104 @@ def load_metrics() -> dict:
     return json.loads(METRICS_PATH.read_text(encoding="utf-8"))
 
 
-def anchor_pattern(anchor: str) -> re.Pattern[str]:
-    """Match the anchor with any number in the placeholder, tolerating line breaks."""
+def anchor_pattern(anchor: str, numeric: bool) -> re.Pattern[str]:
+    """Match the anchor with any value in the placeholder, tolerating line breaks.
+
+    The placeholder is type aware. For a numeric metric it matches a number or a
+    number spelled as a word, and nothing else: an earlier version matched any word
+    at all, which turned "errs toward buying eval cases" into a stale reading of the
+    suite size. For a string metric it matches one token.
+    """
     before, _, after = anchor.partition("{}")
-    return re.compile(
-        rf"{_flexible(before)}({NUMBER_PATTERN.pattern}|[A-Za-z][\w=&> -]*?){_flexible(after)}"
+    placeholder = (
+        rf"{NUMBER_PATTERN.pattern}|(?i:\b(?:{NUMBER_WORDS})\b)"
+        if numeric
+        else r"[A-Za-z][\w=.&>-]*"
     )
+    # Case insensitive, because a sentence that starts with the anchor capitalises
+    # its first word and that is not a stale figure.
+    return re.compile(rf"{_flexible(before)}({placeholder}){_flexible(after)}", re.IGNORECASE)
 
 
 def _flexible(fragment: str) -> str:
-    """Whitespace in an anchor matches a line break, because markdown wraps."""
-    return r"\s+".join(re.escape(word) for word in fragment.split())
+    """Whitespace in an anchor matches a line break, because markdown wraps.
+
+    Leading and trailing whitespace is preserved as a separator. An earlier version
+    dropped it, so the anchor "{} retrainings" compiled to a pattern demanding the
+    number and the word with nothing between them. Every numeric anchor silently
+    matched nothing, the checker reported clean on every document, and it stayed
+    that way until a figure was deliberately broken and the build did not fail.
+    """
+    if not fragment:
+        return ""
+    pattern = r"\s+".join(re.escape(word) for word in fragment.split())
+    if fragment[:1].isspace():
+        pattern = r"\s+" + pattern
+    if fragment[-1:].isspace() and fragment.strip():
+        pattern = pattern + r"\s+"
+    return pattern
+
+
+def _context(anchor: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    before, _, after = anchor.partition("{}")
+    return tuple(before.split()), tuple(after.split())
+
+
+def _is_suffix(shorter: tuple[str, ...], longer: tuple[str, ...]) -> bool:
+    return len(shorter) <= len(longer) and longer[len(longer) - len(shorter) :] == shorter
+
+
+def _is_prefix(shorter: tuple[str, ...], longer: tuple[str, ...]) -> bool:
+    return len(shorter) <= len(longer) and longer[: len(shorter)] == shorter
+
+
+def anchors_can_collide(first: str, second: str) -> bool:
+    """True when one anchor can match a sentence written for the other.
+
+    Literal containment is not the right test. "floor of {} points" and
+    "noise floor of {}" share no substring, and in a document that says
+    "a noise floor of 3.92 points" both patterns match the same number, so one
+    metric's guard reports the other metric's value as stale. That happened.
+
+    The condition is about what surrounding prose can supply. Two anchors collide
+    when the words before the placeholder are a suffix of one another, so arbitrary
+    earlier text could complete the longer one, and the words after are a prefix of
+    one another, so arbitrary later text could complete it on the right.
+
+    One more condition is needed, or the rule fires on every pair of one sided
+    anchors. An anchor with nothing before the placeholder matches whatever precedes
+    it, and one with nothing after matches whatever follows, so two anchors open on
+    complementary sides are compatible in the abstract and cannot meet in a real
+    sentence. A collision therefore also requires at least one side where both
+    anchors say something and one absorbs the other.
+    """
+    left_first, right_first = _context(first)
+    left_second, right_second = _context(second)
+    left_compatible = _is_suffix(left_first, left_second) or _is_suffix(left_second, left_first)
+    right_compatible = _is_prefix(right_first, right_second) or _is_prefix(
+        right_second, right_first
+    )
+    shares_real_context = (left_first and left_second) or (right_first and right_second)
+    return bool(left_compatible and right_compatible and shares_real_context)
+
+
+def check_anchor_overlap(payload: dict) -> list[str]:
+    """Report every pair of anchors from different metrics that can collide."""
+    problems: list[str] = []
+    anchors = payload["anchors"]
+    names = sorted(anchors)
+    for position, metric in enumerate(names):
+        for other in names[position + 1 :]:
+            for phrase in anchors[metric]:
+                for other_phrase in anchors[other]:
+                    if phrase.count("{}") != 1 or other_phrase.count("{}") != 1:
+                        continue
+                    if anchors_can_collide(phrase, other_phrase):
+                        problems.append(
+                            f"anchor {phrase!r} for {metric} can collide with "
+                            f"{other_phrase!r} for {other} in ordinary prose"
+                        )
+    return problems
 
 
 def check_anchor_hygiene(anchors: dict[str, list[str]]) -> list[str]:
@@ -80,6 +172,12 @@ def check_anchor_hygiene(anchors: dict[str, list[str]]) -> list[str]:
         if not phrases:
             problems.append(f"metric {metric} declares no anchor phrase")
         for phrase in phrases:
+            if phrase.count("{}") != 1:
+                problems.append(
+                    f"anchor {phrase!r} for {metric} must contain exactly one "
+                    "placeholder, otherwise it guards a phrase rather than a figure"
+                )
+                continue
             words = [word for word in phrase.split() if word != "{}"]
             if len(words) > MAX_ANCHOR_WORDS:
                 problems.append(
@@ -106,13 +204,14 @@ def check_documents(payload: dict) -> tuple[list[str], dict[str, int]]:
         if not path.exists():
             problems.append(f"checked document {relative} does not exist")
             continue
-        text = path.read_text(encoding="utf-8")
+        text = EMPHASIS.sub("", path.read_text(encoding="utf-8"))
         for metric, phrases in payload["anchors"].items():
             expected = payload["rendered"].get(metric)
             if expected is None:
                 continue
+            numeric = bool(NUMBER_PATTERN.fullmatch(expected))
             for phrase in phrases:
-                for match in anchor_pattern(phrase).finditer(text):
+                for match in anchor_pattern(phrase, numeric).finditer(text):
                     found = match.group(1).replace(",", "")
                     if found == expected:
                         occurrences[metric] += 1
@@ -133,10 +232,14 @@ def check_reverse(payload: dict) -> list[str]:
     if not path.exists():
         return ["README.md does not exist"]
     text = path.read_text(encoding="utf-8")
-    stripped = re.sub(r"```.*?```", " ", text, flags=re.S)
+    stripped = LIST_MARKER.sub(" ", text)
+    stripped = re.sub(r"```.*?```", " ", stripped, flags=re.S)
     stripped = re.sub(r"`[^`]*`", " ", stripped)
     stripped = re.sub(r"<[^>]+>", " ", stripped)
     stripped = re.sub(r"\]\([^)]*\)", " ", stripped)
+    # ADR-004 is a document name, not a figure. Without this the leading hyphen is
+    # read as a sign and every reference becomes an unexplained number.
+    stripped = re.sub(r"ADR-\d+", " ", stripped)
     for match in NUMBER_PATTERN.finditer(stripped):
         token = match.group(0)
         bare = token.replace(",", "")
@@ -158,6 +261,7 @@ def check_reverse(payload: dict) -> list[str]:
 def main() -> int:
     payload = load_metrics()
     problems = check_anchor_hygiene(payload["anchors"])
+    problems.extend(check_anchor_overlap(payload))
     document_problems, occurrences = check_documents(payload)
     problems.extend(document_problems)
     for metric, count in occurrences.items():

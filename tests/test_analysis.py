@@ -200,3 +200,28 @@ def test_the_suite_size_curve_falls_as_the_suite_grows():
 
 def test_the_required_suite_size_grows_as_the_claim_shrinks():
     assert suite_size_for(1.0, 0.1) > suite_size_for(4.0, 0.1)
+
+
+def test_the_smallest_suite_with_power_is_the_point_where_a_floor_first_exists():
+    """A different quantity from the detection floor, and a more alarming one. The
+    floor says how large an effect must be; this says whether the question is
+    answerable at all."""
+    from finetune_eval_power.analysis import smallest_suite_with_power
+    from finetune_eval_power.power.paired import minimum_detectable_points
+
+    size = smallest_suite_with_power(0.02)
+    assert size is not None
+    assert minimum_detectable_points(size, 0.02) is not None
+    assert minimum_detectable_points(size - 1, 0.02) is None
+
+
+def test_a_more_stable_model_needs_a_larger_suite_before_it_has_any_power():
+    from finetune_eval_power.analysis import smallest_suite_with_power
+
+    assert smallest_suite_with_power(0.01) > smallest_suite_with_power(0.10)
+
+
+def test_no_suite_size_inside_the_ceiling_helps_at_a_vanishing_discordance():
+    from finetune_eval_power.analysis import smallest_suite_with_power
+
+    assert smallest_suite_with_power(1e-6, ceiling=512) is None
