@@ -8,10 +8,12 @@ without.
 
 from __future__ import annotations
 
+# Collection of this module is skipped entirely when the training extra is
+# absent; see pytest_ignore_collect in conftest.py for why that is done there
+# rather than with importorskip.
+import keras  # noqa: F401
 import numpy as np
 import pytest
-
-keras = pytest.importorskip("keras", reason="needs the training extra")
 
 from finetune_eval_power.errors import ToolError  # noqa: E402
 from finetune_eval_power.models.architectures import (  # noqa: E402

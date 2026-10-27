@@ -9,6 +9,7 @@ training code has its own small, slow file.
 from __future__ import annotations
 
 import dataclasses
+import importlib.util
 
 import numpy as np
 import pytest
@@ -17,6 +18,23 @@ from finetune_eval_power.config import VISION_ARM, ArmConfig
 from finetune_eval_power.runs import SweepRuns
 from finetune_eval_power.slices.spec import CoverageProfile, enumerate_slices
 from finetune_eval_power.slices.suite import build_probe, build_suite
+
+#: Test modules that cannot be imported without the training extra.
+TRAINING_ONLY_MODULES = frozenset({"test_training.py", "test_sweep_and_tracking.py"})
+
+
+def pytest_ignore_collect(collection_path, config):
+    """Skip the training-only modules at collection rather than at import.
+
+    A module-level `importorskip` is reported as a collected, skipped entry, so the
+    junit test count came out two higher on a machine without the training extra
+    than on one with it. The published count then depended on what happened to be
+    installed, and `make verify` failed its own receipts on a fresh clone. Ignoring
+    the module during collection keeps the count identical either way.
+    """
+    if collection_path.name not in TRAINING_ONLY_MODULES:
+        return False
+    return importlib.util.find_spec("keras") is None
 
 
 @pytest.fixture

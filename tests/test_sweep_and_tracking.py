@@ -17,7 +17,8 @@ from finetune_eval_power.config import SWEEP_SEEDS, ArmConfig
 from finetune_eval_power.runs import ARRAY_NAMES, load_runs
 from finetune_eval_power.sweep import _build_manifest, run_sweep
 
-pytest.importorskip("keras", reason="needs the training extra")
+# Collection of this module is skipped entirely when the training extra is
+# absent; see pytest_ignore_collect in conftest.py.
 pytestmark = pytest.mark.slow
 
 
