@@ -54,9 +54,11 @@ def _stratified_sample(
     classes = space.label_classes()
     if size % len(classes) != 0:
         raise ToolError(f"{what} size {size} is not divisible by {len(classes)} label classes")
+    # No emptiness guard on the region as a whole: the space is a full product and
+    # validate_against has already rejected any value the space does not have, so a
+    # non-empty profile always selects something. The per-class check below is the
+    # one that can actually fire, when a profile excludes an entire label class.
     region = [cell for cell in enumerate_cells(space) if profile.contains(cell)]
-    if not region:
-        raise ToolError(f"the {what} profile selects no cells")
     per_class = size // len(classes)
     chosen: list[dict[str, str]] = []
     for class_name in classes:

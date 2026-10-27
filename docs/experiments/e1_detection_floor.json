@@ -1,0 +1,102 @@
+{
+  "alpha": 0.05,
+  "arms": {
+    "sequence": {
+      "cases_needed_for_one_point": 1389,
+      "curve": [
+        {
+          "exact_points": null,
+          "normal_points": null,
+          "suite_size": 120,
+          "unpaired_points": 9.28949773311615
+        },
+        {
+          "exact_points": null,
+          "normal_points": null,
+          "suite_size": 240,
+          "unpaired_points": 5.848767757415771
+        },
+        {
+          "exact_points": 1.6537984212239585,
+          "normal_points": 1.646830240885417,
+          "suite_size": 480,
+          "unpaired_points": 3.770486315091452
+        },
+        {
+          "exact_points": 1.1897786458333337,
+          "normal_points": 1.1659240722656248,
+          "suite_size": 960,
+          "unpaired_points": 2.4861623843510943
+        },
+        {
+          "exact_points": 0.85601806640625,
+          "normal_points": 0.8249409993489585,
+          "suite_size": 1920,
+          "unpaired_points": 1.669936577479045
+        },
+        {
+          "exact_points": 0.5995686848958335,
+          "normal_points": 0.58349609375,
+          "suite_size": 3840,
+          "unpaired_points": 1.1378171046574914
+        }
+      ],
+      "discordance": 0.01666666666666667,
+      "mde_points": 1.6537984212239585,
+      "mde_points_normal": 1.646830240885417,
+      "mde_points_unpaired": 3.770486315091452,
+      "smallest_size_with_any_power": 473,
+      "suite_accuracy_before": 0.9729166666666667,
+      "suite_size": 480
+    },
+    "vision": {
+      "cases_needed_for_one_point": 5385,
+      "curve": [
+        {
+          "exact_points": 6.57383410135905,
+          "normal_points": 6.528555711110434,
+          "suite_size": 120,
+          "unpaired_points": 12.637687702973688
+        },
+        {
+          "exact_points": 4.743684609731039,
+          "normal_points": 4.6391843159993496,
+          "suite_size": 240,
+          "unpaired_points": 8.447847306728363
+        },
+        {
+          "exact_points": 3.4164649645487466,
+          "normal_points": 3.2884888648986825,
+          "suite_size": 480,
+          "unpaired_points": 5.709578355153402
+        },
+        {
+          "exact_points": 2.3934674263000493,
+          "normal_points": 2.3281610806783046,
+          "suite_size": 960,
+          "unpaired_points": 3.9004163742065425
+        },
+        {
+          "exact_points": 1.6878242492675783,
+          "normal_points": 1.6472613016764324,
+          "suite_size": 1920,
+          "unpaired_points": 2.6885187427202863
+        },
+        {
+          "exact_points": 1.1866183280944829,
+          "normal_points": 1.165170669555664,
+          "suite_size": 3840,
+          "unpaired_points": 1.866069237391154
+        }
+      ],
+      "discordance": 0.06645833333333334,
+      "mde_points": 3.4164649645487466,
+      "mde_points_normal": 3.2884888648986825,
+      "mde_points_unpaired": 5.709578355153402,
+      "smallest_size_with_any_power": 118,
+      "suite_accuracy_before": 0.9152083333333333,
+      "suite_size": 480
+    }
+  },
+  "target_power": 0.8
+}

@@ -1,0 +1,4089 @@
+{
+  "arm": "vision",
+  "array_sha256": {
+    "probe_after.npy": "78006b29b3c3e06bf93753df3333b0d766d1ee62a4400bad64597d731ddd056c",
+    "probe_before.npy": "2c944b197304b62d151efa2778e037230a5b4778ffd78ca5e8d63433b7f08629",
+    "suite_after.npy": "f92f8572211b34a0c1b988a1c162aa9fd3cf1e2c9f877132f9d8b4f5e4032af1",
+    "suite_before.npy": "995c8b920ff0caa5c1dad4c5d6f0e376329ca19f69a8ff6792a306b2e4cdded8",
+    "suite_curve.npy": "8a5a135b4ac754e67e021cee1d3513cd8a2330f5cb4bb2419027915a4aae86bd"
+  },
+  "config": {
+    "batch_size": 64,
+    "finetune_epochs": 12,
+    "finetune_items": 1536,
+    "finetune_learning_rate": 0.0002,
+    "finetune_profile": {
+      "contrast": [
+        "high"
+      ],
+      "occlusion": [
+        "none"
+      ],
+      "scale": [
+        "large"
+      ]
+    },
+    "freeze_depths": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "learning_rate": 0.002,
+    "name": "vision",
+    "pair_attributes": [
+      "scale",
+      "contrast",
+      "occlusion"
+    ],
+    "pretrain_epochs": 30,
+    "pretrain_items": 3072,
+    "probe_repeats": 2,
+    "space": {
+      "attributes": {
+        "contrast": [
+          "low",
+          "high"
+        ],
+        "occlusion": [
+          "none",
+          "corner",
+          "bar"
+        ],
+        "rotation": [
+          "r000",
+          "r030",
+          "r060",
+          "r090"
+        ],
+        "scale": [
+          "small",
+          "medium",
+          "large"
+        ],
+        "shape": [
+          "disc",
+          "square",
+          "triangle",
+          "ring"
+        ],
+        "texture": [
+          "solid",
+          "striped",
+          "dotted"
+        ]
+      },
+      "label_attribute": "shape",
+      "name": "vision"
+    },
+    "suite_profile": {
+      "contrast": [
+        "high"
+      ],
+      "occlusion": [
+        "none",
+        "corner"
+      ],
+      "scale": [
+        "medium",
+        "large"
+      ]
+    },
+    "suite_seed": 20260101,
+    "suite_size": 480
+  },
+  "freeze_depths": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "held_out_slices": [
+    "contrast=low",
+    "occlusion=bar",
+    "scale=small",
+    "contrast=low & occlusion=none",
+    "contrast=low & occlusion=corner",
+    "contrast=low & occlusion=bar",
+    "contrast=high & occlusion=bar",
+    "contrast=low & scale=small",
+    "contrast=low & scale=medium",
+    "contrast=low & scale=large",
+    "contrast=high & scale=small",
+    "occlusion=none & scale=small",
+    "occlusion=corner & scale=small",
+    "occlusion=bar & scale=small",
+    "occlusion=bar & scale=medium",
+    "occlusion=bar & scale=large"
+  ],
+  "package_version": "0.1.0",
+  "probe_size": 1728,
+  "seeds": [
+    11,
+    23,
+    37,
+    41,
+    59,
+    67,
+    73,
+    89,
+    97,
+    101
+  ],
+  "shapes": {
+    "probe_after": [
+      10,
+      5,
+      1728
+    ],
+    "probe_before": [
+      10,
+      5,
+      1728
+    ],
+    "suite_after": [
+      10,
+      5,
+      480
+    ],
+    "suite_before": [
+      10,
+      5,
+      480
+    ],
+    "suite_curve": [
+      10,
+      5,
+      13
+    ]
+  },
+  "slice_names": [
+    "contrast=low",
+    "contrast=high",
+    "occlusion=none",
+    "occlusion=corner",
+    "occlusion=bar",
+    "rotation=r000",
+    "rotation=r030",
+    "rotation=r060",
+    "rotation=r090",
+    "scale=small",
+    "scale=medium",
+    "scale=large",
+    "shape=disc",
+    "shape=square",
+    "shape=triangle",
+    "shape=ring",
+    "texture=solid",
+    "texture=striped",
+    "texture=dotted",
+    "contrast=low & occlusion=none",
+    "contrast=low & occlusion=corner",
+    "contrast=low & occlusion=bar",
+    "contrast=high & occlusion=none",
+    "contrast=high & occlusion=corner",
+    "contrast=high & occlusion=bar",
+    "contrast=low & scale=small",
+    "contrast=low & scale=medium",
+    "contrast=low & scale=large",
+    "contrast=high & scale=small",
+    "contrast=high & scale=medium",
+    "contrast=high & scale=large",
+    "occlusion=none & scale=small",
+    "occlusion=none & scale=medium",
+    "occlusion=none & scale=large",
+    "occlusion=corner & scale=small",
+    "occlusion=corner & scale=medium",
+    "occlusion=corner & scale=large",
+    "occlusion=bar & scale=small",
+    "occlusion=bar & scale=medium",
+    "occlusion=bar & scale=large"
+  ],
+  "suite_cells": [
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "disc",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "square",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "square",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "square",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "triangle",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "dotted"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r090",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r060",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r090",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "striped"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "none",
+      "rotation": "r000",
+      "scale": "large",
+      "shape": "ring",
+      "texture": "solid"
+    },
+    {
+      "contrast": "high",
+      "occlusion": "corner",
+      "rotation": "r030",
+      "scale": "medium",
+      "shape": "ring",
+      "texture": "solid"
+    }
+  ],
+  "suite_slice_case_counts": {
+    "contrast=high": 480,
+    "contrast=high & occlusion=bar": 0,
+    "contrast=high & occlusion=corner": 232,
+    "contrast=high & occlusion=none": 248,
+    "contrast=high & scale=large": 248,
+    "contrast=high & scale=medium": 232,
+    "contrast=high & scale=small": 0,
+    "contrast=low": 0,
+    "contrast=low & occlusion=bar": 0,
+    "contrast=low & occlusion=corner": 0,
+    "contrast=low & occlusion=none": 0,
+    "contrast=low & scale=large": 0,
+    "contrast=low & scale=medium": 0,
+    "contrast=low & scale=small": 0,
+    "occlusion=bar": 0,
+    "occlusion=bar & scale=large": 0,
+    "occlusion=bar & scale=medium": 0,
+    "occlusion=bar & scale=small": 0,
+    "occlusion=corner": 232,
+    "occlusion=corner & scale=large": 130,
+    "occlusion=corner & scale=medium": 102,
+    "occlusion=corner & scale=small": 0,
+    "occlusion=none": 248,
+    "occlusion=none & scale=large": 118,
+    "occlusion=none & scale=medium": 130,
+    "occlusion=none & scale=small": 0,
+    "rotation=r000": 107,
+    "rotation=r030": 133,
+    "rotation=r060": 121,
+    "rotation=r090": 119,
+    "scale=large": 248,
+    "scale=medium": 232,
+    "scale=small": 0,
+    "shape=disc": 120,
+    "shape=ring": 120,
+    "shape=square": 120,
+    "shape=triangle": 120,
+    "texture=dotted": 173,
+    "texture=solid": 162,
+    "texture=striped": 145
+  },
+  "tracking_enabled": true
+}

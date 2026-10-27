@@ -13,6 +13,7 @@ import pytest
 
 keras = pytest.importorskip("keras", reason="needs the training extra")
 
+from finetune_eval_power.errors import ToolError  # noqa: E402
 from finetune_eval_power.models.architectures import (  # noqa: E402
     LABEL_HEAD,
     SEQUENCE_BLOCKS,
@@ -21,7 +22,6 @@ from finetune_eval_power.models.architectures import (  # noqa: E402
     block_names,
     build_model,
 )
-from finetune_eval_power.errors import ToolError  # noqa: E402
 
 pytestmark = pytest.mark.slow
 

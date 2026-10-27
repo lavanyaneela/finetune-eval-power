@@ -352,6 +352,44 @@ def suite_size_curve(
     return rows
 
 
+def smallest_suite_with_power(
+    discordance: float, rule: DecisionRule | None = None, ceiling: int = 100_000
+) -> int | None:
+    """Fewest cases at which this suite reaches the target power against any effect.
+
+    Below this size the exact test has too few discordant cases for any outcome to
+    be significant, so the suite cannot produce a positive result whatever the model
+    did. It is a different quantity from the detection floor and a more alarming
+    one: the floor says how large an effect must be, this says whether the question
+    is answerable at all.
+    """
+    rule = rule or DecisionRule()
+
+    def reachable(size: int) -> bool:
+        return (
+            minimum_detectable_points(
+                size, discordance, rule.alpha, rule.target_power, method="exact"
+            )
+            is not None
+        )
+
+    low, high = 1, 2
+    while high <= ceiling:
+        if reachable(high):
+            break
+        low = high
+        high *= 2
+    else:
+        return None
+    while low + 1 < high:
+        middle = (low + high) // 2
+        if reachable(middle):
+            high = middle
+        else:
+            low = middle
+    return high
+
+
 def suite_size_for(drop_points: float, discordance: float, rule: DecisionRule | None = None):
     """How many cases a suite needs to see a drop of this size."""
     rule = rule or DecisionRule()

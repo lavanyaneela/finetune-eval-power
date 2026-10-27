@@ -60,9 +60,10 @@ def test_every_analysis_module_imports_without_the_training_extra(
 def test_the_whole_analysis_runs_without_the_training_extra(
     tmp_path, vision_arm, without_training_extra
 ):
+    from tests.conftest import build_synthetic_runs
+
     from finetune_eval_power.analysis import analyse
     from finetune_eval_power.runs import load_runs
-    from tests.conftest import build_synthetic_runs
 
     build_synthetic_runs(vision_arm).write(tmp_path)
     analysis = analyse(vision_arm, load_runs(tmp_path))
@@ -70,8 +71,9 @@ def test_the_whole_analysis_runs_without_the_training_extra(
 
 
 def test_the_cli_answers_without_the_training_extra(tmp_path, vision_arm, without_training_extra):
-    from finetune_eval_power.cli import main
     from tests.conftest import build_synthetic_runs
+
+    from finetune_eval_power.cli import main
 
     build_synthetic_runs(vision_arm).write(tmp_path / "vision")
     assert main(["suite", "--runs", str(tmp_path)]) == 0

@@ -1,0 +1,36 @@
+{
+  "arms": {
+    "sequence": {
+      "accuracy before": 0.9729166666666667,
+      "detection floor, points": 1.6537984212239585,
+      "discordance": 0.01666666666666667,
+      "freeze depth shipped": 0,
+      "missed slices": 9,
+      "named slices": 29,
+      "never sampled": 15,
+      "no usable power": 17,
+      "probe cases": 1536,
+      "retraining spread, points": 0.849382491745592,
+      "suite cases": 480,
+      "suite drop, points": -0.16666666666666669,
+      "worst missed, points": 5.937499999999999
+    },
+    "vision": {
+      "accuracy before": 0.9152083333333333,
+      "detection floor, points": 3.4164649645487466,
+      "discordance": 0.06645833333333334,
+      "freeze depth shipped": 0,
+      "missed slices": 8,
+      "named slices": 40,
+      "never sampled": 16,
+      "no usable power": 19,
+      "probe cases": 1728,
+      "retraining spread, points": 2.001759449849489,
+      "suite cases": 480,
+      "suite drop, points": -1.2708333333333333,
+      "worst missed, points": 10.578703703703702
+    }
+  },
+  "both_arms_have_slices_without_power": true,
+  "both_arms_missed_slices": true
+}
