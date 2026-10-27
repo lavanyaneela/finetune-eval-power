@@ -92,7 +92,8 @@ jobs:
           sys.exit(0 if published == collected else 1)
           PY
       - run: python -m finetune_eval_power.cli suite --arm vision
-      - run: python -m finetune_eval_power.cli blind --arm vision || true
+      # blind exits 1 when it finds something, which on this measurement it does.
+      - run: python -m finetune_eval_power.cli blind --arm vision || test $? -eq 1
 
   receipts:
     needs: tests

@@ -5,33 +5,43 @@
         {
           "freeze_depth": 0,
           "in_region_gain_points": 0.0,
+          "in_region_spread_points": 0.0,
           "mde_points": 1.6537984212239585,
           "outside_region_loss_points": 0.8355978260869564,
+          "outside_region_spread_points": 0.9024223818981699,
           "seeds_flagging": 0,
           "suite_drop_points": -0.16666666666666669
         },
         {
           "freeze_depth": 1,
           "in_region_gain_points": 0.0,
+          "in_region_spread_points": 0.0,
           "mde_points": null,
           "outside_region_loss_points": 0.6657608695652174,
+          "outside_region_spread_points": 0.84898850388633,
           "seeds_flagging": 0,
           "suite_drop_points": -0.125
         },
         {
           "freeze_depth": 2,
           "in_region_gain_points": 0.0,
+          "in_region_spread_points": 0.0,
           "mde_points": null,
           "outside_region_loss_points": 0.061141304347826095,
+          "outside_region_spread_points": 0.38356256074005746,
           "seeds_flagging": 0,
           "suite_drop_points": -2.7755575615628915e-18
         }
       ],
+      "in_region_cases": 64,
+      "outside_region_cases": 1472,
       "safest_depth": 2,
       "safest_in_region_gain_points": 0.0,
       "safest_outside_loss_points": 0.061141304347826095,
+      "safest_outside_spread_points": 0.38356256074005746,
       "shipped_depth": 0,
       "shipped_in_region_gain_points": 0.0,
+      "shipped_in_region_spread_points": 0.0,
       "shipped_outside_loss_points": 0.8355978260869564
     },
     "vision": {
@@ -39,49 +49,63 @@
         {
           "freeze_depth": 0,
           "in_region_gain_points": 1.145833333333336,
+          "in_region_spread_points": 1.42741699938156,
           "mde_points": 3.4164649645487466,
           "outside_region_loss_points": 1.9178921568627456,
+          "outside_region_spread_points": 1.72781321471835,
           "seeds_flagging": 0,
           "suite_drop_points": -1.2708333333333333
         },
         {
           "freeze_depth": 1,
           "in_region_gain_points": 1.1458333333333348,
+          "in_region_spread_points": 1.6615952936118623,
           "mde_points": 3.395254611968995,
           "outside_region_loss_points": 1.599264705882353,
+          "outside_region_spread_points": 1.617680584091762,
           "seeds_flagging": 0,
           "suite_drop_points": -1.3124999999999998
         },
         {
           "freeze_depth": 2,
           "in_region_gain_points": 1.0416666666666683,
+          "in_region_spread_points": 1.6286165832720254,
           "mde_points": 3.3246873219807944,
           "outside_region_loss_points": 0.8333333333333334,
+          "outside_region_spread_points": 1.3362901542680372,
           "seeds_flagging": 0,
           "suite_drop_points": -1.2500000000000002
         },
         {
           "freeze_depth": 3,
           "in_region_gain_points": 0.7291666666666673,
+          "in_region_spread_points": 1.6323137879921066,
           "mde_points": 3.268436431884765,
           "outside_region_loss_points": 0.15931372549019604,
+          "outside_region_spread_points": 1.551266003713277,
           "seeds_flagging": 0,
           "suite_drop_points": -0.9583333333333333
         },
         {
           "freeze_depth": 4,
           "in_region_gain_points": 0.31250000000000105,
+          "in_region_spread_points": 2.0276112945356153,
           "mde_points": 2.8266162872314453,
           "outside_region_loss_points": -0.15931372549019612,
+          "outside_region_spread_points": 1.5189268626669679,
           "seeds_flagging": 0,
           "suite_drop_points": -0.45833333333333337
         }
       ],
+      "in_region_cases": 96,
+      "outside_region_cases": 1632,
       "safest_depth": 4,
       "safest_in_region_gain_points": 0.31250000000000105,
       "safest_outside_loss_points": -0.15931372549019612,
+      "safest_outside_spread_points": 1.5189268626669679,
       "shipped_depth": 0,
       "shipped_in_region_gain_points": 1.145833333333336,
+      "shipped_in_region_spread_points": 1.42741699938156,
       "shipped_outside_loss_points": 1.9178921568627456
     }
   }

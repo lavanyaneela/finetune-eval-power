@@ -78,7 +78,9 @@ def anchor_pattern(anchor: str, numeric: bool) -> re.Pattern[str]:
     placeholder = (
         rf"{NUMBER_PATTERN.pattern}|(?i:\b(?:{NUMBER_WORDS})\b)"
         if numeric
-        else r"[A-Za-z][\w=.&>-]*"
+        # No full stop in the class: it swallows the sentence-ending period and the
+        # captured value then never equals the published one.
+        else r"[A-Za-z][\w=&>-]*"
     )
     # Case insensitive, because a sentence that starts with the anchor capitalises
     # its first word and that is not a stale figure.
@@ -166,6 +168,23 @@ def check_anchor_overlap(payload: dict) -> list[str]:
     return problems
 
 
+def check_orphans(payload: dict) -> list[str]:
+    """An anchor for a metric that no longer exists guards nothing.
+
+    It also makes the suite's own "every metric is quoted" test fail in a way that
+    looks like a documentation problem and is really a leftover.
+    """
+    return [
+        f"anchor set declares {name!r}, which is not a metric any more"
+        for name in payload["anchors"]
+        if name not in payload["metrics"]
+    ] + [
+        f"metric {name!r} has no anchor, so nothing guards it"
+        for name in payload["metrics"]
+        if name not in payload["anchors"]
+    ]
+
+
 def check_anchor_hygiene(anchors: dict[str, list[str]]) -> list[str]:
     problems: list[str] = []
     seen: dict[str, str] = {}
@@ -225,19 +244,45 @@ def check_documents(payload: dict) -> tuple[list[str], dict[str, int]]:
 
 
 def check_reverse(payload: dict) -> list[str]:
-    """Report numbers in the README that no metric accounts for."""
+    """Report numbers that no metric accounts for, in every checked document.
+
+    This ran over the README alone until an audit pointed out that the ADRs are
+    listed as checked documents, publish figures, and were guarded by nothing. The
+    build stayed green while three of them could go stale, which is the repository's
+    own headline bug reappearing somewhere nobody looked.
+    """
     problems: list[str] = []
     values = set(payload["rendered"].values())
     used: set[str] = set()
-    path = ROOT / "README.md"
+    for relative in payload["checked_documents"]:
+        problems.extend(_reverse_one(ROOT / relative, relative, values, used))
+    for exemption in REVERSE_EXEMPTIONS:
+        if exemption not in used:
+            problems.append(f"exemption {exemption!r} is never used, so it is guarding nothing")
+        if exemption in values:
+            problems.append(f"exemption {exemption!r} hides a measured value and must be removed")
+    return problems
+
+
+def _blank(match: re.Match[str]) -> str:
+    """Replace a span with blanks, keeping its line breaks.
+
+    Collapsing the span instead shifts every line number after it, and a checker
+    that reports the wrong line is a checker people stop reading.
+    """
+    return "\n" * match.group(0).count("\n") or " "
+
+
+def _reverse_one(path: Path, relative: str, values: set[str], used: set[str]) -> list[str]:
+    problems: list[str] = []
     if not path.exists():
-        return ["README.md does not exist"]
+        return [f"{relative} does not exist"]
     text = path.read_text(encoding="utf-8")
     stripped = LIST_MARKER.sub(" ", text)
-    stripped = re.sub(r"```.*?```", " ", stripped, flags=re.S)
-    stripped = re.sub(r"`[^`]*`", " ", stripped)
-    stripped = re.sub(r"<[^>]+>", " ", stripped)
-    stripped = re.sub(r"\]\([^)]*\)", " ", stripped)
+    stripped = re.sub(r"```.*?```", _blank, stripped, flags=re.S)
+    stripped = re.sub(r"`[^`]*`", _blank, stripped)
+    stripped = re.sub(r"<[^>]+>", _blank, stripped)
+    stripped = re.sub(r"\]\([^)]*\)", _blank, stripped)
     # ADR-004 is a document name, not a figure. Without this the leading hyphen is
     # read as a sign and every reference becomes an unexplained number.
     stripped = re.sub(r"ADR-\d+", " ", stripped)
@@ -250,7 +295,7 @@ def check_reverse(payload: dict) -> list[str]:
             used.add(bare)
             continue
         line = stripped[: match.start()].count("\n") + 1
-        problems.append(f"README.md line {line}: {token} matches no metric and no exemption")
+        problems.append(f"{relative} line {line}: {token} matches no metric and no exemption")
     for exemption in REVERSE_EXEMPTIONS:
         if exemption not in used:
             problems.append(f"exemption {exemption!r} is never used, so it is guarding nothing")
@@ -261,7 +306,8 @@ def check_reverse(payload: dict) -> list[str]:
 
 def main() -> int:
     payload = load_metrics()
-    problems = check_anchor_hygiene(payload["anchors"])
+    problems = check_orphans(payload)
+    problems.extend(check_anchor_hygiene(payload["anchors"]))
     problems.extend(check_anchor_overlap(payload))
     document_problems, occurrences = check_documents(payload)
     problems.extend(document_problems)

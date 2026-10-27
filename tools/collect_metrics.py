@@ -151,17 +151,30 @@ def main() -> int:
         "worst_undetected_name": vision_e3["worst_undetected_name"],
         "worst_undetected_points": round(vision_e3["worst_undetected_points"], 2),
         "worst_undetected_suite_cases": vision_e3["worst_undetected_suite_cases"],
-        "slice_resolution_floor_points": floor_to(vision_e3["resolution_floor_points"], 3),
+        "probe_resolution_floor_points": floor_to(100.0 / analysis.probe_size, 3),
+        "thinnest_slice_floor_points": floor_to(
+            max(item.resolution_floor_points for item in analysis.findings), 2
+        ),
+        "probe_change_points": round(analysis.probe_change_points, 2),
+        "suite_worst_class_points": round(analysis.worst_class_on_suite[1], 2),
+        "improving_class_points": round(analysis.improving_class_total_points, 2),
+        "underpowered_covered_slices": analysis.underpowered_covered_slices,
         "seed_spread_points": round(analysis.variance.standard_deviation_points, 3),
         "seed_noise_floor_points": round(analysis.variance.noise_floor_points, 2),
         "shipped_depth": vision_e5["shipped_depth"],
         "in_region_gain_points": round(vision_e5["shipped_in_region_gain_points"], 2),
+        "in_region_cases": vision_e5["in_region_cases"],
+        "in_region_floor_points": floor_to(100.0 / vision_e5["in_region_cases"], 2),
+        "in_region_spread_points": round(vision_e5["shipped_in_region_spread_points"], 2),
         "outside_loss_points": round(vision_e5["shipped_outside_loss_points"], 2),
         "safest_depth": vision_e5["safest_depth"],
+        "safest_outside_change_points": round(vision_e5["safest_outside_loss_points"], 2),
+        "safest_outside_spread_points": round(vision_e5["safest_outside_spread_points"], 2),
         "case_interval_points": round(analysis.suite_case_interval_width_points, 2),
         "retraining_interval_points": round(analysis.retraining_interval_width_points, 2),
         "epoch_band_points": round(e2["vision"]["final_band_points"], 2),
         "widest_band_points": round(e2["vision"]["widest_band_points"], 2),
+        "widest_band_epoch": e2["vision"]["widest_epoch"],
         "sequence_suite_cases": e1["sequence"]["suite_size"],
         "sequence_mde_points": floor_to(e1["sequence"]["mde_points"], 2)
         if e1["sequence"]["mde_points"] is not None
@@ -169,7 +182,7 @@ def main() -> int:
         "sequence_undetected_slices": sequence_e3["undetected_slices"],
         "sequence_slices_total": sequence_e3["slices_total"],
         "tests_total": read_test_count(),
-        "coverage_line_pct": round(read_coverage(), 1),
+        "coverage_pct": round(read_coverage(), 1),
     }
 
     rendered = {
@@ -198,6 +211,14 @@ TWO_DECIMALS = {
     "mde_points",
     "mde_points_unpaired",
     "suite_change_points",
+    "probe_change_points",
+    "suite_worst_class_points",
+    "improving_class_points",
+    "thinnest_slice_floor_points",
+    "in_region_floor_points",
+    "in_region_spread_points",
+    "safest_outside_change_points",
+    "safest_outside_spread_points",
     "worst_undetected_points",
     "seed_noise_floor_points",
     "in_region_gain_points",
@@ -208,8 +229,8 @@ TWO_DECIMALS = {
     "widest_band_points",
     "sequence_mde_points",
 }
-THREE_DECIMALS = {"seed_spread_points", "slice_resolution_floor_points"}
-ONE_DECIMAL = {"coverage_line_pct"}
+THREE_DECIMALS = {"seed_spread_points", "probe_resolution_floor_points"}
+ONE_DECIMAL = {"coverage_pct"}
 
 
 def _render(name: str, value: object) -> str:
@@ -246,24 +267,35 @@ ANCHORS: dict[str, list[str]] = {
     "worst_undetected_name": ["worst is {}"],
     "worst_undetected_points": ["worst lost {}"],
     "worst_undetected_suite_cases": ["{} cases of its own"],
-    "slice_resolution_floor_points": ["resolves {}"],
     "seed_spread_points": ["deviation of {}"],
     "seed_noise_floor_points": ["noise floor reaches {}"],
     "shipped_depth": ["shipped depth {}"],
     "safest_depth": ["safest is depth {}"],
     "in_region_gain_points": ["gains {}"],
+    "in_region_cases": ["{} cases in region"],
+    "in_region_floor_points": ["one of them is {}"],
+    "in_region_spread_points": ["gain spread of {}"],
+    "safest_outside_change_points": ["depth four moves {}"],
+    "safest_outside_spread_points": ["that spread is {}"],
     "outside_loss_points": ["costs {}"],
     "case_interval_points": ["resampling cases gives {}"],
     "retraining_interval_points": ["retraining gives {}"],
     "epoch_band_points": ["spans {}"],
     "widest_band_points": ["widest band is {}"],
+    "widest_band_epoch": ["at epoch {}"],
     "sequence_suite_cases": ["sequence ships {}"],
     "sequence_mde_points": ["sequence arm reaches {}"],
     "sequence_undetected_slices": ["sequence missed {}"],
     "sequence_slices_total": ["{} sequence slices named"],
     "sequence_smallest_suite_with_power": ["sequence needs {}"],
     "tests_total": ["{} tests"],
-    "coverage_line_pct": ["{}% line coverage"],
+    "coverage_pct": ["{}% statement and branch"],
+    "probe_change_points": ["probe says {}"],
+    "suite_worst_class_points": ["suite shows {}"],
+    "improving_class_points": ["together gain {}"],
+    "underpowered_covered_slices": ["{} sampled too thinly"],
+    "probe_resolution_floor_points": ["probe resolves {}"],
+    "thinnest_slice_floor_points": ["thinnest slice resolves {}"],
 }
 
 

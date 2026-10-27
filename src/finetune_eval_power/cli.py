@@ -4,11 +4,18 @@ The distinction the codes exist to make is between "the tool worked and the answ
 is no" and "the tool cannot answer this". Most eval tooling collapses those two, and
 a team reading a green pipeline cannot tell which one it got.
 
-    0  the suite can see a regression of the size claimed
-    1  it cannot, and a larger suite would fix that. The size needed is printed.
+    0  the tool answered, and the answer is the reassuring one: `power` means the
+       suite can see a regression of the size claimed, `blind` means nothing fell
+       past its floor unnoticed.
+    1  the tool answered, and the answer is the unwelcome one: `power` means the
+       suite cannot see it and prints the suite size that could, `blind` means it
+       found capabilities that regressed unflagged and lists them.
     2  refused. Retraining noise alone is larger than the claimed effect, so no
        suite size fixes it. The number of retrainings that would is printed.
     3  the tool itself failed
+
+`suite`, `curve`, `report` and `metrics` describe the measurement rather than
+judging it, so they return 0 unless the tool fails.
 
 Code 2 is the one worth reading twice. A power calculation always has a remedy to
 offer, because its model of the world contains exactly one noise source. When the
@@ -28,6 +35,7 @@ from finetune_eval_power import __version__
 from finetune_eval_power.analysis import ArmAnalysis, analyse, suite_size_curve, suite_size_for
 from finetune_eval_power.config import ARMS, DEFAULT_CLAIM_POINTS, RUNS_DIRECTORY, DecisionRule
 from finetune_eval_power.errors import ToolError, Unanswerable
+from finetune_eval_power.formatting import format_floor
 from finetune_eval_power.runs import load_runs
 
 EXIT_DETECTABLE = 0
@@ -78,7 +86,7 @@ def command_power(arguments: argparse.Namespace) -> int:
         )
         print(
             f"\nREFUSED: retraining noise alone spans "
-            f"{variance.noise_floor_points:.2f} points, which is wider than the "
+            f"{format_floor(variance.noise_floor_points)} points, which is wider than the "
             f"{claim:.2f} point effect being claimed."
         )
         print(
@@ -96,7 +104,11 @@ def command_power(arguments: argparse.Namespace) -> int:
         )
         return EXIT_NOT_DETECTABLE
 
-    print(f"minimum detectable   {floor:.2f} points at {rule.target_power:.0%} power")
+    # Rounded down, not to nearest, and through the same helper the report and the
+    # metrics collector use. A floor printed one way here and another way in the
+    # README puts two numbers for one quantity in front of a reviewer, and this
+    # command is the one the defense guide tells the candidate to run live.
+    print(f"minimum detectable   {format_floor(floor)} points at {rule.target_power:.0%} power")
     if claim >= floor:
         print(f"\nYES: a {claim:.2f} point regression is above this suite's floor.")
         return EXIT_DETECTABLE
@@ -119,19 +131,26 @@ def command_blind(arguments: argparse.Namespace) -> int:
         f"suite verdict: {operating.suite_drop_points:+.2f} points, flagged a regression in "
         f"{operating.seeds_flagging_regression} of {operating.seeds} retrainings"
     )
+    print(f"probe verdict: {analysis.probe_change_points:+.2f} points over the whole space")
     print(
         "suite detection floor: "
-        + ("unreachable at any effect size" if floor is None else f"{floor:.2f} points")
+        + ("unreachable at any effect size" if floor is None else f"{format_floor(floor)} points")
     )
     print(
-        f"slices: {analysis.slices_total} named, {analysis.held_out_slices} never sampled "
-        f"by the suite, {analysis.slices_without_suite_power} with no usable suite power"
+        f"slices: {analysis.slices_total} named, {analysis.slices_without_suite_power} with "
+        f"no usable suite power, of which {analysis.held_out_slices} are never sampled and "
+        f"{analysis.underpowered_covered_slices} are sampled too thinly"
     )
+    print("per class, measured on the suite's own cases:")
+    for name, drop in analysis.suite_class_drops:
+        print(f"  {name:<28} {drop:+7.2f} points")
+
     missed = analysis.undetected
     if not missed:
         print("\nNo capability slice regressed beyond what the suite could resolve.")
         return EXIT_DETECTABLE
-    print(f"\n{len(missed)} slices regressed past the suite's own floor without being flagged:")
+    print(f"\n{len(missed)} slices regressed past the suite's own floor without being flagged.")
+    print("Drops below are measured on the probe, not on the suite.")
     print(f"{'slice':<40} {'drop':>8} {'95% interval':>18} {'suite':>7} {'probe':>7}")
     for item in sorted(missed, key=lambda row: row.drop_points, reverse=True):
         interval = f"[{item.interval.low_points:+.1f}, {item.interval.high_points:+.1f}]"
@@ -154,7 +173,7 @@ def command_suite(arguments: argparse.Namespace) -> int:
     print()
     print(f"{'depth':>5} {'suite drop':>11} {'discordance':>12} {'floor':>9} {'in region':>10}")
     for summary in analysis.depths:
-        floor = "none" if summary.mde_points is None else f"{summary.mde_points:.2f}p"
+        floor = "none" if summary.mde_points is None else f"{format_floor(summary.mde_points)}p"
         print(
             f"{summary.freeze_depth:>5} {summary.suite_drop_points:>10.2f}p "
             f"{summary.discordance:>12.4f} {floor:>9} "
@@ -173,8 +192,8 @@ def command_curve(arguments: argparse.Namespace) -> int:
         normal = row["normal_points"]
         print(
             f"{row['suite_size']:>7} "
-            f"{'unreachable' if exact is None else f'{exact:.3f}p':>12} "
-            f"{'unreachable' if normal is None else f'{normal:.3f}p':>12}"
+            f"{format_floor(exact, 3) + 'p' if exact is not None else 'unreachable':>12} "
+            f"{format_floor(normal, 3) + 'p' if normal is not None else 'unreachable':>12}"
         )
     return EXIT_DETECTABLE
 

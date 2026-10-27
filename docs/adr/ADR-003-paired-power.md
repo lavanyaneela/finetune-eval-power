@@ -31,12 +31,12 @@ evaluations. Its optimism against the exact value is published in E1 rather than
 asserted here.
 
 **The unpaired calculation is implemented too, under its own name.** A team that
-reports "accuracy went from 91 to 89" and asks whether the suite was big enough
-almost always reaches for two independent proportions. On this measurement that
-calculation would claim this suite needs a regression of 5.70 points to see,
-where the paired calculation that matches the design puts the floor at 3.41 points.
-The unpaired number is not a small correction, and it errs toward buying eval cases
-that were not needed.
+reports an accuracy before and an accuracy after, and then asks whether the suite was
+big enough, almost always reaches for two independent proportions. That calculation is
+the one the **unpaired says 5.70** about on this measurement, where the paired
+calculation that matches the design gives a **detection floor of 3.41** points. The
+gap is not a small correction, and it errs toward buying more evaluation data than was
+needed.
 
 ## The test is two sided, which is a choice
 

@@ -43,10 +43,19 @@ point nothing is checked.
 
 **What is kept honest instead.** A separate CI job retrains the whole sweep from
 scratch and reports the drift against the committed measurement in the job summary.
-It publishes the difference rather than asserting there is none. The arrays are
-stored as individual `.npy` files rather than one `.npz`, because the zip container
-inside an `.npz` embeds a modification time and the fixture would stop matching
-itself a second after it was written.
+It publishes the difference rather than asserting there is none.
+
+That job is manual and non-blocking, and it is worth saying so rather than letting a
+reader assume otherwise. It is gated on a workflow dispatch and runs with
+`continue-on-error`, for two reasons. It takes the better part of an hour, which is
+not something to put on every push. And it exists to measure a difference this ADR
+already predicts, so wiring it to fail the build would paint the badge red for
+something documented, and a badge that is red for a known reason is a badge everybody
+learns to ignore. The result is a number a reader can go and look at, not a gate.
+
+The arrays are stored as individual `.npy` files rather than one `.npz`, because the
+zip container inside an `.npz` embeds a modification time and the fixture would stop
+matching itself a second after it was written.
 
 ## Alternatives considered
 

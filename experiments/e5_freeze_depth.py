@@ -49,6 +49,8 @@ def main() -> int:
                 losses.append(paired_counts(before[outside], after[outside]).drop_points)
             gain = float(np.mean(gains))
             loss = float(np.mean(losses))
+            gain_spread = float(np.std(gains, ddof=1))
+            loss_spread = float(np.std(losses, ddof=1))
             rows.append(
                 (
                     summary.freeze_depth,
@@ -63,7 +65,9 @@ def main() -> int:
                 {
                     "freeze_depth": summary.freeze_depth,
                     "in_region_gain_points": gain,
+                    "in_region_spread_points": gain_spread,
                     "outside_region_loss_points": loss,
+                    "outside_region_spread_points": loss_spread,
                     "suite_drop_points": summary.suite_drop_points,
                     "seeds_flagging": summary.seeds_flagging_regression,
                     "mde_points": summary.mde_points,
@@ -80,9 +84,13 @@ def main() -> int:
         payload["arms"][name] = {
             "shipped_depth": analysis.operating_depth,
             "shipped_in_region_gain_points": shipped["in_region_gain_points"],
+            "shipped_in_region_spread_points": shipped["in_region_spread_points"],
             "shipped_outside_loss_points": shipped["outside_region_loss_points"],
+            "in_region_cases": int(region.sum()),
+            "outside_region_cases": int(outside.sum()),
             "safest_depth": safest["freeze_depth"],
             "safest_outside_loss_points": safest["outside_region_loss_points"],
+            "safest_outside_spread_points": safest["outside_region_spread_points"],
             "safest_in_region_gain_points": safest["in_region_gain_points"],
             "depths": depths,
         }

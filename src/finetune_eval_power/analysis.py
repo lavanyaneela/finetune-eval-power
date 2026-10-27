@@ -140,6 +140,8 @@ class ArmAnalysis:
     variance: SeedVariance
     suite_accuracy_before: float
     suite_case_interval_width_points: float
+    probe_change_points: float
+    suite_class_drops: tuple[tuple[str, float], ...]
 
     def depth(self, freeze_depth: int) -> DepthSummary:
         for summary in self.depths:
@@ -178,6 +180,32 @@ class ArmAnalysis:
     @property
     def slices_without_suite_power(self) -> int:
         return sum(1 for item in self.findings if not item.suite_has_power)
+
+    @property
+    def underpowered_covered_slices(self) -> int:
+        """Slices the suite does sample and still has no usable power on.
+
+        Kept separate from the never-sampled count because the two have different
+        remedies. A slice with no suite cases needs cases; one with too few needs
+        more of them, and saying that no suite size would help either is false of
+        the second group.
+        """
+        return sum(1 for item in self.findings if item.covered and not item.suite_has_power)
+
+    @property
+    def improving_class_total_points(self) -> float:
+        """How much the classes that improved gained, measured on the suite.
+
+        This is the other half of the headline. The aggregate stays flat because
+        some classes moved the other way, and the arithmetic has to be done on the
+        suite's own cases, since the aggregate being explained is the suite's.
+        """
+        return -sum(drop for _name, drop in self.suite_class_drops if drop < 0.0)
+
+    @property
+    def worst_class_on_suite(self) -> tuple[str, float]:
+        name, drop = max(self.suite_class_drops, key=lambda row: row[1])
+        return name, drop
 
     @property
     def retraining_interval_width_points(self) -> float:
@@ -327,6 +355,18 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
             rule.seed_noise_multiplier,
         ),
         suite_accuracy_before=float(np.mean(runs.suite_before[:, operating_position])),
+        probe_change_points=float(
+            np.mean(
+                [
+                    paired_counts(
+                        runs.probe_before[position, operating_position],
+                        runs.probe_after[position, operating_position],
+                    ).drop_points
+                    for position in range(len(runs.seeds))
+                ]
+            )
+        ),
+        suite_class_drops=_suite_class_drops(arm, runs, operating_position),
         suite_case_interval_width_points=_interval_width(
             bootstrap_drop_interval(
                 runs.suite_before[0, operating_position],
@@ -339,6 +379,35 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
 
 def _interval_width(interval: DropInterval) -> float:
     return interval.high_points - interval.low_points
+
+
+def _suite_class_drops(
+    arm: ArmConfig, runs: SweepRuns, depth_position: int
+) -> tuple[tuple[str, float], ...]:
+    """Per label class, measured on the eval suite's own cases.
+
+    Deliberately not measured on the probe. The quantity these numbers explain is
+    the suite's aggregate, so they have to come from the cases the suite holds. An
+    earlier version of the README explained a suite figure with probe figures, which
+    produced a story that did not add up and would not have survived a reviewer with
+    a calculator.
+    """
+    cells = runs.manifest.get("suite_cells", [])
+    drops: list[tuple[str, float]] = []
+    for class_name in arm.space.label_classes():
+        item = CapabilitySlice.of(**{arm.space.label_attribute: class_name})
+        mask = np.array([item.matches(cell) for cell in cells], dtype=bool)
+        if not mask.any():
+            continue
+        per_seed = [
+            paired_counts(
+                runs.suite_before[position, depth_position][mask],
+                runs.suite_after[position, depth_position][mask],
+            ).drop_points
+            for position in range(len(runs.seeds))
+        ]
+        drops.append((item.name, float(np.mean(per_seed))))
+    return tuple(drops)
 
 
 def _choose_operating_depth(summaries: list[DepthSummary]) -> int:

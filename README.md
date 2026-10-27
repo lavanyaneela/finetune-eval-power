@@ -19,16 +19,17 @@ Four questions this answers that an eval suite does not:
 
 ## The uncomfortable numbers
 
-On the vision arm, at the freeze depth the eval suite waves through:
+On the vision arm, at the freeze depth the eval suite waves through, the suite and the referee disagree about the sign of what happened.
 
-- The suite's accuracy **changed by -1.27** points, which is to say it went up, and it raised a flag in **0 of the retrainings**. Nothing about it says stop.
-- Meanwhile **8 slices regressed** past what the suite could resolve. **2 sit inside** the region the suite samples. The **worst is shape=square**, and the **worst lost 10.58** points while the suite holds **120 cases of its own** for exactly that shape.
-- The reason the aggregate stays flat is that another class improved by almost as much. The suite is not insensitive. It is averaging over a dimension it does not report.
+- The eval suite's accuracy **changed by -1.27** points, which is to say it went up, and it raised a flag in **0 of the retrainings**. The referee probe, which enumerates the whole attribute space, says the same fine-tune cost the model what the **probe says 1.75** points. One of them is looking at a sample of its own choosing.
+- The aggregate stays flat because the classes move in opposite directions. On the suite's own cases one class gets worse by what the **suite shows 4.75** points, which is above the suite's own detection floor, while two others **together gain 9.83** points. The suite is not insensitive. It is averaging over a dimension it never reports.
+- The referee measures the damage on that class as **worst lost 10.58** points. The suite holds **120 cases of its own** for it and still said nothing.
+- Across all the slices, **8 slices regressed** past what the suite could resolve, and **2 sit inside** the region the suite samples at all.
 - The suite's **detection floor of 3.41** points is not the binding constraint anyway. Retraining the same configuration moves the measured result with a standard **deviation of 2.002** points, so the **noise floor reaches 3.92** points. No larger suite reduces that number.
 
-Of **40 named capability** slices, there are **16 it never samples** and the suite has **no usable power on 19** of them. With **power below 118** cases, this suite cannot reach 80% power against a regression of any size whatsoever.
+Of **40 named capability** slices the suite has **no usable power on 19**: there are **16 it never samples** at all and another **3 sampled too thinly** for any effect size to reach the target power. Separately, with **power below 118** cases nothing at this discordance reaches 80% power at all, and the suite that ships is larger than that, so its problem is not its size.
 
-Every figure above and below is re-measured from a committed measurement by `make verify`, which also runs **317 tests** at **99.7% line coverage** and fails the build if any document quotes a figure the code no longer produces. That coverage figure is over the modules a core install executes. The training modules are excluded from its denominator on purpose, because `make verify` has to run from a bare clone without a deep learning framework, and a figure a reviewer cannot reproduce is worse than no figure. They are exercised by the CI jobs that install the training extra.
+Every figure above and below is re-measured from a committed measurement by `make verify`, which also runs **317 tests** at **99.4% statement and branch** coverage and fails the build if any of the seven checked documents quotes a figure the code no longer produces. That coverage figure is over the modules a core install executes; the training, sweep and tracking modules are excluded from its denominator on purpose, because `make verify` has to run from a bare clone without a deep learning framework, and a figure a reviewer cannot reproduce is worse than no figure. They are exercised by the CI jobs that install the training extra.
 
 ## Quickstart
 
@@ -63,29 +64,33 @@ See [E1](docs/experiments/e1_detection_floor.json) and [ADR-003](docs/adr/ADR-00
 
 ## What it missed
 
-The suite is **480 eval cases** drawn from a coverage region. The referee is a probe that enumerates the whole attribute space rather than sampling it, so every slice has an exact denominator: **1728 probe cases** for the vision arm, which **resolves 0.115** points per case. A slice counts as missed when it moved further than the suite's own detection floor while the suite raised no flag. The bar is the suite's floor rather than a number somebody picked, so the comparison is against the thing that was supposed to be watching.
+The suite is **480 eval cases** drawn from a coverage region. The referee is a probe that enumerates the whole attribute space rather than sampling it, so every slice has an exact denominator: **1728 probe cases** for the vision arm. Denominators differ by slice and the floors differ with them, so both ends are published: across the whole probe one case is **probe resolves 0.057** points, while the **thinnest slice resolves 0.52** points, nine times coarser.
+
+A slice counts as missed when three things hold together: the suite raised no regression flag in a majority of retrainings, the slice's drop exceeds the suite's own detection floor, and its interval across retrainings stays clear of zero. The materiality bar is the suite's floor rather than a number somebody picked, so the comparison is against the thing that was supposed to be watching, and the interval condition is there so a slice cannot be called regressed on the strength of one unlucky retraining.
 
 | what the suite reports | what the probe reports |
 | --- | --- |
-| no regression flagged, in any retraining | eight named capabilities below the floor |
-| one aggregate accuracy, moving upward | one class up by nearly eight points, another down by more than ten |
-| a case count that looks comfortable | nineteen slices on which no suite size would help |
+| no regression flagged, in any retraining | eight named capabilities below the suite's floor |
+| one aggregate accuracy, moving upward | the whole space moving downward |
+| a case count that looks comfortable | nineteen slices it has no usable power on |
 
-Full per-slice table with intervals in [E3](docs/experiments/e3_blind_capabilities.json).
+Full per-slice table with intervals, denominators and per-slice floors in [E3](docs/experiments/e3_blind_capabilities.json).
 
 ## What freezing buys and what it costs
 
-Freeze depth is the knob a team turns. Deeper freezing protects what the model already knew and gives up adaptation. At **shipped depth 0**, the shallowest the suite permits, the fine-tune **gains 1.15** points inside the region it trained on and **costs 1.92** points outside it. The **safest is depth 4**, which gives up most of the gain and costs nothing measurable.
+Freeze depth is the knob a team turns. Deeper freezing protects what the model already knew and gives up adaptation. At **shipped depth 0**, the shallowest the suite permits, the fine-tune **gains 1.15** points inside the region it trained on and **costs 1.92** points outside it. Those two carry opposite sign conventions by construction, so to be explicit: the first is an improvement and the second is a loss.
 
-So the fine-tune trades away more than it gains, and the eval suite reports the trade as an improvement. [E5](docs/experiments/e5_freeze_depth.json) has every depth.
+Both are priced before they are used. The in-region figure is measured over **96 cases in region**, so **one of them is 1.04** points and the gain is barely more than a single flipped case, with a **gain spread of 1.43** points across retrainings. It is at the resolution floor and should be read as "no measurable in-region gain" rather than as a win.
+
+The other end of the dial is no better. The **safest is depth 4**, where the outside-region change is what **depth four moves -0.16** points, a number smaller than its own retraining spread, since **that spread is 1.52** points. So the honest summary of the trade is that the fine-tune buys nothing this measurement can resolve, costs almost two points outside the region it trained on, and the eval suite reports the whole thing as an improvement. [E5](docs/experiments/e5_freeze_depth.json) has every depth.
 
 ## Which uncertainty actually dominates
 
 Both of these describe a single measurement, which is the only way they can be compared. Resampling the eval cases of one retraining puts a 95% interval around the suite's reading, and **resampling cases gives 3.54** points of width. Retraining the same configuration with the eval cases held fixed gives a wider one: **retraining gives 7.85** points.
 
-A larger eval suite shrinks the first and leaves the second untouched, which is why the tool checks the second before it recommends anything about the first. Those two answers send a team in opposite directions and only one of them is cheap.
+A larger eval suite shrinks the first and leaves the second untouched, which is why the tool checks the second before it recommends anything about the first. Those two answers send a team in opposite directions and only one of them is cheap. The refusal threshold itself is the half-width of that second interval, so the **noise floor reaches 3.92** points while the full interval is twice that.
 
-The same instability shows up along the fine-tune. The suite's reading at the final epoch **spans 6.25** points between the best and worst retraining, and its **widest band is 9.17** points mid-run, so the epoch a team happened to stop at moves the number they report. [E2](docs/experiments/e2_forgetting_curve.json), [ADR-004](docs/adr/ADR-004-seed-budget-and-pinned-training.md).
+The same instability shows up along the fine-tune. The suite's reading at the final epoch **spans 6.25** points between the best and worst retraining, and the **widest band is 9.17** points **at epoch 2** of twelve, so the epoch a team happened to stop at moves the number they report. [E2](docs/experiments/e2_forgetting_curve.json), [ADR-004](docs/adr/ADR-004-seed-budget-and-pinned-training.md).
 
 ## The bugs the measurement found
 
@@ -177,10 +182,12 @@ fixtures/runs/ the committed measurement, hashed
 
 | code | meaning |
 | --- | --- |
-| `0` | the suite can see a regression of the size claimed |
-| `1` | it cannot, and a larger suite would fix that. The size needed is printed |
+| `0` | the tool answered and the answer is the reassuring one: `power` means the suite can see a regression of the size claimed, `blind` means nothing fell past its floor unnoticed |
+| `1` | the tool answered and the answer is the unwelcome one: `power` prints the suite size that would work, `blind` lists the capabilities it found |
 | `2` | refused. Retraining noise alone is wider than the claimed effect, so no suite size fixes it |
 | `3` | the tool itself failed |
+
+`suite`, `curve`, `report` and `metrics` describe the measurement rather than judging it, so they return `0` unless the tool fails. The headline command in the quickstart is `blind`, and on this measurement it exits `1`, because it found something.
 
 Code `2` is the one that matters. A power calculation always has a remedy to offer, because its model of the world contains exactly one source of noise. When the real obstacle is that the same configuration trained twice disagrees by more than the effect under discussion, that remedy is wrong and expensive.
 

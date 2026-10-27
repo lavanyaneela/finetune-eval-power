@@ -49,9 +49,10 @@ The fine-tune distribution was narrowed on purpose, so it is not a surprise that
 something suffered. The measurement is not "does narrowing hurt", which is already
 known. It is which named capabilities move, by how much, and whether the suite could
 have resolved any of it. Those are measured against injected ground truth, and
-several of them came out differently from the way the build expected: one slice
-improved by nearly eight points while another lost ten, and that cancellation is
-what keeps the suite quiet.
+several of them came out differently from the way the build expected. In particular
+the classes move in opposite directions: on the suite's own cases one class gets
+worse by what the **suite shows 4.75** points while two others **together gain 9.83**
+points, and that cancellation, not insensitivity, is what keeps the aggregate quiet.
 
 ## A rejected design that is worth recording
 

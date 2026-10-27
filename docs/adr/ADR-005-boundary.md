@@ -7,8 +7,8 @@ support, so that nothing in the README is read as a wider claim than it is.
 
 ## The capability space is unbounded, so coverage is unprovable
 
-This repository names 40 capability slices for the vision arm and 29 for the
-sequence arm, and measures all of them. That is not coverage. The set of
+This repository measures **40 named capability** slices for the vision arm and
+**29 sequence slices named** for the other, and reports every one of them. That is not coverage. The set of
 capabilities a model might have is not enumerable, and a slice only exists here
 because somebody wrote down an attribute. Every figure published about what the
 suite missed is a lower bound: it counts the capabilities that were named and
