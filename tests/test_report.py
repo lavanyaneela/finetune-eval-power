@@ -115,7 +115,12 @@ def test_writing_the_report_creates_the_parent_directory(tmp_path, vision_arm):
     assert destination.read_text(encoding="utf-8").startswith("<!doctype html>")
 
 
-def test_the_report_states_both_interval_widths_so_they_can_be_compared(vision_arm):
-    html = report_html(vision_arm)
-    assert "Resampling eval cases" in html
-    assert "Resampling\nretrainings" in html or "Resampling retrainings" in html
+def test_the_report_compares_the_two_noise_sources_on_a_single_measurement(vision_arm):
+    """Both widths must describe one measurement. Comparing a bootstrap over cases
+    against a bootstrap over the mean of several retrainings is not like for like:
+    the second shrinks with the number of retrainings, which makes retraining noise
+    look smaller the more of it you measure. An earlier version of this section did
+    exactly that and stated the comparison backwards."""
+    rendered = report_html(vision_arm)
+    assert "Both figures below describe one measurement" in rendered
+    assert "Retraining the same configuration, with the eval cases held fixed" in rendered

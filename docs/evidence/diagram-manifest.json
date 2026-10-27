@@ -1,0 +1,7 @@
+{
+  "background": "#ffffff",
+  "html_labels": false,
+  "output": "architecture.svg",
+  "renderer": "mermaid.min.js",
+  "source": "README.md fence labelled mermaid-source"
+}

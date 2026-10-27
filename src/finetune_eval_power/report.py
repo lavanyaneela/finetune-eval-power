@@ -16,6 +16,7 @@ from pathlib import Path
 
 from finetune_eval_power.analysis import ArmAnalysis
 from finetune_eval_power.config import DecisionRule
+from finetune_eval_power.formatting import format_floor
 
 STYLESHEET = """
 :root { color-scheme: light; }
@@ -52,7 +53,13 @@ def _escape(value: object) -> str:
 
 
 def _points(value: float | None, digits: int = 2) -> str:
-    return "unreachable" if value is None else f"{value:.{digits}f}"
+    """Every quantity rendered through this helper is a minimum, so it rounds down.
+
+    Shared with the metrics collector. A report that rounded differently from the
+    published figure would put two numbers for one quantity in front of a reader,
+    and the screenshot of this report goes in the README.
+    """
+    return format_floor(value, digits)
 
 
 def _figure(value: str, label: str) -> str:
@@ -92,17 +99,6 @@ def render_report(analysis: ArmAnalysis, rule: DecisionRule) -> str:
         f'<td class="number">{summary.in_region_gain_points:+.2f}</td>'
         f'<td class="number">{summary.seeds_flagging_regression} of {summary.seeds}</td></tr>'
         for summary in analysis.depths
-    )
-
-    case_width = (
-        sum(item.case_interval_width_points for item in analysis.findings) / len(analysis.findings)
-        if analysis.findings
-        else 0.0
-    )
-    seed_width = (
-        sum(item.interval_width_points for item in analysis.findings) / len(analysis.findings)
-        if analysis.findings
-        else 0.0
     )
 
     if worst is None:
@@ -166,10 +162,14 @@ a test any cases to work with.</p>
 <tbody>{depth_rows}</tbody></table>
 
 <h2 id="noise-sources">Which uncertainty actually dominates</h2>
-<p>Resampling eval cases gives a mean interval width of {case_width:.2f} points. Resampling
-retrainings gives {seed_width:.2f} points. The second is the one the published intervals use,
-because a suite size calculation cannot shrink it: it is not a property of the eval set.
-Retraining this configuration moves the measured suite regression with a standard deviation of
+<p>Both figures below describe one measurement, which is the only way they can be compared.
+Resampling the eval cases of a single retraining puts a 95% interval
+{analysis.suite_case_interval_width_points:.2f} points wide around the suite's reading.
+Retraining the same configuration, with the eval cases held fixed, puts one
+{analysis.retraining_interval_width_points:.2f} points wide around it. A larger eval suite
+shrinks the first and leaves the second alone, which is why this tool checks the second before
+it recommends anything about the first.</p>
+<p>Retraining moves the measured suite regression with a standard deviation of
 {analysis.variance.standard_deviation_points:.3f} points over
 {analysis.variance.seeds} retrainings, so any claimed effect below
 {analysis.variance.noise_floor_points:.2f} points is refused rather than answered.</p>

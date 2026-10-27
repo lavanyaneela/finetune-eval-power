@@ -1,5 +1,8 @@
 {
   "anchors": {
+    "case_interval_points": [
+      "resampling cases gives {}"
+    ],
     "cases_for_one_point": [
       "would need {}"
     ],
@@ -26,6 +29,9 @@
     ],
     "probe_cases": [
       "{} probe cases"
+    ],
+    "retraining_interval_points": [
+      "retraining gives {}"
     ],
     "retrainings": [
       "{} retrainings"
@@ -113,8 +119,9 @@
     "docs/adr/ADR-005-boundary.md"
   ],
   "metrics": {
+    "case_interval_points": 3.54,
     "cases_for_one_point": 5385,
-    "coverage_line_pct": 99.1,
+    "coverage_line_pct": 99.0,
     "epoch_band_points": 6.25,
     "held_out_slices": 16,
     "in_region_gain_points": 1.15,
@@ -122,6 +129,7 @@
     "mde_points_unpaired": 5.7,
     "outside_loss_points": 1.92,
     "probe_cases": 1728,
+    "retraining_interval_points": 7.85,
     "retrainings": 10,
     "safest_depth": 4,
     "seed_noise_floor_points": 3.92,
@@ -140,7 +148,7 @@
     "suite_cases": 480,
     "suite_change_points": -1.27,
     "suite_flagged_in_seeds": 0,
-    "tests_total": 317,
+    "tests_total": 340,
     "undetected_covered_slices": 2,
     "undetected_slices": 8,
     "widest_band_points": 9.17,
@@ -150,8 +158,9 @@
   },
   "note": "Every value here is produced by running the test suite and the five experiments against the committed measurement. Nothing is typed by hand.",
   "rendered": {
+    "case_interval_points": "3.54",
     "cases_for_one_point": "5385",
-    "coverage_line_pct": "99.1",
+    "coverage_line_pct": "99.0",
     "epoch_band_points": "6.25",
     "held_out_slices": "16",
     "in_region_gain_points": "1.15",
@@ -159,6 +168,7 @@
     "mde_points_unpaired": "5.70",
     "outside_loss_points": "1.92",
     "probe_cases": "1728",
+    "retraining_interval_points": "7.85",
     "retrainings": "10",
     "safest_depth": "4",
     "seed_noise_floor_points": "3.92",
@@ -177,7 +187,7 @@
     "suite_cases": "480",
     "suite_change_points": "-1.27",
     "suite_flagged_in_seeds": "0",
-    "tests_total": "317",
+    "tests_total": "340",
     "undetected_covered_slices": "2",
     "undetected_slices": "8",
     "widest_band_points": "9.17",

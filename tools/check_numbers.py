@@ -49,6 +49,7 @@ NUMBER_WORDS = (
 #: Each one must actually occur, and none may collide with a measured value.
 REVERSE_EXEMPTIONS = {
     "80": "the target power, written as a percentage",
+    "95": "the confidence level of the published intervals",
 }
 
 

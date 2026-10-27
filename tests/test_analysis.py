@@ -225,3 +225,36 @@ def test_no_suite_size_inside_the_ceiling_helps_at_a_vanishing_discordance():
     from finetune_eval_power.analysis import smallest_suite_with_power
 
     assert smallest_suite_with_power(1e-6, ceiling=512) is None
+
+
+def test_the_retraining_interval_describes_one_run_rather_than_the_mean(analysis):
+    """The comparison the report makes only works if both widths are about a single
+    measurement. This one is two noise floors wide by construction, which is the
+    spread of one run, not of the average of ten."""
+    assert analysis.retraining_interval_width_points == pytest.approx(
+        2.0 * analysis.variance.noise_floor_points
+    )
+
+
+def test_retrainings_that_agree_exactly_leave_no_retraining_interval(analysis):
+    """The synthetic measurement loses the same cases every time, so the only
+    uncertainty left is case sampling. Useful as a control: it shows the two widths
+    are measuring different things rather than two views of one thing."""
+    assert analysis.suite_case_interval_width_points > 0.0
+    assert analysis.retraining_interval_width_points == 0.0
+
+
+def test_disagreeing_retrainings_produce_the_wider_interval_of_the_two(vision_arm):
+    """The finding the report states, as a property. On a measurement whose
+    retrainings disagree, retraining alone moves a single reading further than
+    resampling that reading's eval cases does."""
+    runs = build_synthetic_runs(vision_arm, suite_drop_jitter=(4, 14, 26, 9, 19))
+    result = analyse(vision_arm, runs)
+    assert result.retraining_interval_width_points > result.suite_case_interval_width_points
+
+
+def test_the_case_interval_comes_from_one_retraining_not_an_average(vision_arm, synthetic_runs):
+    """A fixture where every retraining is identical must still produce a case-level
+    interval, because case resampling is a property of one run."""
+    result = analyse(vision_arm, synthetic_runs)
+    assert result.suite_case_interval_width_points > 0.0

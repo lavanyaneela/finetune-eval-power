@@ -17,4 +17,5 @@ node_modules/
 reports/
 mlruns/
 docs/video/*.webm
+docs/video/player.html
 .DS_Store

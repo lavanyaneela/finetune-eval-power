@@ -6,7 +6,8 @@
 PYTHON ?= python3
 REPORTS := reports
 
-.PHONY: help install lint test receipts verify experiments report sweep demo clean
+.PHONY: help install install-all lint test receipts verify experiments report sweep \
+        evidence diagrams screenshots recording demo set-handle clean
 
 help:
 	@echo "install      editable install with the dev extra"
@@ -18,6 +19,8 @@ help:
 	@echo "experiments  run the five experiments and print their tables"
 	@echo "report       write the HTML report for both arms"
 	@echo "sweep        re-capture the committed measurement (needs the training extra)"
+	@echo "evidence     re-render the diagram, the screenshots and the terminal replay"
+	@echo "set-handle   fill the GITHUB_USERNAME placeholder: make set-handle HANDLE=you"
 
 install:
 	$(PYTHON) -m pip install -e ".[dev]"
@@ -60,11 +63,28 @@ report:
 sweep:
 	$(PYTHON) tools/capture_sweep.py
 
+diagrams:
+	$(PYTHON) tools/render_diagrams.py
+
+screenshots:
+	$(PYTHON) tools/capture_screenshots.py
+
+recording:
+	$(PYTHON) tools/record_demo.py
+
+evidence: diagrams screenshots recording
+
 demo:
 	$(PYTHON) -m finetune_eval_power.cli power --arm vision --claim 2; \
 		echo "tool exit code $$?"
 	$(PYTHON) -m finetune_eval_power.cli blind --arm vision; \
 		echo "tool exit code $$?"
+
+set-handle:
+	@test -n "$(HANDLE)" || (echo "usage: make set-handle HANDLE=your-github-handle" && exit 1)
+	@grep -rl GITHUB_USERNAME README.md docs 2>/dev/null | xargs -r sed -i.bak "s/GITHUB_USERNAME/$(HANDLE)/g"
+	@find . -name "*.bak" -delete
+	@echo "handle set to $(HANDLE); the badge and clone URL now point at the real repository"
 
 clean:
 	rm -rf $(REPORTS) .pytest_cache .ruff_cache .coverage

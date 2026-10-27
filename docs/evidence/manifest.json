@@ -1,0 +1,29 @@
+{
+  "badge": {
+    "background": "rgb(138, 28, 28)",
+    "colour": "rgb(255, 255, 255)",
+    "text": "SUITE RAISED NOTHING",
+    "visible": true
+  },
+  "report": "reports/vision.html",
+  "shots": [
+    {
+      "bytes": 49624,
+      "file": "suite-verdict.png",
+      "framed_from": "overview",
+      "framed_to": "detection-floor"
+    },
+    {
+      "bytes": 331364,
+      "file": "missed-capabilities.png",
+      "framed_from": "missed-capabilities",
+      "framed_to": "freeze-depth"
+    },
+    {
+      "bytes": 86621,
+      "file": "noise-sources.png",
+      "framed_from": "noise-sources",
+      "framed_to": null
+    }
+  ]
+}

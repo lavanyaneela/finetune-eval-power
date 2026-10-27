@@ -1,0 +1,173 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
+      - run: ruff check src tests tools experiments
+      - run: ruff format --check src tests tools experiments
+
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev,train]"
+      - name: Run the suite as its own step
+        run: |
+          mkdir -p reports
+          python -m pytest -q \
+            --junitxml reports/junit.xml \
+            --cov=finetune_eval_power \
+            --cov-report json:reports/coverage.json \
+            --cov-report xml:reports/coverage.xml
+      - name: Enforce the coverage floor
+        run: |
+          python - <<'PY'
+          import json, sys
+          floor = 95.0
+          covered = json.load(open("reports/coverage.json"))["totals"]["percent_covered"]
+          print(f"line coverage {covered:.2f}%, floor {floor}%")
+          sys.exit(0 if covered >= floor else 1)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.python-version }}
+          path: reports/
+
+  no-training-extra:
+    # Trap one: a heavy optional dependency installed on the build machine masks a
+    # broken import in the job that installs without it. Everything that computes a
+    # published figure must work here.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
+      - name: Confirm the training extra really is absent
+        run: |
+          python - <<'PY'
+          import importlib.util, sys
+          present = [n for n in ("tensorflow", "keras", "mlflow") if importlib.util.find_spec(n)]
+          print("training packages present:", present or "none")
+          sys.exit(1 if present else 0)
+          PY
+      - run: python -m pytest -q
+      - run: python -m finetune_eval_power.cli suite --arm vision
+      - run: python -m finetune_eval_power.cli blind --arm vision || true
+
+  receipts:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
+      - name: Re-run the suite for the reports the collector reads
+        run: |
+          mkdir -p reports
+          python -m pytest -q \
+            --junitxml reports/junit.xml \
+            --cov=finetune_eval_power \
+            --cov-report json:reports/coverage.json
+      - name: Re-measure every published figure
+        run: python tools/collect_metrics.py --skip-tests
+      - name: Fail if a document quotes a figure the code no longer produces
+        run: python tools/check_numbers.py
+      - name: Fail if any tracked file publishes an absolute duration
+        run: python tools/check_durations.py
+      - name: Confirm the measurement has not drifted from its manifest
+        run: |
+          git diff --exit-code -- docs/metrics.json docs/experiments \
+            || (echo "re-measuring changed a published figure; commit the new values" && exit 1)
+      - name: Publish the awkward table
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          metrics = json.load(open("docs/metrics.json"))["rendered"]
+          rows = [
+              ("suite accuracy change, points", "suite_change_points"),
+              ("retrainings that flagged a regression", "suite_flagged_in_seeds"),
+              ("smallest regression the suite could see", "mde_points"),
+              ("capabilities that fell further, unflagged", "undetected_slices"),
+              ("worst of them", "worst_undetected_name"),
+              ("by how much, points", "worst_undetected_points"),
+              ("suite cases it held for that capability", "worst_undetected_suite_cases"),
+              ("retraining spread, points", "seed_spread_points"),
+          ]
+          print("### What the eval suite did not see\n")
+          print("| quantity | value |")
+          print("| --- | --- |")
+          for label, key in rows:
+              print(f"| {label} | {metrics[key]} |")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: experiment-json
+          path: docs/experiments/
+
+  retrain-drift:
+    # ADR-004: floating point training is not bitwise portable, so the committed
+    # measurement is not re-derived on every run. This job retrains from scratch and
+    # publishes the difference rather than pretending there is none. It does not
+    # block, because a red badge for a difference the repository already documents
+    # would teach everyone to ignore the badge.
+    if: github.event_name == 'workflow_dispatch'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev,train]"
+      - name: Recapture the measurement on this runner
+        run: python tools/capture_sweep.py --out fresh-runs
+      - name: Report the drift
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import numpy as np
+          from pathlib import Path
+          print("### Drift between the committed measurement and a fresh capture\n")
+          print("| arm | array | cases differing | share |")
+          print("| --- | --- | --- | --- |")
+          for arm in ("vision", "sequence"):
+              for name in ("suite_after", "probe_after"):
+                  committed = np.load(Path("fixtures/runs") / arm / f"{name}.npy")
+                  fresh = np.load(Path("fresh-runs") / arm / f"{name}.npy")
+                  if committed.shape != fresh.shape:
+                      print(f"| {arm} | {name} | shape changed | |")
+                      continue
+                  differing = int(np.sum(committed != fresh))
+                  print(f"| {arm} | {name} | {differing} | {differing / committed.size:.4%} |")
+          PY

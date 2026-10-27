@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import subprocess
 import sys
 import xml.etree.ElementTree as ElementTree
@@ -98,17 +97,6 @@ def run_experiments() -> dict[str, dict]:
     return results
 
 
-def floor_to(value: float, digits: int) -> float:
-    """Round a minimum downward.
-
-    A floor printed with ordinary rounding can read higher than the true floor, and
-    a sentence that says "never below" next to a rounded-up number is false. This
-    happened on an earlier build and cost an audit finding.
-    """
-    scale = 10**digits
-    return math.floor(value * scale) / scale
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -128,6 +116,7 @@ def main() -> int:
     e5 = experiments["e5_freeze_depth"]["arms"]
 
     from finetune_eval_power.config import SWEEP_SEEDS, VISION_ARM
+    from finetune_eval_power.formatting import floor_to
     from finetune_eval_power.runs import load_runs
 
     runs = load_runs(ROOT / "fixtures" / "runs" / "vision")
@@ -169,6 +158,8 @@ def main() -> int:
         "in_region_gain_points": round(vision_e5["shipped_in_region_gain_points"], 2),
         "outside_loss_points": round(vision_e5["shipped_outside_loss_points"], 2),
         "safest_depth": vision_e5["safest_depth"],
+        "case_interval_points": round(analysis.suite_case_interval_width_points, 2),
+        "retraining_interval_points": round(analysis.retraining_interval_width_points, 2),
         "epoch_band_points": round(e2["vision"]["final_band_points"], 2),
         "widest_band_points": round(e2["vision"]["widest_band_points"], 2),
         "sequence_suite_cases": e1["sequence"]["suite_size"],
@@ -211,6 +202,8 @@ TWO_DECIMALS = {
     "seed_noise_floor_points",
     "in_region_gain_points",
     "outside_loss_points",
+    "case_interval_points",
+    "retraining_interval_points",
     "epoch_band_points",
     "widest_band_points",
     "sequence_mde_points",
@@ -260,6 +253,8 @@ ANCHORS: dict[str, list[str]] = {
     "safest_depth": ["safest is depth {}"],
     "in_region_gain_points": ["gains {}"],
     "outside_loss_points": ["costs {}"],
+    "case_interval_points": ["resampling cases gives {}"],
+    "retraining_interval_points": ["retraining gives {}"],
     "epoch_band_points": ["spans {}"],
     "widest_band_points": ["widest band is {}"],
     "sequence_suite_cases": ["sequence ships {}"],

@@ -139,6 +139,7 @@ class ArmAnalysis:
     findings: tuple[SliceFinding, ...]
     variance: SeedVariance
     suite_accuracy_before: float
+    suite_case_interval_width_points: float
 
     def depth(self, freeze_depth: int) -> DepthSummary:
         for summary in self.depths:
@@ -177,6 +178,19 @@ class ArmAnalysis:
     @property
     def slices_without_suite_power(self) -> int:
         return sum(1 for item in self.findings if not item.suite_has_power)
+
+    @property
+    def retraining_interval_width_points(self) -> float:
+        """Width of the interval retraining alone puts around a single measurement.
+
+        Stated this way so it can be compared with the case-level interval, which is
+        also a statement about one measurement. The obvious comparison, between a
+        bootstrap over cases and a bootstrap over the mean of several retrainings, is
+        not like for like: the second shrinks with the number of retrainings and the
+        first does not, so it makes retraining noise look smaller the more of it you
+        measure.
+        """
+        return 2.0 * self.variance.noise_floor_points
 
 
 def _slice_masks(
@@ -312,7 +326,18 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
             rule.seed_noise_multiplier,
         ),
         suite_accuracy_before=float(np.mean(runs.suite_before[:, operating_position])),
+        suite_case_interval_width_points=_interval_width(
+            bootstrap_drop_interval(
+                runs.suite_before[0, operating_position],
+                runs.suite_after[0, operating_position],
+                BOOTSTRAP_SEED,
+            )
+        ),
     )
+
+
+def _interval_width(interval: DropInterval) -> float:
+    return interval.high_points - interval.low_points
 
 
 def _choose_operating_depth(summaries: list[DepthSummary]) -> int:
