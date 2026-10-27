@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finetune-eval-power"
+version = "0.1.0"
+description = "Computes the statistical power of a model eval suite and publishes where it is blind."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Lavanya Neela", email = "lavanyaneela@mycvcareer.com" }]
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "statsmodels>=0.14",
+]
+
+[project.optional-dependencies]
+# Training is an extra on purpose. Every published figure is computed from the
+# committed sweep by the core install, so a reviewer who only wants to check the
+# arithmetic never installs a deep learning framework. See ADR-004.
+train = [
+    "tensorflow-cpu>=2.19,<3; platform_system != 'Darwin'",
+    "tensorflow>=2.19,<3; platform_system == 'Darwin'",
+    "mlflow>=2.14",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "cmarkgfm>=2024.1.14",
+    "playwright>=1.44",
+]
+
+[project.scripts]
+finetune-eval-power = "finetune_eval_power.cli:main"
+fep = "finetune_eval_power.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+finetune_eval_power = ["py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "tools", "experiments"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4", "SIM", "RET", "ARG", "PTH"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG001", "ARG002"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+markers = [
+    "slow: trains a model and is therefore measured in seconds rather than milliseconds",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["finetune_eval_power"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
