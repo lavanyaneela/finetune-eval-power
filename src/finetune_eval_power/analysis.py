@@ -125,6 +125,36 @@ class SliceFinding:
 
 
 @dataclass(frozen=True)
+class ClassFinding:
+    """One label class, measured on the eval suite's own cases.
+
+    Carries its own case count, discordance, floor and interval rather than only a
+    drop, because the drop on its own invites the comparison that caused the worst
+    error in this repository's documents: putting a per-class drop next to the
+    aggregate's detection floor, which was computed for a different case count.
+    """
+
+    name: str
+    suite_cases: int
+    drop_points: float
+    discordance: float
+    floor_points: float | None
+    interval_low_points: float
+    interval_high_points: float
+
+    @property
+    def interval_excludes_zero(self) -> bool:
+        return self.interval_low_points > 0.0 or self.interval_high_points < 0.0
+
+    @property
+    def resolvable_by_the_suite(self) -> bool:
+        """Whether the suite's reading of this class clears its own per-class floor."""
+        if self.floor_points is None:
+            return False
+        return self.drop_points > self.floor_points and self.interval_excludes_zero
+
+
+@dataclass(frozen=True)
 class ArmAnalysis:
     """Everything a document can quote about one arm."""
 
@@ -141,7 +171,7 @@ class ArmAnalysis:
     suite_accuracy_before: float
     suite_case_interval_width_points: float
     probe_change_points: float
-    suite_class_drops: tuple[tuple[str, float], ...]
+    suite_class_findings: tuple[ClassFinding, ...]
 
     def depth(self, freeze_depth: int) -> DepthSummary:
         for summary in self.depths:
@@ -200,12 +230,59 @@ class ArmAnalysis:
         some classes moved the other way, and the arithmetic has to be done on the
         suite's own cases, since the aggregate being explained is the suite's.
         """
-        return -sum(drop for _name, drop in self.suite_class_drops if drop < 0.0)
+        return -sum(
+            item.drop_points for item in self.suite_class_findings if item.drop_points < 0.0
+        )
 
     @property
-    def worst_class_on_suite(self) -> tuple[str, float]:
-        name, drop = max(self.suite_class_drops, key=lambda row: row[1])
-        return name, drop
+    def label_classes(self) -> int:
+        return len(self.suite_class_findings)
+
+    @property
+    def improving_classes(self) -> int:
+        return sum(1 for item in self.suite_class_findings if item.drop_points < 0.0)
+
+    @property
+    def worst_class_on_suite(self) -> ClassFinding:
+        return max(self.suite_class_findings, key=lambda item: item.drop_points)
+
+    @property
+    def improving_slices(self) -> int:
+        """Slices that moved the other way, with an interval clear of zero.
+
+        Published next to the missed count because a reader is entitled to ask how
+        many went the other way, and because it is the first thing a statistician
+        asks about a list of eight selected from forty.
+        """
+        return sum(
+            1
+            for item in self.findings
+            if item.drop_points < 0.0 and item.interval.high_points < 0.0
+        )
+
+    @property
+    def significant_verdict_seeds(self) -> int:
+        """Retrainings where the suite's test rejected, in either direction."""
+        return sum(1 for verdict in self.operating.verdicts if verdict.significant)
+
+    @property
+    def maximal_undetected(self) -> tuple[SliceFinding, ...]:
+        """Missed slices that are not contained in another missed slice.
+
+        Slices nest: a single-attribute slice and the pairs that partition it are all
+        named separately, so a raw count of eight is not a count of eight independent
+        regions. This reports the regions.
+        """
+        missed = self.undetected
+        constraints = {item.name: set(item.name.split(" & ")) for item in missed}
+        return tuple(
+            item
+            for item in missed
+            if not any(
+                other.name != item.name and constraints[other.name] < constraints[item.name]
+                for other in missed
+            )
+        )
 
     @property
     def retraining_interval_width_points(self) -> float:
@@ -366,7 +443,7 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
                 ]
             )
         ),
-        suite_class_drops=_suite_class_drops(arm, runs, operating_position),
+        suite_class_findings=_suite_class_findings(arm, runs, operating_position, rule),
         suite_case_interval_width_points=_interval_width(
             bootstrap_drop_interval(
                 runs.suite_before[0, operating_position],
@@ -381,9 +458,9 @@ def _interval_width(interval: DropInterval) -> float:
     return interval.high_points - interval.low_points
 
 
-def _suite_class_drops(
-    arm: ArmConfig, runs: SweepRuns, depth_position: int
-) -> tuple[tuple[str, float], ...]:
+def _suite_class_findings(
+    arm: ArmConfig, runs: SweepRuns, depth_position: int, rule: DecisionRule
+) -> tuple[ClassFinding, ...]:
     """Per label class, measured on the eval suite's own cases.
 
     Deliberately not measured on the probe. The quantity these numbers explain is
@@ -393,21 +470,42 @@ def _suite_class_drops(
     a calculator.
     """
     cells = runs.manifest.get("suite_cells", [])
-    drops: list[tuple[str, float]] = []
+    findings: list[ClassFinding] = []
     for class_name in arm.space.label_classes():
         item = CapabilitySlice.of(**{arm.space.label_attribute: class_name})
         mask = np.array([item.matches(cell) for cell in cells], dtype=bool)
         if not mask.any():
             continue
-        per_seed = [
-            paired_counts(
+        per_seed: list[float] = []
+        per_seed_discordance: list[float] = []
+        for position in range(len(runs.seeds)):
+            counts = paired_counts(
                 runs.suite_before[position, depth_position][mask],
                 runs.suite_after[position, depth_position][mask],
-            ).drop_points
-            for position in range(len(runs.seeds))
-        ]
-        drops.append((item.name, float(np.mean(per_seed))))
-    return tuple(drops)
+            )
+            per_seed.append(counts.drop_points)
+            per_seed_discordance.append(counts.discordance)
+        cases = int(mask.sum())
+        discordance = float(np.mean(per_seed_discordance))
+        interval = bootstrap_seed_interval(per_seed, BOOTSTRAP_SEED)
+        findings.append(
+            ClassFinding(
+                name=item.name,
+                suite_cases=cases,
+                drop_points=float(np.mean(per_seed)),
+                discordance=discordance,
+                # The floor uses the suite's own discordance on the suite's own
+                # cases, so every input to it comes from the thing being judged.
+                floor_points=(
+                    minimum_detectable_points(cases, discordance, rule.alpha, rule.target_power)
+                    if discordance > 0.0
+                    else None
+                ),
+                interval_low_points=interval.low_points,
+                interval_high_points=interval.high_points,
+            )
+        )
+    return tuple(findings)
 
 
 def _choose_operating_depth(summaries: list[DepthSummary]) -> int:

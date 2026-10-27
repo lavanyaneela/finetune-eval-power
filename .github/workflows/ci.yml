@@ -131,10 +131,12 @@ jobs:
           import json
           metrics = json.load(open("docs/metrics.json"))["rendered"]
           rows = [
-              ("suite accuracy change, points", "suite_change_points"),
+              ("suite accuracy drop, points (negative means it rose)", "suite_drop_points"),
+              ("the same drop, measured by the referee probe", "probe_change_points"),
               ("retrainings that flagged a regression", "suite_flagged_in_seeds"),
               ("smallest regression the suite could see", "mde_points"),
-              ("capabilities that fell further, unflagged", "undetected_slices"),
+              ("slices that moved further than the floor, unflagged", "undetected_slices"),
+              ("its floor on its own cases, points", "suite_worst_class_floor_points"),
               ("worst of them", "worst_undetected_name"),
               ("by how much, points", "worst_undetected_points"),
               ("suite cases it held for that capability", "worst_undetected_suite_cases"),

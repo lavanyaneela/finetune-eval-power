@@ -92,8 +92,13 @@ def render_report(analysis: ArmAnalysis, rule: DecisionRule) -> str:
         )
 
     class_rows = "".join(
-        f'<tr><td>{_escape(name)}</td><td class="number">{drop:+.2f}</td></tr>'
-        for name, drop in analysis.suite_class_drops
+        f"<tr><td>{_escape(item.name)}</td>"
+        f'<td class="number">{item.suite_cases}</td>'
+        f'<td class="number">{item.drop_points:+.2f}</td>'
+        f'<td class="number">{_points(item.floor_points)}</td>'
+        f'<td class="number">{item.interval_low_points:+.2f} to '
+        f"{item.interval_high_points:+.2f}</td></tr>"
+        for item in analysis.suite_class_findings
     )
 
     depth_rows = "".join(
@@ -127,15 +132,26 @@ freeze depth {analysis.operating_depth}, the shallowest the suite does not objec
 
 <h2 id="overview">What the suite reported</h2>
 <div class="figures">
-{_figure(f"{operating.suite_drop_points:+.2f}", "suite accuracy change, points")}
+{
+        _figure(
+            f"{operating.suite_drop_points:+.2f}",
+            "suite accuracy drop, points. Negative means accuracy rose",
+        )
+    }
 {
         _figure(
             f"{operating.seeds_flagging_regression} of {operating.seeds}",
             "retrainings where the suite flagged a regression",
         )
     }
-{_figure(_points(operating.mde_points), "smallest drop the suite could see, points")}
-{_figure(str(len(missed)), "capabilities that fell further than that, unflagged")}
+{
+        _figure(
+            _points(operating.mde_points),
+            "smallest drop the suite could see, points",
+        )
+    }
+{_figure(f"{analysis.probe_change_points:+.2f}", "the same drop, measured by the referee")}
+{_figure(str(len(missed)), "slices that moved further than the floor, unflagged")}
 </div>
 <p>The suite holds {analysis.suite_size} cases and reports accuracy
 {analysis.suite_accuracy_before:.4f} before the fine-tune. The referee probe holds
@@ -150,11 +166,15 @@ Of {analysis.slices_total} named capability slices the suite has no usable power
 {analysis.underpowered_covered_slices} it samples too thinly for any effect size to reach that
 power at the current suite size. The second group would be helped by a larger suite. The first
 would not, because no suite size gives a test cases it does not have.</p>
-<p>The suite reports {operating.suite_drop_points:+.2f} points over its own cases. The probe,
-enumerating the whole space, reports {analysis.probe_change_points:+.2f}. Where those two
-disagree in sign, the aggregate is hiding movement rather than failing to see it: measured on
-the suite's own cases the classes move in opposite directions, as the table below shows.</p>
-<table><thead><tr><th>label class</th><th>drop on the suite, points</th></tr></thead>
+<p>The suite measures a drop of {operating.suite_drop_points:+.2f} points over its own cases,
+and a drop is positive when the model gets worse, so that is an improvement. The probe,
+enumerating the whole space, measures {analysis.probe_change_points:+.2f}. Measured on the
+suite's own cases the classes move against each other, which is why the aggregate is quiet.
+The last two columns are the point: each class is read against the floor that applies at its
+own case count, and the worst one does not clear it, so reporting per class would not have
+rescued this suite either.</p>
+<table><thead><tr><th>label class</th><th>suite cases</th><th>drop, points</th>
+<th>its own floor</th><th>95% interval over retrainings</th></tr></thead>
 <tbody>{class_rows}</tbody></table>
 
 <h2 id="missed-capabilities">What it missed</h2>

@@ -21,11 +21,16 @@ fire or not fire depending on which three. Running 10 keeps the estimate usable 
 keeping a full capture inside a single sitting, which matters because a capture
 nobody will rerun is a capture that silently goes stale.
 
-The spread is not a diagnostic. It is the headline's companion. Retraining this
-configuration moves the measured suite regression with a standard deviation of
-2.002 points, which is wider than the suite's own detection floor. That is the whole
-argument of the repository in one comparison, and it is why the tool's refusal
-checks the retraining spread before it checks the suite size.
+The spread is not a diagnostic. It is the headline's companion, and the arithmetic
+has to be done in full or the claim is false. Retraining this configuration moves the
+measured suite regression with a standard **deviation of 2.002** points. That standard
+deviation is **not** the quantity to compare against the suite's floor, and an earlier
+draft of this ADR made exactly that comparison and reached the right conclusion by a
+wrong route. The refusal threshold is 1.96 of those standard deviations, so the
+**noise floor reaches 3.92** points, and that is what exceeds the suite's
+**detection floor of 3.41**. The tool's refusal checks the retraining spread before it
+checks the suite size for that reason, and `tools/check_numbers.py` now evaluates both
+inequalities as relations so neither can be restated loosely again.
 
 ## Decision two: the measurement is captured, hashed and committed
 

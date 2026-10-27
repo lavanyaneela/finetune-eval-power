@@ -203,3 +203,34 @@ def test_the_repository_publishes_no_absolute_duration():
 @pytest.mark.parametrize("marker", ("1. ", "2) "))
 def test_an_ordered_list_marker_is_not_read_as_a_figure(marker):
     assert checker.LIST_MARKER.sub(" ", f"{marker}a point") == " a point"
+
+
+def test_the_relations_the_documents_assert_hold_against_the_measurement():
+    """Anchors guard digits and are blind to the relation joining two of them. Two
+    adversarial audits of this repository each found a false comparison sitting
+    between two correctly guarded figures, which is what this table is for."""
+    assert checker.check_relations(checker.load_metrics()) == []
+
+
+def test_a_relation_naming_an_unknown_metric_is_reported_rather_than_skipped(monkeypatch):
+    monkeypatch.setattr(checker, "RELATIONS", (("not_a_metric > 1", "reason"),))
+    problems = checker.check_relations({"metrics": {"a": 1}})
+    assert any("could not be evaluated" in problem for problem in problems)
+
+
+def test_a_relation_that_is_false_is_reported(monkeypatch):
+    monkeypatch.setattr(checker, "RELATIONS", (("a > b", "a must exceed b"),))
+    problems = checker.check_relations({"metrics": {"a": 1, "b": 2}})
+    assert problems and "a must exceed b" in problems[0]
+
+
+def test_the_relation_table_covers_the_comparisons_the_headline_makes():
+    expressions = " ".join(expression for expression, _reason in checker.RELATIONS)
+    for metric in (
+        "seed_noise_floor_points",
+        "mde_points",
+        "suite_worst_class_floor_points",
+        "held_out_slices",
+        "retraining_interval_points",
+    ):
+        assert metric in expressions, metric

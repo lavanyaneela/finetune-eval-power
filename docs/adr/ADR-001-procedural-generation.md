@@ -50,17 +50,22 @@ something suffered. The measurement is not "does narrowing hurt", which is alrea
 known. It is which named capabilities move, by how much, and whether the suite could
 have resolved any of it. Those are measured against injected ground truth, and
 several of them came out differently from the way the build expected. In particular
-the classes move in opposite directions: on the suite's own cases one class gets
-worse by what the **suite shows 4.75** points while two others **together gain 9.83**
-points, and that cancellation, not insensitivity, is what keeps the aggregate quiet.
+the classes move in opposite directions: on the suite's own cases one class gets worse
+by what the **suite shows 4.75** points while **2 improve and** the fourth holds,
+**together gain 9.83** points **across 4 classes**. That cancellation is what keeps the
+aggregate quiet, and separately the worst class sits below its own per-class floor, so
+the suite could not have resolved it even reported class by class.
 
 ## A rejected design that is worth recording
 
 The first version of this repository pretrained on one task and fine-tuned on a
-different one, with the original head frozen. In a model this small that produces
-total collapse: the eval suite lost more than fifty points at every freeze depth
-below a fully frozen backbone, and zero at a fully frozen one. There was no
-intermediate regime, so there was nothing to measure.
+different one, with the original head frozen. In a model this small that produced
+total collapse: at every freeze depth short of a fully frozen backbone the eval suite
+fell to near chance, and at a fully frozen one nothing moved at all, because the
+classifier head was frozen too. There was no intermediate regime, so there was nothing
+to measure. Those observations came from a design that no longer exists in this
+repository, so no figure is quoted for them: nothing here re-measures that design, and
+an unreproducible number does not belong in a document the build checks.
 
 That is a fact about model capacity rather than about eval suites. Real models
 degrade gracefully under a task switch because they are enormously

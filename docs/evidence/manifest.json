@@ -8,7 +8,7 @@
   "report": "reports/vision.html",
   "shots": [
     {
-      "bytes": 49624,
+      "bytes": 58717,
       "file": "suite-verdict.png",
       "framed_from": "overview",
       "framed_to": "detection-floor"

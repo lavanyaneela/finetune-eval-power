@@ -91,7 +91,21 @@ set-handle:
 	@test -n "$(HANDLE)" || (echo "usage: make set-handle HANDLE=your-github-handle" && exit 1)
 	@grep -rl GITHUB_USERNAME README.md docs 2>/dev/null | xargs -r sed -i.bak "s/GITHUB_USERNAME/$(HANDLE)/g"
 	@find . -name "*.bak" -delete
-	@echo "handle set to $(HANDLE); the badge and clone URL now point at the real repository"
+	@python3 - "$(HANDLE)" <<'PY'
+	import pathlib, sys
+	handle = sys.argv[1]
+	badge = (
+	    f"[![ci](https://github.com/{handle}/finetune-eval-power/actions/workflows/"
+	    f"ci.yml/badge.svg)](https://github.com/{handle}/finetune-eval-power/actions/"
+	    "workflows/ci.yml)\n"
+	)
+	path = pathlib.Path("README.md")
+	text = path.read_text(encoding="utf-8")
+	if "actions/workflows/ci.yml/badge.svg" not in text:
+	    marker = "![python](https://img.shields.io"
+	    path.write_text(text.replace(marker, badge + marker, 1), encoding="utf-8")
+	PY
+	@echo "handle set to $(HANDLE); the clone URL and the CI badge now point at the real repository"
 
 clean:
 	rm -rf $(REPORTS) .pytest_cache .ruff_cache .coverage

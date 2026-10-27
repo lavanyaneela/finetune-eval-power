@@ -9,16 +9,17 @@ has drifted the build fails.
 "A passing eval suite gets read as evidence that fine-tuning broke nothing. It is not.
 I built a tool that computes how small a regression a suite could actually have
 detected, and then measures what fell below that. On my vision arm the suite's
-accuracy went up and it never flagged anything, while the referee that enumerates the
-whole input space says the same fine-tune made the model worse. They disagree about
-the sign."
+accuracy went up and it raised no regression flag, while the referee that enumerates
+the whole input space says the same fine-tune made the model worse. They disagree
+about the sign."
 
 Then stop.
 
 The question that usually comes next is "isn't that just because you held those cases
-out". Partly, and the better part is not: two of the eight missed slices are inside
-the region the suite samples, and the suite's own cases on the worst class show a drop
-above its own detection floor. It had the signal and averaged it away.
+out". Partly. Six of the eight missed slices are regions the suite never samples. The
+part that is not about holding out is the worst class, which the suite does sample
+with a hundred and twenty of its own cases and still cannot resolve, because at that
+case count its floor is nearly twice the drop.
 
 ## The claims, and how each is proved
 
@@ -26,29 +27,42 @@ above its own detection floor. It had the signal and averaged it away.
 
 **Command:** `python -m finetune_eval_power.cli blind --arm vision`
 
-The suite **changed by -1.27** points, meaning it improved, and it raised a flag in
-**0 of the retrainings**. The probe, enumerating the whole attribute space, says the
-same fine-tune cost **probe says 1.75** points.
+The suite's **measured drop of -1.27** points is negative, so its accuracy rose. It
+raised a regression flag in **0 of the retrainings** and returned a **significant verdict in 2**
+of them, both improvements. The probe, enumerating the whole attribute
+space, says the same fine-tune cost what the **probe says 1.75** points.
 
 **If pushed on which one to believe:** the probe, and not because it is bigger. It is
 an enumeration rather than a sample, so it has no coverage region to be flattered by.
 The suite's region is a choice somebody made, and the fine-tune narrowed onto part of
 that same region.
 
-### Claim two: the aggregate hides the signal rather than missing it
+**If pushed on the minus sign:** the quantity is a drop, and a drop is positive when
+the model gets worse, so a negative drop is an improvement. The tool prints the word
+next to the number for exactly this reason.
+
+### Claim two: the aggregate cannot show a class, and neither can the suite
 
 **Command:** the per-class table printed by the same command.
 
 Measured on the suite's own cases, one class gets worse by what the **suite shows 4.75**
-points while two others **together gain 9.83** points, and the four average to the
-published figure. The worst class is **worst is shape=square**. On the probe that same
-class **worst lost 10.58** points, and the suite holds **120 cases of its own** for it.
+points while **2 improve and** the fourth holds, **together gain 9.83** points
+**across 4 classes** that average to the published aggregate. So the aggregate hides
+the movement.
+
+It is worse than that, and this is the honest version. The class is **worst is shape=square**,
+and the **suite holds 120** cases of it. At that case count and that rate of changed
+verdicts, **its own floor is 8.74** points, and its retraining interval
+**interval starts at -1.09**, which means it includes zero. The suite could not have
+resolved this class even if it had reported per class. The referee resolves it because
+it holds **432 referee cases** of the class and sees **worst lost 10.58** points there.
 
 **If pushed on the two different numbers for one class:** they are different
-denominators and both are stated. The probe measures the class across the whole space
-and sees 10.58 points. The suite measures it on the 120 cases it happens to hold and
-sees 4.75, which is still above its own floor. The failure is not that the suite was
-blind to the class. It is that the aggregate it reports cannot show a class.
+denominators and both are published, with the floor that applies at each. The useful
+conclusion is not that the suite averaged away a signal it had. It is that a suite this
+size cannot resolve a per-class regression of this size at all, so reporting per class
+would not have saved it either. That is an argument about suite design, not about
+aggregation.
 
 ### Claim three: the detection floor is set by discordance, not by case count
 
@@ -72,10 +86,11 @@ from it.
 exits `2`.
 
 Retraining the same configuration moves the measured regression with a standard
-**deviation of 2.002** points, so the **noise floor reaches 3.92** points, which is
-wider than the suite's own floor. For any claim smaller than that the tool refuses
-rather than recommending a larger suite, and prints how many retrainings would resolve
-it instead.
+**deviation of 2.002** points. That standard deviation is not itself wider than the
+floor, and saying so would be the easy mistake. At 1.96 of them the
+**noise floor reaches 3.92** points, and that is the quantity wider than the suite's
+own floor. For any claim smaller than it the tool refuses rather than recommending a
+larger suite, and prints how many retrainings would resolve it instead.
 
 **If pushed on why this deserves its own exit code:** because the two answers send a
 team in opposite directions. "Buy more eval cases" and "your eval set is not the
@@ -87,9 +102,11 @@ first, since its model of the world contains one noise source.
 **Command:** `python -m finetune_eval_power.cli suite --arm vision`
 
 Of **40 named capability** slices the suite has **no usable power on 19**: **16 it never samples**
-at all, and **3 sampled too thinly** for any effect size to reach the target power. The
-second arm reproduces the shape with a different architecture and a different data
-type: the **sequence missed 9** of its **29 sequence slices named**.
+at all, and **3 sampled too thinly**, meaning their cases almost never change verdict
+rather than that there are few of them. **8 slices regressed** unflagged, covering
+**3 regions once nesting** is removed, and **5 slices moved up** with intervals clear of
+zero. The second arm reproduces the shape with a different architecture and a
+different data type: the **sequence missed 9** of its **29 sequence slices named**.
 
 ## Questions that are meant to be hard
 
@@ -159,6 +176,8 @@ guard nobody has seen fail should not be trusted.
 - "The suite and the probe disagree about the sign of what the fine-tune did."
 - "The aggregate stayed flat because two classes improved while a third got worse, and
   an aggregate cannot show a class."
+- "And a suite this size could not have resolved that class even per class, which is
+  the stronger version of the same point."
 - "Every figure in the README is re-measured by CI and the build fails if the prose
   drifts from it."
 
@@ -167,16 +186,16 @@ guard nobody has seen fail should not be trusted.
 - Do not say "the model did not regress". That claim is unavailable here and
   unavailable anywhere, because the set of capabilities is not enumerable. Say "no
   regression above the detection floor on the slices we named".
-- Do not say "zero false alarms". Say the suite flagged nothing in any of the
-  retrainings, over the slices measured, at the stated power.
+- Do not say the suite flagged nothing in any retraining. It raised no regression
+  flag, and it did return a significant verdict twice, in the improvement direction.
 - Do not say the numbers predict what a production fine-tune would lose. They describe
   two small models on generated data.
 - Do not say the repository proves that eval suites are useless. It measures what one
   suite could resolve and names what fell below it. That is an argument for computing
   the floor, not for throwing the suite away.
-- Do not say the suite was blind to the worst class. It held 120 cases of it and the
-  drop on those cases was above its own floor. The aggregate hid it, which is worse
-  and more interesting.
+- Do not say the suite had the signal and averaged it away. On its own cases the worst
+  class is below its own per-class floor with an interval spanning zero. Say the suite
+  could not have resolved that class at this case count, which is a sharper criticism.
 - Do not quote the probe's drop for a class and the suite's case count for that class
   in the same breath without saying they are different denominators. The two numbers
   are both published for exactly that reason.

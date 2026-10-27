@@ -85,9 +85,9 @@ def command_power(arguments: argparse.Namespace) -> int:
             else "reduce training nondeterminism"
         )
         print(
-            f"\nREFUSED: retraining noise alone spans "
-            f"{format_floor(variance.noise_floor_points)} points, which is wider than the "
-            f"{claim:.2f} point effect being claimed."
+            f"\nREFUSED: retraining noise alone reaches "
+            f"{format_floor(variance.noise_floor_points)} points either side of the "
+            f"measurement, which is wider than the {claim:.2f} point effect being claimed."
         )
         print(
             "No suite size resolves this. The eval suite is not the binding "
@@ -127,29 +127,47 @@ def command_blind(arguments: argparse.Namespace) -> int:
     operating = analysis.operating
     floor = operating.mde_points
     print(f"arm {analysis.arm}, freeze depth {analysis.operating_depth}")
+    # "Drop" is positive when the model got worse, so a negative drop is an
+    # improvement. Said out loud every time it is printed, because a signed number
+    # under an unsigned noun is how a reader ends up with the opposite conclusion.
     print(
-        f"suite verdict: {operating.suite_drop_points:+.2f} points, flagged a regression in "
-        f"{operating.seeds_flagging_regression} of {operating.seeds} retrainings"
+        f"suite measured drop: {operating.suite_drop_points:+.2f} points "
+        f"({'accuracy rose' if operating.suite_drop_points < 0 else 'accuracy fell'})"
     )
-    print(f"probe verdict: {analysis.probe_change_points:+.2f} points over the whole space")
+    print(
+        f"  regression flags: {operating.seeds_flagging_regression} of {operating.seeds} "
+        f"retrainings; significant either way: {analysis.significant_verdict_seeds}"
+    )
+    print(f"probe measured drop: {analysis.probe_change_points:+.2f} points over the whole space")
     print(
         "suite detection floor: "
         + ("unreachable at any effect size" if floor is None else f"{format_floor(floor)} points")
     )
     print(
         f"slices: {analysis.slices_total} named, {analysis.slices_without_suite_power} with "
-        f"no usable suite power, of which {analysis.held_out_slices} are never sampled and "
-        f"{analysis.underpowered_covered_slices} are sampled too thinly"
+        f"no usable suite power, of which {analysis.held_out_slices} it never samples and "
+        f"{analysis.underpowered_covered_slices} whose cases change verdict too rarely"
     )
+    print(f"slices that moved the other way, interval clear of zero: {analysis.improving_slices}")
     print("per class, measured on the suite's own cases:")
-    for name, drop in analysis.suite_class_drops:
-        print(f"  {name:<28} {drop:+7.2f} points")
+    print(f"  {'class':<24} {'cases':>6} {'drop':>8} {'its own floor':>14} {'interval':>18}")
+    for item in analysis.suite_class_findings:
+        floor = "none" if item.floor_points is None else f"{format_floor(item.floor_points)}p"
+        interval = f"[{item.interval_low_points:+.2f}, {item.interval_high_points:+.2f}]"
+        print(
+            f"  {item.name:<24} {item.suite_cases:>6} {item.drop_points:>7.2f}p "
+            f"{floor:>14} {interval:>18}"
+        )
 
     missed = analysis.undetected
     if not missed:
         print("\nNo capability slice regressed beyond what the suite could resolve.")
         return EXIT_DETECTABLE
-    print(f"\n{len(missed)} slices regressed past the suite's own floor without being flagged.")
+    print(
+        f"\n{len(missed)} slices regressed past the suite's own floor without being "
+        f"flagged, covering {len(analysis.maximal_undetected)} regions once nesting is "
+        "removed."
+    )
     print("Drops below are measured on the probe, not on the suite.")
     print(f"{'slice':<40} {'drop':>8} {'95% interval':>18} {'suite':>7} {'probe':>7}")
     for item in sorted(missed, key=lambda row: row.drop_points, reverse=True):

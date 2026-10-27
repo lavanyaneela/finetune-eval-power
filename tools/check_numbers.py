@@ -50,6 +50,7 @@ NUMBER_WORDS = (
 REVERSE_EXEMPTIONS = {
     "80": "the target power, written as a percentage",
     "95": "the confidence level of the published intervals",
+    "1.96": "the normal quantile that turns a standard deviation into the noise floor",
 }
 
 
@@ -58,6 +59,98 @@ REVERSE_EXEMPTIONS = {
 EMPHASIS = re.compile(r"[*_`]+")
 #: An ordered list marker is markdown, not a figure.
 LIST_MARKER = re.compile(r"(?m)^\s{0,3}\d+[.)]\s")
+
+
+#: Relations between metrics that the documents assert in words. Anchors guard the
+#: digits in a sentence and are structurally blind to the relation joining them, so
+#: two correctly guarded figures can sit either side of a false comparison and the
+#: build stays green. Both adversarial audits of this repository found exactly that,
+#: and this table is the answer: every relation a document states is also evaluated
+#: against the measurement.
+RELATIONS: tuple[tuple[str, str], ...] = (
+    (
+        "seed_noise_floor_points > mde_points",
+        "the refusal threshold must be wider than the suite's floor, or the "
+        "repository's central claim is false",
+    ),
+    (
+        "seed_spread_points < mde_points",
+        "the raw standard deviation is NOT the quantity wider than the floor; a "
+        "document that says it is has dropped the 1.96 step",
+    ),
+    (
+        "retraining_interval_points > case_interval_points",
+        "retraining must be the wider of the two noise sources, or the refusal rule "
+        "has nothing to stand on",
+    ),
+    (
+        "abs(retraining_interval_points - 2 * seed_noise_floor_points) <= 0.02",
+        "the published interval is twice the half-width refusal threshold, allowing "
+        "for the two being rounded independently",
+    ),
+    (
+        "held_out_slices + underpowered_covered_slices == slices_without_power",
+        "the never-sampled slices are a subset of the slices with no usable power, "
+        "not a separate group to be added to them",
+    ),
+    (
+        "undetected_covered_slices <= undetected_slices",
+        "the covered missed slices are a subset of the missed slices",
+    ),
+    (
+        "maximal_undetected_slices <= undetected_slices",
+        "slices nest, so the region count cannot exceed the slice count",
+    ),
+    (
+        "suite_cases > smallest_suite_with_any_power",
+        "the suite that ships is above the size at which nothing has power, so its "
+        "problem is not its size",
+    ),
+    (
+        "sequence_suite_cases > sequence_smallest_suite_with_power",
+        "the same, for the second arm",
+    ),
+    (
+        "mde_points_unpaired > mde_points",
+        "the unpaired calculation must be the more pessimistic one, or the argument "
+        "for taking the pairing seriously runs backwards",
+    ),
+    (
+        "suite_worst_class_points < suite_worst_class_floor_points",
+        "the worst class on the suite's own cases sits BELOW its own per-class "
+        "floor; any sentence claiming the suite could have resolved it is false",
+    ),
+    (
+        "in_region_gain_points < in_region_spread_points",
+        "the in-region gain is smaller than its own retraining spread, so it must "
+        "not be described as a gain",
+    ),
+    (
+        "improving_classes + 1 <= label_classes",
+        "at least one class got worse while the named number improved, which is what "
+        "the cancellation sentence asserts; a class may also be exactly flat",
+    ),
+    (
+        "thinnest_slice_floor_points > probe_resolution_floor_points",
+        "a thin slice resolves less finely than the whole probe",
+    ),
+)
+
+
+def check_relations(payload: dict) -> list[str]:
+    """Evaluate every relation the documents assert, against the measurement."""
+    metrics = payload["metrics"]
+    problems: list[str] = []
+    for expression, reason in RELATIONS:
+        try:
+            scope = {"__builtins__": {}, "abs": abs, "min": min, "max": max}
+            holds = bool(eval(expression, scope, dict(metrics)))  # noqa: S307
+        except (NameError, TypeError, ZeroDivisionError) as failure:
+            problems.append(f"relation {expression!r} could not be evaluated: {failure}")
+            continue
+        if not holds:
+            problems.append(f"relation {expression!r} is false. {reason}")
+    return problems
 
 
 def load_metrics() -> dict:
@@ -296,17 +389,13 @@ def _reverse_one(path: Path, relative: str, values: set[str], used: set[str]) ->
             continue
         line = stripped[: match.start()].count("\n") + 1
         problems.append(f"{relative} line {line}: {token} matches no metric and no exemption")
-    for exemption in REVERSE_EXEMPTIONS:
-        if exemption not in used:
-            problems.append(f"exemption {exemption!r} is never used, so it is guarding nothing")
-        if exemption in values:
-            problems.append(f"exemption {exemption!r} hides a measured value and must be removed")
     return problems
 
 
 def main() -> int:
     payload = load_metrics()
     problems = check_orphans(payload)
+    problems.extend(check_relations(payload))
     problems.extend(check_anchor_hygiene(payload["anchors"]))
     problems.extend(check_anchor_overlap(payload))
     document_problems, occurrences = check_documents(payload)

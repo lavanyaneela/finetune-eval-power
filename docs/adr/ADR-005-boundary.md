@@ -20,6 +20,29 @@ the quantifier is over a set nobody can enumerate. What is in reach, and what th
 repository publishes, is a detection floor and a list of named things that fell
 below it.
 
+## A count of slices is not a count of capabilities
+
+Slices nest. A single-attribute slice and the pairs that partition it are named and
+measured separately, so eight missed slices are not eight independent regions: on the
+vision arm they cover **3 regions once nesting** is removed. Every missed count in this
+repository is a count of named slices, and the region count is published beside it for
+that reason.
+
+The companion number matters too. Eight slices selected from forty invites the
+question of how many went the other way, and **5 slices moved up** with retraining
+intervals clear of zero. Both counts are published, because publishing only the first
+would be selecting the evidence.
+
+## A per-slice floor mixes two sources, and the column says so
+
+The per-slice floor in the E3 table is computed from the slice's suite case count and
+the slice's discordance **as measured on the probe**, because many slices have too few
+suite cases to estimate a discordance from. For the label classes, where the suite has
+enough cases, the floor is computed entirely from the suite and those two figures
+differ: on the worst class the probe-based estimate is higher than the suite-based one.
+Neither is wrong, and a reader comparing the two columns is entitled to know they do
+not share an input.
+
 ## The effect sizes are about these models
 
 Both arms are small models trained on generated data. The numbers describe them.

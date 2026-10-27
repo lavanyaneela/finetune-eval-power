@@ -258,3 +258,72 @@ def test_the_case_interval_comes_from_one_retraining_not_an_average(vision_arm, 
     interval, because case resampling is a property of one run."""
     result = analyse(vision_arm, synthetic_runs)
     assert result.suite_case_interval_width_points > 0.0
+
+
+def test_every_label_class_is_measured_on_the_suites_own_cases(analysis, vision_arm):
+    """The aggregate being explained is the suite's, so the per-class figures that
+    explain it have to come from the suite's cases. An earlier version explained a
+    suite number with probe numbers and the arithmetic did not add up."""
+    assert len(analysis.suite_class_findings) == len(vision_arm.space.label_classes())
+    assert all(item.suite_cases > 0 for item in analysis.suite_class_findings)
+
+
+def test_the_class_drops_average_to_the_published_aggregate(analysis):
+    mean = sum(item.drop_points for item in analysis.suite_class_findings) / len(
+        analysis.suite_class_findings
+    )
+    assert mean == pytest.approx(analysis.operating.suite_drop_points, abs=1e-6)
+
+
+def test_each_class_carries_the_floor_that_applies_at_its_own_case_count(analysis):
+    """Not the aggregate's floor. Putting a per-class drop beside the aggregate's
+    floor compares two numbers computed for different denominators, which is the
+    mistake this field exists to prevent."""
+    from finetune_eval_power.power.paired import minimum_detectable_points
+
+    for item in analysis.suite_class_findings:
+        if item.floor_points is None:
+            continue
+        expected = minimum_detectable_points(item.suite_cases, item.discordance)
+        assert item.floor_points == pytest.approx(expected)
+        assert item.suite_cases < analysis.suite_size
+
+
+def test_a_class_below_its_own_floor_is_not_reported_as_resolvable(analysis):
+    for item in analysis.suite_class_findings:
+        if item.floor_points is not None and item.drop_points <= item.floor_points:
+            assert not item.resolvable_by_the_suite
+
+
+def test_the_improving_total_counts_only_the_classes_that_improved(analysis):
+    expected = -sum(
+        item.drop_points for item in analysis.suite_class_findings if item.drop_points < 0.0
+    )
+    assert analysis.improving_class_total_points == pytest.approx(expected)
+    assert analysis.improving_classes + 1 <= analysis.label_classes
+
+
+def test_slices_nest_so_the_region_count_never_exceeds_the_slice_count(analysis):
+    assert len(analysis.maximal_undetected) <= len(analysis.undetected)
+    names = {item.name for item in analysis.maximal_undetected}
+    for item in analysis.undetected:
+        if item.name in names:
+            continue
+        parts = set(item.name.split(" & "))
+        assert any(set(other.split(" & ")) < parts for other in names)
+
+
+def test_slices_that_moved_the_other_way_are_counted_too(analysis):
+    """A list of eight selected from forty invites the question, so the count of
+    slices that moved up is published beside it."""
+    assert analysis.improving_slices >= 0
+    for item in analysis.findings:
+        if item.drop_points < 0.0 and item.interval.high_points < 0.0:
+            assert item not in analysis.undetected
+
+
+def test_a_significant_verdict_is_counted_even_when_it_is_an_improvement(analysis):
+    """`suite_flagged_in_seeds` counts regressions only, so the number of
+    significant verdicts is published separately rather than letting a document say
+    the suite found nothing."""
+    assert analysis.significant_verdict_seeds >= analysis.operating.seeds_flagging_regression

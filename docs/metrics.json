@@ -18,8 +18,14 @@
     "improving_class_points": [
       "together gain {}"
     ],
+    "improving_classes": [
+      "{} improve and"
+    ],
+    "improving_slices": [
+      "{} slices moved up"
+    ],
     "in_region_cases": [
-      "{} cases in region"
+      "{} cases in the region"
     ],
     "in_region_floor_points": [
       "one of them is {}"
@@ -29,6 +35,12 @@
     ],
     "in_region_spread_points": [
       "gain spread of {}"
+    ],
+    "label_classes": [
+      "across {} classes"
+    ],
+    "maximal_undetected_slices": [
+      "{} regions once nesting"
     ],
     "mde_points": [
       "detection floor of {}"
@@ -90,6 +102,9 @@
     "shipped_depth": [
       "shipped depth {}"
     ],
+    "significant_verdict_seeds": [
+      "significant verdict in {}"
+    ],
     "slices_total": [
       "{} named capability"
     ],
@@ -102,11 +117,17 @@
     "suite_cases": [
       "{} eval cases"
     ],
-    "suite_change_points": [
-      "changed by {}"
+    "suite_drop_points": [
+      "measured drop of {}"
     ],
     "suite_flagged_in_seeds": [
       "{} of the retrainings"
+    ],
+    "suite_worst_class_floor_points": [
+      "its own floor is {}"
+    ],
+    "suite_worst_class_interval_low_points": [
+      "interval starts at {}"
     ],
     "suite_worst_class_points": [
       "suite shows {}"
@@ -132,6 +153,9 @@
     "widest_band_points": [
       "widest band is {}"
     ],
+    "worst_class_probe_cases": [
+      "{} referee cases"
+    ],
     "worst_undetected_name": [
       "worst is {}"
     ],
@@ -139,7 +163,7 @@
       "worst lost {}"
     ],
     "worst_undetected_suite_cases": [
-      "{} cases of its own"
+      "suite holds {}"
     ]
   },
   "checked_documents": [
@@ -154,14 +178,18 @@
   "metrics": {
     "case_interval_points": 3.54,
     "cases_for_one_point": 5385,
-    "coverage_pct": 99.4,
+    "coverage_pct": 99.1,
     "epoch_band_points": 6.25,
     "held_out_slices": 16,
     "improving_class_points": 9.83,
+    "improving_classes": 2,
+    "improving_slices": 5,
     "in_region_cases": 96,
     "in_region_floor_points": 1.04,
     "in_region_gain_points": 1.15,
     "in_region_spread_points": 1.43,
+    "label_classes": 4,
+    "maximal_undetected_slices": 3,
     "mde_points": 3.41,
     "mde_points_unpaired": 5.7,
     "outside_loss_points": 1.92,
@@ -182,20 +210,24 @@
     "sequence_suite_cases": 480,
     "sequence_undetected_slices": 9,
     "shipped_depth": 0,
+    "significant_verdict_seeds": 2,
     "slices_total": 40,
     "slices_without_power": 19,
     "smallest_suite_with_any_power": 118,
     "suite_cases": 480,
-    "suite_change_points": -1.27,
+    "suite_drop_points": -1.27,
     "suite_flagged_in_seeds": 0,
+    "suite_worst_class_floor_points": 8.74,
+    "suite_worst_class_interval_low_points": -1.09,
     "suite_worst_class_points": 4.75,
-    "tests_total": 317,
+    "tests_total": 329,
     "thinnest_slice_floor_points": 0.52,
     "underpowered_covered_slices": 3,
     "undetected_covered_slices": 2,
     "undetected_slices": 8,
     "widest_band_epoch": 2,
     "widest_band_points": 9.17,
+    "worst_class_probe_cases": 432,
     "worst_undetected_name": "shape=square",
     "worst_undetected_points": 10.58,
     "worst_undetected_suite_cases": 120
@@ -204,14 +236,18 @@
   "rendered": {
     "case_interval_points": "3.54",
     "cases_for_one_point": "5385",
-    "coverage_pct": "99.4",
+    "coverage_pct": "99.1",
     "epoch_band_points": "6.25",
     "held_out_slices": "16",
     "improving_class_points": "9.83",
+    "improving_classes": "2",
+    "improving_slices": "5",
     "in_region_cases": "96",
     "in_region_floor_points": "1.04",
     "in_region_gain_points": "1.15",
     "in_region_spread_points": "1.43",
+    "label_classes": "4",
+    "maximal_undetected_slices": "3",
     "mde_points": "3.41",
     "mde_points_unpaired": "5.70",
     "outside_loss_points": "1.92",
@@ -232,20 +268,24 @@
     "sequence_suite_cases": "480",
     "sequence_undetected_slices": "9",
     "shipped_depth": "0",
+    "significant_verdict_seeds": "2",
     "slices_total": "40",
     "slices_without_power": "19",
     "smallest_suite_with_any_power": "118",
     "suite_cases": "480",
-    "suite_change_points": "-1.27",
+    "suite_drop_points": "-1.27",
     "suite_flagged_in_seeds": "0",
+    "suite_worst_class_floor_points": "8.74",
+    "suite_worst_class_interval_low_points": "-1.09",
     "suite_worst_class_points": "4.75",
-    "tests_total": "317",
+    "tests_total": "329",
     "thinnest_slice_floor_points": "0.52",
     "underpowered_covered_slices": "3",
     "undetected_covered_slices": "2",
     "undetected_slices": "8",
     "widest_band_epoch": "2",
     "widest_band_points": "9.17",
+    "worst_class_probe_cases": "432",
     "worst_undetected_name": "shape=square",
     "worst_undetected_points": "10.58",
     "worst_undetected_suite_cases": "120"

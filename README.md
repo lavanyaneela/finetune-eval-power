@@ -1,10 +1,9 @@
 # finetune-eval-power
 
-[![ci](https://github.com/GITHUB_USERNAME/finetune-eval-power/actions/workflows/ci.yml/badge.svg)](https://github.com/GITHUB_USERNAME/finetune-eval-power/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)
 ![licence](https://img.shields.io/badge/licence-MIT-green)
 
-**Computes what a model eval suite could have detected, then goes looking for the capabilities that fell below it.** A passing suite is routinely read as evidence that fine-tuning broke nothing. This measures the largest regression a suite could have missed, and names the ones it did.
+**Computes what a model eval suite could have detected, then names the capabilities that moved further than that without being flagged.** A passing suite is routinely read as evidence that fine-tuning broke nothing. This measures the largest regression a suite could have missed, and names the ones it did.
 
 ## The impossibility
 
@@ -21,19 +20,22 @@ Four questions this answers that an eval suite does not:
 
 On the vision arm, at the freeze depth the eval suite waves through, the suite and the referee disagree about the sign of what happened.
 
-- The eval suite's accuracy **changed by -1.27** points, which is to say it went up, and it raised a flag in **0 of the retrainings**. The referee probe, which enumerates the whole attribute space, says the same fine-tune cost the model what the **probe says 1.75** points. One of them is looking at a sample of its own choosing.
-- The aggregate stays flat because the classes move in opposite directions. On the suite's own cases one class gets worse by what the **suite shows 4.75** points, which is above the suite's own detection floor, while two others **together gain 9.83** points. The suite is not insensitive. It is averaging over a dimension it never reports.
-- The referee measures the damage on that class as **worst lost 10.58** points. The suite holds **120 cases of its own** for it and still said nothing.
-- Across all the slices, **8 slices regressed** past what the suite could resolve, and **2 sit inside** the region the suite samples at all.
-- The suite's **detection floor of 3.41** points is not the binding constraint anyway. Retraining the same configuration moves the measured result with a standard **deviation of 2.002** points, so the **noise floor reaches 3.92** points. No larger suite reduces that number.
+- The suite's **measured drop of -1.27** points is negative, which means its accuracy went up. It raised a regression flag in **0 of the retrainings**, and returned a **significant verdict in 2** of them, both in the improvement direction. Nothing about it says stop.
+- The referee probe, which enumerates the whole attribute space instead of sampling a region of it, says the same fine-tune cost the model what the **probe says 1.75** points. The two disagree about the direction, not the size.
+- The aggregate stays flat because the classes move against each other. Measured on the suite's own cases, one class gets worse by what the **suite shows 4.75** points while **2 improve and** hold, **together gain 9.83** points, **across 4 classes** that average to the published figure.
+- Here is the part that is worse than averaging. That class is the one the **worst is shape=square**, the **suite holds 120** cases of it, and at that case count and that rate of changed verdicts **its own floor is 8.74** points, with a retraining interval whose **interval starts at -1.09**. So the suite could not have resolved it even if it had reported per class. The probe can, because it holds **432 referee cases** of that class, and it measures **worst lost 10.58** points there.
+- Across all the slices, **8 slices regressed** past what the suite could resolve, **2 sit inside** the region it samples at all, and those eight cover only **3 regions once nesting** is taken out. Five went the other way: **5 slices moved up** with intervals clear of zero.
+- The suite's **detection floor of 3.41** points is not the binding constraint anyway. Retraining moves the measured result with a standard **deviation of 2.002** points, and at 1.96 of those the **noise floor reaches 3.92** points, wider than the floor. No larger suite reduces that.
 
-Of **40 named capability** slices the suite has **no usable power on 19**: there are **16 it never samples** at all and another **3 sampled too thinly** for any effect size to reach the target power. Separately, with **power below 118** cases nothing at this discordance reaches 80% power at all, and the suite that ships is larger than that, so its problem is not its size.
+Of **40 named capability** slices the suite has **no usable power on 19**: **16 it never samples** at all, and another **3 sampled too thinly** in the sense that matters here, which is that their cases almost never change verdict. Separately, with **power below 118** cases nothing at this discordance reaches 80% power at any effect size, and the suite that ships is larger than that, so its problem is not its size.
 
-Every figure above and below is re-measured from a committed measurement by `make verify`, which also runs **317 tests** at **99.4% statement and branch** coverage and fails the build if any of the seven checked documents quotes a figure the code no longer produces. That coverage figure is over the modules a core install executes; the training, sweep and tracking modules are excluded from its denominator on purpose, because `make verify` has to run from a bare clone without a deep learning framework, and a figure a reviewer cannot reproduce is worse than no figure. They are exercised by the CI jobs that install the training extra.
+Every figure above and below is re-measured from a committed measurement by `make verify`, which also runs **329 tests** at **99.1% statement and branch** coverage, evaluates the relations the prose asserts between those figures, and fails the build if any of the seven checked documents quotes a figure the code no longer produces. That coverage figure is over the modules a core install executes; the training, sweep and tracking modules are excluded from its denominator on purpose, because `make verify` has to run from a bare clone without a deep learning framework, and a figure a reviewer cannot reproduce is worse than no figure. They are exercised by the CI jobs that install the training extra.
 
 ## Quickstart
 
 Requires Python `3.11` or newer. No API keys, no cloud credentials, no network at runtime.
+
+One placeholder ships unfilled, in the clone URL below. Run `make set-handle HANDLE=your-handle` once after cloning and it is replaced everywhere, and the CI badge is added at the same time. It is left as a placeholder rather than guessed, because a badge pointing at a repository that does not exist renders as "unknown" and is the first thing a reviewer notices.
 
 ```bash
 git clone https://github.com/GITHUB_USERNAME/finetune-eval-power.git
@@ -50,7 +52,7 @@ python -m finetune_eval_power.cli power --arm vision --claim 2
 make verify
 ```
 
-`make verify` runs lint, the full test suite, all five experiments and the number checker. It does not retrain anything; [ADR-004](docs/adr/ADR-004-seed-budget-and-pinned-training.md) explains why the training is captured rather than repeated, and what runs instead to keep that honest.
+`make verify` runs lint, the offline test suite, all five experiments and the number checker. The ones that train a model are deselected there and run in CI instead. It does not retrain anything; [ADR-004](docs/adr/ADR-004-seed-budget-and-pinned-training.md) explains why the training is captured rather than repeated, and what runs instead to keep that honest.
 
 ## What the suite could have seen, and why it is less than you think
 
@@ -58,31 +60,31 @@ The suite scores the same cases before and after the fine-tune, so the two accur
 
 Treating the two readings as independent, which is the usual reflex, is the calculation the **unpaired says 5.70** about, where the paired calculation that matches the design puts the floor lower. To see a one point regression this suite **would need 5385** cases at the discordance measured here.
 
-The second arm behaves the same way for the same reason. The **sequence ships 480** cases and holds its floor only just: the **sequence needs 473** cases before it has any power at all, so the suite that ships sits seven cases above being useless, and the **sequence arm reaches 1.65** points once it is over that line. Across **29 sequence slices named**, the **sequence missed 9**.
+The second arm behaves the same way, with one honest caveat. The **sequence ships 480** cases and the **sequence needs 473** before it has any power at all, so the suite that ships sits seven cases above being useless, and the **sequence arm reaches 1.65** points once it is over that line. That floor looks sharper than the vision arm's and is not: its cases change verdict so rarely that the largest drop the arm can even represent is barely above the floor itself, so the suite reaches its target power only if essentially every changed case is a regression. Across **29 sequence slices named**, the **sequence missed 9**.
 
 See [E1](docs/experiments/e1_detection_floor.json) and [ADR-003](docs/adr/ADR-003-paired-power.md).
 
 ## What it missed
 
-The suite is **480 eval cases** drawn from a coverage region. The referee is a probe that enumerates the whole attribute space rather than sampling it, so every slice has an exact denominator: **1728 probe cases** for the vision arm. Denominators differ by slice and the floors differ with them, so both ends are published: across the whole probe one case is **probe resolves 0.057** points, while the **thinnest slice resolves 0.52** points, nine times coarser.
+The suite is **480 eval cases** drawn from a coverage region. The referee is a probe that enumerates the whole attribute space rather than sampling it, so every slice has an exact denominator: **1728 probe cases** for the vision arm. Denominators differ by slice and the floors differ with them, so both ends are published: across the whole probe one case is a little over what the **probe resolves 0.057** points, while the **thinnest slice resolves 0.52** points, nine times coarser.
 
 A slice counts as missed when three things hold together: the suite raised no regression flag in a majority of retrainings, the slice's drop exceeds the suite's own detection floor, and its interval across retrainings stays clear of zero. The materiality bar is the suite's floor rather than a number somebody picked, so the comparison is against the thing that was supposed to be watching, and the interval condition is there so a slice cannot be called regressed on the strength of one unlucky retraining.
 
 | what the suite reports | what the probe reports |
 | --- | --- |
-| no regression flagged, in any retraining | eight named capabilities below the suite's floor |
-| one aggregate accuracy, moving upward | the whole space moving downward |
-| a case count that looks comfortable | nineteen slices it has no usable power on |
+| no regression flagged, in any retraining | eight named slices past the suite's floor, covering three regions |
+| one aggregate accuracy, moving upward | the aggregate over the whole space moving downward, with five slices moving up |
+| a case count that looks comfortable | **no usable power on 19** of the **40 named capability** slices |
 
 Full per-slice table with intervals, denominators and per-slice floors in [E3](docs/experiments/e3_blind_capabilities.json).
 
 ## What freezing buys and what it costs
 
-Freeze depth is the knob a team turns. Deeper freezing protects what the model already knew and gives up adaptation. At **shipped depth 0**, the shallowest the suite permits, the fine-tune **gains 1.15** points inside the region it trained on and **costs 1.92** points outside it. Those two carry opposite sign conventions by construction, so to be explicit: the first is an improvement and the second is a loss.
+Freeze depth is the knob a team turns. Deeper freezing protects what the model already knew and gives up adaptation. At **shipped depth 0**, which is the shallowest freeze the suite does not object to and on this measurement it objects at none of them, the fine-tune **gains 1.15** points inside the region it trained on and **costs 1.92** points outside it. Those two carry opposite sign conventions by construction, so to be explicit: the first is an improvement and the second is a loss.
 
-Both are priced before they are used. The in-region figure is measured over **96 cases in region**, so **one of them is 1.04** points and the gain is barely more than a single flipped case, with a **gain spread of 1.43** points across retrainings. It is at the resolution floor and should be read as "no measurable in-region gain" rather than as a win.
+Both are priced before they are used. The in-region figure is measured over **96 cases in the region**, so **one of them is 1.04** points and the gain is barely more than a single flipped case, with a **gain spread of 1.43** points across retrainings. It is at the resolution floor and should be read as "no measurable in-region gain" rather than as a win.
 
-The other end of the dial is no better. The **safest is depth 4**, where the outside-region change is what **depth four moves -0.16** points, a number smaller than its own retraining spread, since **that spread is 1.52** points. So the honest summary of the trade is that the fine-tune buys nothing this measurement can resolve, costs almost two points outside the region it trained on, and the eval suite reports the whole thing as an improvement. [E5](docs/experiments/e5_freeze_depth.json) has every depth.
+The other end of the dial buys nothing either. The **safest is depth 4**, where the outside-region loss is what **depth four moves -0.16** points, which being a negative loss is a small gain, and is in any case smaller than its own retraining spread, since **that spread is 1.52** points. So the honest summary of the trade is that the fine-tune buys nothing this measurement can resolve, costs almost two points outside the region it trained on, and the eval suite reports the whole thing as an improvement. [E5](docs/experiments/e5_freeze_depth.json) has every depth.
 
 ## Which uncertainty actually dominates
 
@@ -150,7 +152,7 @@ That is a replay, not a screen recording. Every line is real captured stdout fro
 
 The measurement is boolean correctness vectors under `fixtures/runs/`, one entry per case per retraining per freeze depth, with a manifest hashing every array. The data behind it is generated, not downloaded, because a capability slice has to be a region of an addressable attribute space and no fixed dataset exposes one.
 
-What is in it that makes the numbers believable is the awkward cases: small scale at low contrast, occluded by a bar through the middle, and the rotations the fine-tune never saw. Those are the regions the suite never samples, and they are enumerated in the probe at the same density as the easy ones. A probe that sampled proportionally would have given the thin slices a denominator too small to say anything with, which is the failure the resolution floor exists to catch.
+What is in it that makes the numbers believable is the awkward cases: small scale, low contrast, and a bar occlusion through the middle. Those three attributes and their pairs are the sixteen slices the suite never samples. Rotation is deliberately not among them: the fine-tune set covers every rotation, so no rotation slice is held out, and the README says so rather than letting a reader assume the held-out set is larger than it is. Those are the regions the suite never samples, and they are enumerated in the probe at the same density as the easy ones. A probe that sampled proportionally would have given the thin slices a denominator too small to say anything with, which is the failure the resolution floor exists to catch.
 
 ## What this cannot measure
 
@@ -191,7 +193,7 @@ fixtures/runs/ the committed measurement, hashed
 
 Code `2` is the one that matters. A power calculation always has a remedy to offer, because its model of the world contains exactly one source of noise. When the real obstacle is that the same configuration trained twice disagrees by more than the effect under discussion, that remedy is wrong and expensive.
 
-`make verify` is lint, tests and receipts. The number checker matches anchor phrases rather than bare digits, because a checker that searches for digits passes while the sentence around them has gone stale. Break any figure in this document and the build fails.
+`make verify` is lint, tests and receipts. The number checker matches anchor phrases rather than bare digits, because a checker that searches for digits passes while the sentence around them has gone stale. Break any figure written in digits in this document and the build fails, and the checker also evaluates the relations the prose asserts between figures, because two correctly guarded numbers can sit either side of a false comparison. Figures spelled as words are guarded only where they sit inside an anchor.
 
 ## Stack
 

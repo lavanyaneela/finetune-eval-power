@@ -122,11 +122,16 @@ def test_the_demo_shows_the_refusal_and_the_checker_failing():
 
 
 def test_no_placeholder_handle_is_left_in_a_badge_or_a_clone_url():
-    """A placeholder in a clone command is the first thing a reviewer notices. The
-    repository ships one on purpose, in exactly one place, filled by make set-handle.
+    """A placeholder in a badge renders as "unknown" and is the first thing a reviewer
+    notices, so no badge carries one. Exactly one ships, in the clone URL, with the
+    README telling the reader to run make set-handle, which also adds the CI badge.
     """
     text = README.read_text(encoding="utf-8")
-    assert text.count("GITHUB_USERNAME") >= 1
+    assert text.count("GITHUB_USERNAME") == 1, (
+        "exactly one placeholder should ship, in the clone URL, and the README must "
+        "tell the reader how to fill it"
+    )
+    assert "make set-handle" in text
     for forbidden in ("YOUR_USERNAME", "yourname", "<username>"):
         assert forbidden not in text
 
