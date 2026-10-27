@@ -65,6 +65,17 @@ markers = [
 [tool.coverage.run]
 branch = true
 source = ["finetune_eval_power"]
+# The training modules are deliberately off the default path: they need the `train`
+# extra, and `make verify` must run from a bare clone. Leaving them in the
+# denominator would publish a coverage figure no reviewer could reproduce without
+# installing a deep learning framework. They are exercised by the CI matrix jobs,
+# which install the extra and run the slow tests. The README states this exclusion
+# next to the figure.
+omit = [
+    "*/finetune_eval_power/models/*",
+    "*/finetune_eval_power/sweep.py",
+    "*/finetune_eval_power/tracking/*",
+]
 
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]

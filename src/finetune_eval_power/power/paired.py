@@ -109,7 +109,7 @@ def mcnemar_exact_power(
     low = max(int(stats.binom.ppf(_TAIL_TOLERANCE, suite_size, discordance)), 0)
     high = min(int(stats.binom.isf(_TAIL_TOLERANCE, suite_size, discordance)), suite_size)
     counts = np.arange(low, high + 1)
-    if counts.size == 0:
+    if counts.size == 0:  # pragma: no cover - only reachable if scipy inverts the tails
         return 0.0
     weights = stats.binom.pmf(counts, suite_size, discordance)
     tail = alpha / 2.0 if two_sided else alpha

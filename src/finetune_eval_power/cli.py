@@ -269,5 +269,5 @@ def main(argv: list[str] | None = None) -> int:
         return EXIT_TOOL_ERROR
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - exercised by the console script
     raise SystemExit(main())

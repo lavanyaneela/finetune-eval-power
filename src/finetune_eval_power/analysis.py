@@ -267,9 +267,10 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
     findings: list[SliceFinding] = []
     for item in slices:
         mask = masks[item.name]
+        # No emptiness guard: the probe enumerates every cell of the space and a
+        # slice constrains attributes to values the space has, so a slice always
+        # has cases. A test asserts that invariant directly instead.
         probe_cases = int(mask.sum())
-        if probe_cases == 0:
-            raise ToolError(f"slice {item.name!r} has no probe cases, which cannot happen")
         per_seed: list[float] = []
         per_seed_discordance: list[float] = []
         for seed_position in range(len(runs.seeds)):

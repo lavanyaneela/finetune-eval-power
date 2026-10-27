@@ -28,7 +28,7 @@ On the vision arm, at the freeze depth the eval suite waves through:
 
 Of **40 named capability** slices, there are **16 it never samples** and the suite has **no usable power on 19** of them. With **power below 118** cases, this suite cannot reach 80% power against a regression of any size whatsoever.
 
-Every figure above and below is re-measured from a committed measurement by `make verify`, which also runs **340 tests** at **99.0% line coverage** and fails the build if any document quotes a figure the code no longer produces.
+Every figure above and below is re-measured from a committed measurement by `make verify`, which also runs **317 tests** at **99.7% line coverage** and fails the build if any document quotes a figure the code no longer produces. That coverage figure is over the modules a core install executes. The training modules are excluded from its denominator on purpose, because `make verify` has to run from a bare clone without a deep learning framework, and a figure a reviewer cannot reproduce is worse than no figure. They are exercised by the CI jobs that install the training extra.
 
 ## Quickstart
 

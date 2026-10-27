@@ -134,3 +134,57 @@ def test_loading_an_arm_the_registry_does_not_know_is_a_tool_error(tmp_path):
     arguments = argparse.Namespace(arm="olfactory", runs=str(tmp_path), claim=2.0)
     with pytest.raises(ToolError, match="unknown arm"):
         _load(arguments)
+
+
+def test_every_named_slice_has_probe_cases_in_both_arms():
+    """The invariant that replaced a guard: the probe enumerates every cell, and a
+    slice constrains attributes to values the space has, so no slice can be empty."""
+    from finetune_eval_power.config import ARMS
+    from finetune_eval_power.slices.spec import enumerate_slices
+    from finetune_eval_power.slices.suite import build_probe
+
+    for arm in ARMS.values():
+        probe = build_probe(arm.space, 1)
+        for item in enumerate_slices(arm.space, arm.pair_attributes):
+            assert int(probe.membership(item).sum()) > 0, (arm.name, item.name)
+
+
+def test_the_probe_reports_its_labels_in_order():
+    from finetune_eval_power.config import VISION_ARM
+    from finetune_eval_power.slices.suite import build_probe
+
+    probe = build_probe(VISION_ARM.space, 1)
+    labels = probe.labels()
+    classes = VISION_ARM.space.label_classes()
+    assert len(labels) == probe.size
+    assert all(
+        classes[label] == item.cell[VISION_ARM.space.label_attribute]
+        for label, item in zip(labels, probe.items, strict=True)
+    )
+
+
+def test_a_slice_finding_reports_the_width_of_its_retraining_interval(vision_arm):
+    from finetune_eval_power.analysis import analyse
+
+    result = analyse(vision_arm, build_synthetic_runs(vision_arm, suite_drop_jitter=(2, 9, 18)))
+    finding = result.findings[0]
+    assert finding.interval_width_points == pytest.approx(
+        finding.interval.high_points - finding.interval.low_points
+    )
+
+
+def test_the_power_command_says_so_when_no_effect_size_would_reach_the_target(
+    tmp_path, vision_arm, capsys
+):
+    """The branch where the suite has no floor at all: its cases almost never change
+    verdict, so there is nothing for the test to work with and a bigger claim does
+    not help either."""
+    from finetune_eval_power.cli import EXIT_NOT_DETECTABLE, main
+
+    build_synthetic_runs(
+        vision_arm, suite_drop_jitter=(1, 1, 1, 2, 1), held_out_drop_fraction=0.0
+    ).write(tmp_path / "vision")
+    code = main(["power", "--claim", "40", "--runs", str(tmp_path)])
+    captured = capsys.readouterr().out
+    assert code == EXIT_NOT_DETECTABLE
+    assert "cannot reach" in captured

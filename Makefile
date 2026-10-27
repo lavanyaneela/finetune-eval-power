@@ -6,14 +6,15 @@
 PYTHON ?= python3
 REPORTS := reports
 
-.PHONY: help install install-all lint test receipts verify experiments report sweep \
+.PHONY: help install install-all lint test test-all receipts verify experiments report sweep \
         evidence diagrams screenshots recording demo set-handle clean
 
 help:
 	@echo "install      editable install with the dev extra"
 	@echo "install-all  also install the training extra (only needed to re-capture)"
 	@echo "lint         ruff check and format check"
-	@echo "test         pytest with junit and coverage reports"
+	@echo "test         pytest with junit and coverage reports, skipping the slow tests"
+	@echo "test-all     every test, including the ones that need the training extra"
 	@echo "receipts     re-measure every published figure and check the documents"
 	@echo "verify       lint + test + receipts, offline, from a fresh clone"
 	@echo "experiments  run the five experiments and print their tables"
@@ -32,13 +33,19 @@ lint:
 	ruff check src tests tools experiments
 	ruff format --check src tests tools experiments
 
+# -m "not slow" deselects the tests that need the training extra, so the collected
+# count and the coverage are the same whether or not the extra is installed. Without
+# it the published test count changes depending on what happens to be on the machine.
 test:
 	mkdir -p $(REPORTS)
-	$(PYTHON) -m pytest -q \
+	$(PYTHON) -m pytest -q -m "not slow" \
 		--junitxml $(REPORTS)/junit.xml \
 		--cov=finetune_eval_power \
 		--cov-report json:$(REPORTS)/coverage.json \
 		--cov-report term:skip-covered
+
+test-all:
+	$(PYTHON) -m pytest -q
 
 receipts:
 	$(PYTHON) tools/collect_metrics.py --skip-tests
