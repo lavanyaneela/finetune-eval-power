@@ -9,7 +9,7 @@ from finetune_eval_power.slices.spec import CapabilitySlice, CoverageProfile, en
 from finetune_eval_power.slices.suite import (
     EvalSuite,
     ProbeSet,
-    build_finetune_cells,
+    build_finetune_items,
     build_probe,
     build_suite,
 )
@@ -19,7 +19,7 @@ __all__ = [
     "CoverageProfile",
     "EvalSuite",
     "ProbeSet",
-    "build_finetune_cells",
+    "build_finetune_items",
     "build_probe",
     "build_suite",
     "enumerate_slices",

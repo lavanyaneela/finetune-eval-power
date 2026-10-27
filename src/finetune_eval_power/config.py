@@ -42,6 +42,7 @@ class ArmConfig:
     batch_size: int
     freeze_depths: tuple[int, ...]
     learning_rate: float = 0.004
+    finetune_learning_rate: float = 0.0003
     suite_seed: int = 20260101
 
     def describe(self) -> dict[str, Any]:
@@ -50,8 +51,7 @@ class ArmConfig:
         payload["space"] = {
             "name": self.space.name,
             "attributes": {k: list(v) for k, v in self.space.attributes.items()},
-            "task_a_attribute": self.space.task_a_attribute,
-            "task_b_attribute": self.space.task_b_attribute,
+            "label_attribute": self.space.label_attribute,
         }
         payload["suite_profile"] = {k: list(v) for k, v in self.suite_profile.allowed.items()}
         payload["finetune_profile"] = {k: list(v) for k, v in self.finetune_profile.allowed.items()}
@@ -71,14 +71,13 @@ VISION_ARM = ArmConfig(
             "occlusion": ("none", "corner"),
         }
     ),
-    # What the fine-tune data happened to be: narrower still, and narrowed along
+    # What the fine-tune data happened to be: the same region, narrowed again along
     # axes nobody wrote down.
     finetune_profile=CoverageProfile(
         allowed={
             "scale": ("large",),
             "contrast": ("high",),
             "occlusion": ("none",),
-            "rotation": ("r000", "r090"),
         }
     ),
     pair_attributes=("scale", "contrast", "occlusion"),
@@ -86,10 +85,12 @@ VISION_ARM = ArmConfig(
     probe_repeats=2,
     pretrain_items=3072,
     finetune_items=1536,
-    pretrain_epochs=9,
-    finetune_epochs=6,
+    pretrain_epochs=30,
+    finetune_epochs=12,
     batch_size=64,
-    freeze_depths=(0, 1, 2, 3),
+    freeze_depths=(0, 1, 2, 3, 4),
+    learning_rate=0.002,
+    finetune_learning_rate=0.0002,
 )
 
 SEQUENCE_ARM = ArmConfig(
@@ -97,27 +98,31 @@ SEQUENCE_ARM = ArmConfig(
     space=SEQUENCE_SPACE,
     suite_profile=CoverageProfile(
         allowed={
-            "length": ("medium", "long"),
+            "length": ("short", "medium"),
+            "amplitude": ("strong",),
             "noise": ("clean",),
             "ordering": ("forward",),
         }
     ),
     finetune_profile=CoverageProfile(
         allowed={
-            "length": ("long",),
+            "length": ("medium",),
+            "amplitude": ("strong",),
             "noise": ("clean",),
             "ordering": ("forward",),
         }
     ),
-    pair_attributes=("length", "noise", "ordering"),
+    pair_attributes=("length", "amplitude", "noise"),
     suite_size=480,
-    probe_repeats=8,
+    probe_repeats=16,
     pretrain_items=3072,
     finetune_items=1536,
-    pretrain_epochs=9,
-    finetune_epochs=6,
+    pretrain_epochs=30,
+    finetune_epochs=12,
     batch_size=64,
     freeze_depths=(0, 1, 2),
+    learning_rate=0.002,
+    finetune_learning_rate=0.0002,
 )
 
 ARMS: dict[str, ArmConfig] = {arm.name: arm for arm in (VISION_ARM, SEQUENCE_ARM)}

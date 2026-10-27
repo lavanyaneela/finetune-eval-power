@@ -49,10 +49,13 @@ def _shape_mask(shape: str, u: np.ndarray, v: np.ndarray, radius: float) -> np.n
 def _texture_mask(texture: str, u: np.ndarray, v: np.ndarray) -> np.ndarray:
     if texture == "solid":
         return np.ones_like(u, dtype=bool)
+    # Period six rather than three. A three pixel pattern does not survive the two
+    # pooling stages in the backbone, which would make the fine-tune task
+    # unlearnable at every freeze depth and collapse the trade-off E5 measures.
     if texture == "striped":
-        return (np.floor(v) % 3) < 2
+        return (np.floor(v) % 6) < 3
     if texture == "dotted":
-        return ((np.floor(u) % 3) < 2) & ((np.floor(v) % 3) < 2)
+        return ((np.floor(u) % 6) < 3) & ((np.floor(v) % 6) < 3)
     raise ValueError(f"unknown texture {texture!r}")
 
 

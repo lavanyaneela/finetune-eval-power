@@ -1,0 +1,3579 @@
+{
+  "arm": "sequence",
+  "array_sha256": {
+    "probe_after.npy": "ec4d1c346fdbefeca8b29bdf7d4f47ffcc39538a6c17714fb8826ce585baa9aa",
+    "probe_before.npy": "81fd7a198dde8881eb7357800f8cf024d032dba5469b2d9c81008cc082aece8a",
+    "suite_after.npy": "e350724090275e4ac9a5d353b10148f89e4fae955df0574fa6d134689498cbad",
+    "suite_before.npy": "872e25ca35faba0251cbfe7f84f64732a84cbf2e2163cf9467237341128aedaa",
+    "suite_curve.npy": "451bdd32d9e5c837585f0d61971a4d6f0852026f2fa99a377fbb95f02ce8e49a"
+  },
+  "config": {
+    "batch_size": 64,
+    "finetune_epochs": 12,
+    "finetune_items": 1536,
+    "finetune_learning_rate": 0.0002,
+    "finetune_profile": {
+      "amplitude": [
+        "strong"
+      ],
+      "length": [
+        "medium"
+      ],
+      "noise": [
+        "clean"
+      ],
+      "ordering": [
+        "forward"
+      ]
+    },
+    "freeze_depths": [
+      0,
+      1,
+      2
+    ],
+    "learning_rate": 0.002,
+    "name": "sequence",
+    "pair_attributes": [
+      "length",
+      "amplitude",
+      "noise"
+    ],
+    "pretrain_epochs": 30,
+    "pretrain_items": 3072,
+    "probe_repeats": 16,
+    "space": {
+      "attributes": {
+        "amplitude": [
+          "weak",
+          "strong"
+        ],
+        "length": [
+          "short",
+          "medium",
+          "long"
+        ],
+        "motif": [
+          "ascend",
+          "descend",
+          "plateau",
+          "spike"
+        ],
+        "noise": [
+          "clean",
+          "noisy"
+        ],
+        "ordering": [
+          "forward",
+          "shuffled"
+        ]
+      },
+      "label_attribute": "motif",
+      "name": "sequence"
+    },
+    "suite_profile": {
+      "amplitude": [
+        "strong"
+      ],
+      "length": [
+        "short",
+        "medium"
+      ],
+      "noise": [
+        "clean"
+      ],
+      "ordering": [
+        "forward"
+      ]
+    },
+    "suite_seed": 20260101,
+    "suite_size": 480
+  },
+  "freeze_depths": [
+    0,
+    1,
+    2
+  ],
+  "held_out_slices": [
+    "amplitude=weak",
+    "length=long",
+    "noise=noisy",
+    "ordering=shuffled",
+    "amplitude=weak & length=short",
+    "amplitude=weak & length=medium",
+    "amplitude=weak & length=long",
+    "amplitude=strong & length=long",
+    "amplitude=weak & noise=clean",
+    "amplitude=weak & noise=noisy",
+    "amplitude=strong & noise=noisy",
+    "length=short & noise=noisy",
+    "length=medium & noise=noisy",
+    "length=long & noise=clean",
+    "length=long & noise=noisy"
+  ],
+  "package_version": "0.1.0",
+  "probe_size": 1536,
+  "seeds": [
+    11,
+    23,
+    37,
+    41,
+    59,
+    67,
+    73,
+    89,
+    97,
+    101
+  ],
+  "shapes": {
+    "probe_after": [
+      10,
+      3,
+      1536
+    ],
+    "probe_before": [
+      10,
+      3,
+      1536
+    ],
+    "suite_after": [
+      10,
+      3,
+      480
+    ],
+    "suite_before": [
+      10,
+      3,
+      480
+    ],
+    "suite_curve": [
+      10,
+      3,
+      13
+    ]
+  },
+  "slice_names": [
+    "amplitude=weak",
+    "amplitude=strong",
+    "length=short",
+    "length=medium",
+    "length=long",
+    "motif=ascend",
+    "motif=descend",
+    "motif=plateau",
+    "motif=spike",
+    "noise=clean",
+    "noise=noisy",
+    "ordering=forward",
+    "ordering=shuffled",
+    "amplitude=weak & length=short",
+    "amplitude=weak & length=medium",
+    "amplitude=weak & length=long",
+    "amplitude=strong & length=short",
+    "amplitude=strong & length=medium",
+    "amplitude=strong & length=long",
+    "amplitude=weak & noise=clean",
+    "amplitude=weak & noise=noisy",
+    "amplitude=strong & noise=clean",
+    "amplitude=strong & noise=noisy",
+    "length=short & noise=clean",
+    "length=short & noise=noisy",
+    "length=medium & noise=clean",
+    "length=medium & noise=noisy",
+    "length=long & noise=clean",
+    "length=long & noise=noisy"
+  ],
+  "suite_cells": [
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "ascend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "descend",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "plateau",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "short",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    },
+    {
+      "amplitude": "strong",
+      "length": "medium",
+      "motif": "spike",
+      "noise": "clean",
+      "ordering": "forward"
+    }
+  ],
+  "suite_slice_case_counts": {
+    "amplitude=strong": 480,
+    "amplitude=strong & length=long": 0,
+    "amplitude=strong & length=medium": 232,
+    "amplitude=strong & length=short": 248,
+    "amplitude=strong & noise=clean": 480,
+    "amplitude=strong & noise=noisy": 0,
+    "amplitude=weak": 0,
+    "amplitude=weak & length=long": 0,
+    "amplitude=weak & length=medium": 0,
+    "amplitude=weak & length=short": 0,
+    "amplitude=weak & noise=clean": 0,
+    "amplitude=weak & noise=noisy": 0,
+    "length=long": 0,
+    "length=long & noise=clean": 0,
+    "length=long & noise=noisy": 0,
+    "length=medium": 232,
+    "length=medium & noise=clean": 232,
+    "length=medium & noise=noisy": 0,
+    "length=short": 248,
+    "length=short & noise=clean": 248,
+    "length=short & noise=noisy": 0,
+    "motif=ascend": 120,
+    "motif=descend": 120,
+    "motif=plateau": 120,
+    "motif=spike": 120,
+    "noise=clean": 480,
+    "noise=noisy": 0,
+    "ordering=forward": 480,
+    "ordering=shuffled": 0
+  },
+  "tracking_enabled": true
+}

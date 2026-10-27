@@ -28,15 +28,11 @@ class AttributeSpace:
 
     name: str
     attributes: Mapping[str, tuple[str, ...]]
-    task_a_attribute: str
-    task_b_attribute: str
+    label_attribute: str
 
     def __post_init__(self) -> None:
-        for key in (self.task_a_attribute, self.task_b_attribute):
-            if key not in self.attributes:
-                raise ToolError(f"{key!r} is not an attribute of space {self.name!r}")
-        if self.task_a_attribute == self.task_b_attribute:
-            raise ToolError("task A and task B must label different attributes")
+        if self.label_attribute not in self.attributes:
+            raise ToolError(f"{self.label_attribute!r} is not an attribute of space {self.name!r}")
         for attribute, values in self.attributes.items():
             if len(values) != len(set(values)):
                 raise ToolError(f"attribute {attribute!r} has duplicate values")
@@ -51,11 +47,8 @@ class AttributeSpace:
             total *= len(values)
         return total
 
-    def task_a_classes(self) -> tuple[str, ...]:
-        return self.attributes[self.task_a_attribute]
-
-    def task_b_classes(self) -> tuple[str, ...]:
-        return self.attributes[self.task_b_attribute]
+    def label_classes(self) -> tuple[str, ...]:
+        return self.attributes[self.label_attribute]
 
     def validate_cell(self, cell: Mapping[str, str]) -> None:
         if set(cell) != set(self.attributes):
@@ -69,16 +62,15 @@ class AttributeSpace:
 
 @dataclass(frozen=True)
 class Item:
-    """One generated example: its coordinates, and the two labels those imply.
+    """One generated example: its coordinates, and the label those coordinates imply.
 
-    The item carries its cell rather than only its labels, because attribution of a
+    The item carries its whole cell rather than only its label, because attributing a
     regression to a region is the entire point and a bare (x, y) pair throws the
     coordinates away.
     """
 
     cell: Mapping[str, str]
-    task_a_label: int
-    task_b_label: int
+    label: int
     index: int = field(default=-1)
 
 
@@ -92,21 +84,19 @@ VISION_SPACE = AttributeSpace(
         "contrast": ("low", "high"),
         "occlusion": ("none", "corner", "bar"),
     },
-    task_a_attribute="shape",
-    task_b_attribute="texture",
+    label_attribute="shape",
 )
 
 SEQUENCE_SPACE = AttributeSpace(
     name="sequence",
     attributes={
         "motif": ("ascend", "descend", "plateau", "spike"),
-        "parity": ("even", "odd"),
         "length": ("short", "medium", "long"),
+        "amplitude": ("weak", "strong"),
         "noise": ("clean", "noisy"),
         "ordering": ("forward", "shuffled"),
     },
-    task_a_attribute="motif",
-    task_b_attribute="parity",
+    label_attribute="motif",
 )
 
 
