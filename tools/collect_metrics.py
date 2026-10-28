@@ -67,6 +67,39 @@ def run_tests() -> None:
         raise SystemExit("the test suite failed, so no metrics were written")
 
 
+def check_reports_are_fresh() -> None:
+    """Refuse to publish a test count or a coverage figure from a stale report.
+
+    With `--skip-tests` these two figures come from `reports/`, which is gitignored
+    and is the only input to this file that is not the committed measurement. An
+    audit edited `junit.xml` to say 999 tests and `make receipts` published it.
+    `make verify` runs the tests first so it is safe there, but `receipts` is a
+    documented target of its own and was not self-sufficient.
+
+    Comparing against the newest source file catches the case that actually
+    happens, which is running `receipts` after editing code without rerunning the
+    tests. It does not defend against someone editing the reports on purpose, and
+    nothing short of running the tests would.
+    """
+    junit = REPORTS / "junit.xml"
+    if not junit.exists():
+        raise SystemExit("no reports/junit.xml: run make test before make receipts")
+    newest = max(
+        (
+            path.stat().st_mtime
+            for folder in ("src", "tests", "tools", "experiments")
+            for path in (ROOT / folder).rglob("*.py")
+        ),
+        default=0.0,
+    )
+    if junit.stat().st_mtime < newest:
+        raise SystemExit(
+            "reports/junit.xml is older than the newest source file, so the test "
+            "count and coverage would describe a tree that no longer exists. Run "
+            "make test, or drop --skip-tests."
+        )
+
+
 def read_test_count() -> int:
     """Collected tests, not passed tests.
 
@@ -111,7 +144,9 @@ def main() -> int:
     )
     arguments = parser.parse_args()
 
-    if not arguments.skip_tests:
+    if arguments.skip_tests:
+        check_reports_are_fresh()
+    else:
         run_tests()
     experiments = run_experiments()
 

@@ -25,10 +25,14 @@ binomial in the suite size, and the power is an expectation over that count rath
 than its value at the mean. Taking the value at the mean overstates power whenever
 the mean is small, which is exactly the regime this kind of suite sits in.
 
-**The normal approximation is kept, and used only for the curve.** It is the closed
-form a reader will reach for, and the suite size curve needs thousands of
-evaluations. Its optimism against the exact value is published in E1 rather than
-asserted here.
+**The normal approximation is kept, and published beside the exact value rather
+than instead of it.** It is the closed form a reader will reach for, so the suite
+size curve prints both columns and the disagreement between them is the point of
+the curve. Nothing in the repository decides anything on the approximation: every
+published floor and every exit code comes from the exact calculation. An earlier
+version of this ADR said the approximation was used only for the curve and
+justified it by a cost the curve does not have, which is six sizes and a bisection
+capped well short of the thousands of evaluations claimed.
 
 **The unpaired calculation is implemented too, under its own name.** A team that
 reports an accuracy before and an accuracy after, and then asks whether the suite was

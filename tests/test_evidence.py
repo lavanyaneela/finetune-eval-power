@@ -48,7 +48,26 @@ def test_the_diagram_paints_a_background_rather_than_leaving_it_transparent():
 
 
 def test_the_diagram_matches_the_source_fence_in_the_readme():
-    assert "```mermaid-source" in README.read_text(encoding="utf-8")
+    """Named for a match it did not check: it asserted the fence exists, so the
+    committed SVG could drift arbitrarily from the source the README displays.
+
+    Rendering here would need a browser, so instead every node label in the fence
+    has to appear as text in the SVG. That catches the drift that actually happens,
+    which is a diagram edited in one place and not the other.
+    """
+    readme = README.read_text(encoding="utf-8")
+    assert "```mermaid-source" in readme
+    fence = readme.split("```mermaid-source", 1)[1].split("```", 1)[0]
+    svg = (EVIDENCE / "architecture.svg").read_text(encoding="utf-8")
+    labels = set(re.findall(r'\["([^"\]]+)"\]', fence))
+    assert labels, "the fence declares no labelled nodes, so this test proves nothing"
+    # The renderer puts each word in its own tspan, so the comparison is against
+    # the SVG's text with its markup removed and its whitespace collapsed.
+    flat = " ".join(re.sub(r"<[^>]+>", " ", svg).split())
+    missing = [
+        label for label in labels if " ".join(label.replace("<br/>", " ").split()) not in flat
+    ]
+    assert missing == [], f"these diagram labels are not in the committed SVG: {missing}"
 
 
 def test_the_diagram_source_fence_is_not_labelled_mermaid():
@@ -150,3 +169,42 @@ def test_no_badge_names_a_logo_slug_that_might_not_exist():
     repository uses none rather than guessing one."""
     text = README.read_text(encoding="utf-8")
     assert "logo=" not in text
+
+
+def test_the_committed_screenshots_are_of_the_verdict_the_measurement_still_gives():
+    """`make verify` runs lint, tests and receipts, and never re-renders evidence,
+    so a committed screenshot can be of a report the measurement no longer
+    produces. The screenshot tool refuses a stale frame, but only when it is run.
+
+    The images cannot be diffed cheaply, so the manifest's recorded verdict badge
+    is checked against the verdict the analysis gives now. That is the reading a
+    screenshot would contradict first.
+    """
+    from pathlib import Path as _Path
+
+    from finetune_eval_power.analysis import analyse
+    from finetune_eval_power.config import VISION_ARM
+    from finetune_eval_power.runs import load_runs
+
+    analysis = analyse(VISION_ARM, load_runs(_Path(ROOT / "fixtures" / "runs" / "vision")))
+    expected = (
+        "SUITE RAISED NOTHING"
+        if analysis.operating.suite_is_quiet
+        else "SUITE FLAGGED A REGRESSION"
+    )
+    recorded = json.loads((EVIDENCE / "manifest.json").read_text(encoding="utf-8"))["badge"]
+    assert recorded["text"] == expected
+    assert recorded["bytes" if "bytes" in recorded else "visible"]
+
+
+def test_the_committed_screenshot_byte_counts_match_the_files_on_disk():
+    """A shot replaced without rerunning the capture leaves the manifest describing
+    a file that is no longer there, which is the cheap half of the same check."""
+    manifest = json.loads((EVIDENCE / "manifest.json").read_text(encoding="utf-8"))
+    for shot in manifest["shots"]:
+        path = EVIDENCE / shot["file"]
+        assert path.exists(), f"{shot['file']} is in the manifest and not on disk"
+        assert path.stat().st_size == shot["bytes"], (
+            f"{shot['file']} is {path.stat().st_size} bytes, manifest says {shot['bytes']}; "
+            "run make evidence"
+        )
