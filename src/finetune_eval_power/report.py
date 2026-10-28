@@ -78,9 +78,21 @@ def render_report(analysis: ArmAnalysis, rule: DecisionRule) -> str:
     badge_class = "badge badge-quiet" if quiet else "badge badge-loud"
     badge_text = "SUITE RAISED NOTHING" if quiet else "SUITE FLAGGED A REGRESSION"
 
+    # The size each underpowered covered slice would need, so the note under the
+    # table can promise one and the table can keep it. "unreachable" on its own
+    # read as "nothing would help", which is the misreading this column exists to
+    # correct, and it was still doing it after the note was rewritten.
+    needed_cases = {name: needed for name, _cases, needed in analysis.slices_short_of_power}
+
     rows = []
     for item in sorted(analysis.findings, key=lambda row: row.drop_points, reverse=True):
         classes = ' class="missed"' if item in missed else ""
+        needed = needed_cases.get(item.name)
+        floor_cell = (
+            _points(item.suite_mde_on_slice_points)
+            if item.suite_has_power
+            else (f"needs {needed} cases" if needed else "no suite size")
+        )
         rows.append(
             f"<tr{classes}><td>{_escape(item.name)}</td>"
             f'<td class="number">{item.suite_cases}</td>'
@@ -88,7 +100,7 @@ def render_report(analysis: ArmAnalysis, rule: DecisionRule) -> str:
             f'<td class="number">{item.drop_points:+.2f}</td>'
             f'<td class="number">{item.interval.low_points:+.2f} to '
             f"{item.interval.high_points:+.2f}</td>"
-            f'<td class="number">{_points(item.suite_mde_on_slice_points)}</td></tr>'
+            f'<td class="number">{floor_cell}</td></tr>'
         )
 
     class_rows = "".join(
@@ -185,9 +197,13 @@ raised nothing.</p>
 <th>drop, points</th><th>95% interval over retrainings</th>
 <th>suite floor on this slice</th></tr></thead>
 <tbody>{"".join(rows)}</tbody></table>
-<p class="note">A slice with zero suite cases has no suite floor at all. A slice with a few
-has one that no realistic suite size reaches, which is a different problem with a different
-remedy.</p>
+<p class="note">The last column reads three ways. A number is the smallest regression the
+suite could resolve on that slice, at its own case count. "needs N cases" means the suite
+samples the slice but too thinly to reach that power at its current size, and N is the size
+that would: those are fixable by a larger suite, and the size is computed from the slice's
+rate of changed verdicts on the suite's own cases. "no suite size" means the suite holds no
+cases of the slice, or none that ever change verdict, and no larger suite drawn the same way
+would help. The three look alike in a table and have different remedies.</p>
 
 <h2 id="freeze-depth">What freezing buys and what it costs</h2>
 <table><thead><tr><th>freeze depth</th><th>suite drop, points</th><th>discordance</th>

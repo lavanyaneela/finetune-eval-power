@@ -87,6 +87,10 @@ def main() -> int:
             "shipped_in_region_spread_points": shipped["in_region_spread_points"],
             "shipped_outside_loss_points": shipped["outside_region_loss_points"],
             "shipped_outside_spread_points": shipped["outside_region_spread_points"],
+            # The spread times the normal quantile, which is the comparison
+            # ADR-004 insists on. Published because a paragraph compared the loss
+            # against the raw standard deviation and concluded the opposite.
+            "shipped_outside_noise_floor_points": 1.96 * shipped["outside_region_spread_points"],
             "in_region_cases": int(region.sum()),
             "outside_region_cases": int(outside.sum()),
             "safest_depth": safest["freeze_depth"],

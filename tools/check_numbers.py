@@ -47,11 +47,60 @@ NUMBER_WORDS = (
 
 #: Numbers allowed to appear in a checked document without matching a metric.
 #: Each one must actually occur, and none may collide with a measured value.
-REVERSE_EXEMPTIONS = {
-    "80": "the target power, written as a percentage",
-    "95": "the confidence level of the published intervals",
-    "1.96": "the normal quantile that turns a standard deviation into the noise floor",
+#: Numbers that appear legitimately and are not measured. Scoped to the documents
+#: they are allowed in, because a global free pass is not a guard: an audit pointed
+#: out that `80`, `95` and `1.96` were accepted in any sentence of any document, so
+#: "the suite resolves 80 distinct capabilities" passed the build. An exemption now
+#: has to name where it is allowed, and is rejected everywhere else.
+REVERSE_EXEMPTIONS: dict[str, tuple[str, tuple[str, ...]]] = {
+    "80": ("the target power, written as a percentage", ("README.md",)),
+    "95": ("the confidence level of the published intervals", ("README.md",)),
+    "1.96": (
+        "the normal quantile that turns a standard deviation into the noise floor",
+        (
+            "README.md",
+            "docs/defense-guide.md",
+            "docs/adr/ADR-004-seed-budget-and-pinned-training.md",
+        ),
+    ),
+    "3.11": ("the minimum supported Python version", ("README.md",)),
+    "1": (
+        "an exit code, and the only one of the four that is not also a measured value",
+        ("README.md",),
+    ),
 }
+
+#: Lines that must appear in a document character for character. The reverse sweep
+#: is a value allow-list: it asks whether a digit is one of the measured values, not
+#: whether it is the right one for this sentence. Every exit code but `1` happens to
+#: equal some measured value, so the published exit-code contract could be rewritten
+#: freely while the build stayed green. These rows are the contract, so they are
+#: pinned as text, and a test asserts each one still matches what the CLI returns.
+LITERAL_GUARDS: tuple[tuple[str, str], ...] = (
+    ("README.md", "| `0` | the tool answered and the answer is the reassuring one:"),
+    ("README.md", "| `1` | the tool answered and the answer is the unwelcome one:"),
+    ("README.md", "| `2` | refused: no suite size fixes it."),
+    ("README.md", "| `3` | the tool itself failed, or was used wrongly."),
+    ("README.md", "python -m finetune_eval_power.cli blind --arm vision"),
+    ("README.md", "python -m finetune_eval_power.cli power --arm vision --claim 2"),
+    ("README.md", "Requires Python `3.11` or newer."),
+)
+
+
+def check_literals() -> list[str]:
+    """Every pinned line is present, character for character."""
+    problems: list[str] = []
+    for relative, line in LITERAL_GUARDS:
+        path = ROOT / relative
+        if not path.exists():
+            problems.append(f"{relative} does not exist")
+            continue
+        if line not in path.read_text(encoding="utf-8"):
+            problems.append(
+                f"{relative}: the pinned line {line!r} is gone. It is part of the "
+                "published contract and is guarded as text, not as a figure"
+            )
+    return problems
 
 
 #: Bold, italic and code markers are removed before an anchor is matched. A figure
@@ -72,6 +121,18 @@ RELATIONS: tuple[tuple[str, str], ...] = (
         "seed_noise_floor_points > mde_points",
         "the refusal threshold must be wider than the suite's floor, or the "
         "repository's central claim is false",
+    ),
+    (
+        "seeds_to_settle < seeds_declared",
+        "the seed budget is above the point at which the spread estimate settles. "
+        "If this ever reversed, the budget would be too small and the refusal "
+        "threshold would rest on an estimate that is still moving",
+    ),
+    (
+        "short_budget_noise_floor_points < seed_noise_floor_points",
+        "a three retraining budget sets the refusal bar LOWER than the settled "
+        "estimate does, so it would accept claims the measurement cannot support. "
+        "This is the measured form of ADR-004's argument for ten",
     ),
     (
         "seed_spread_points < mde_points",
@@ -168,9 +229,22 @@ RELATIONS: tuple[tuple[str, str], ...] = (
     ),
     (
         "outside_loss_points > shipped_outside_spread_points",
-        "the outside-region loss is wider than its own retraining spread, which is "
-        "the asymmetry that lets one side of the trade be called a cost while the "
-        "in-region gain is explicitly not called a gain",
+        "the outside-region loss is wider than one standard deviation of its own "
+        "retraining spread. True, and NOT sufficient to call it a measured cost: "
+        "see the relation below, which is the comparison ADR-004 requires",
+    ),
+    (
+        "outside_loss_points < shipped_outside_noise_floor_points",
+        "the outside-region loss does NOT clear 1.96 standard deviations of its own "
+        "retraining spread, so it is not resolved above retraining noise either. A "
+        "paragraph here once compared it against the raw standard deviation and "
+        "called it the one asymmetry in the table, which is the exact error ADR-004 "
+        "was written about",
+    ),
+    (
+        "in_region_gain_points < shipped_outside_noise_floor_points",
+        "neither side of the freeze-depth trade clears retraining noise, which is "
+        "what makes the suite's confident improvement verdict the result",
     ),
     (
         "final_epoch_accuracy_span_points < epoch_band_points",
@@ -415,9 +489,14 @@ def _reverse_one(path: Path, relative: str, values: set[str], used: set[str]) ->
         return [f"{relative} does not exist"]
     text = path.read_text(encoding="utf-8")
     stripped = LIST_MARKER.sub(" ", text)
-    stripped = re.sub(r"```.*?```", _blank, stripped, flags=re.S)
-    stripped = re.sub(r"`[^`]*`", _blank, stripped)
+    # Fenced blocks, inline code spans, HTML attributes and link targets used to be
+    # blanked here. Three of those four render as text a reader believes, and the
+    # exit-code table lives entirely in code spans, so the sweep now reads them. An
+    # audit changed every cell of that table with the build green.
     stripped = re.sub(r"<[^>]+>", _blank, stripped)
+    # The target of a link or image is a URL, not a sentence, and a badge URL
+    # carries version numbers that are not figures. The link TEXT, which is what a
+    # reader sees, sits outside the parentheses and is still swept.
     stripped = re.sub(r"\]\([^)]*\)", _blank, stripped)
     # ADR-004 is a document name, not a figure. Without this the leading hyphen is
     # read as a sign and every reference becomes an unexplained number.
@@ -427,10 +506,17 @@ def _reverse_one(path: Path, relative: str, values: set[str], used: set[str]) ->
         bare = token.replace(",", "")
         if bare in values or token in values:
             continue
-        if bare in REVERSE_EXEMPTIONS:
-            used.add(bare)
-            continue
         line = stripped[: match.start()].count("\n") + 1
+        if bare in REVERSE_EXEMPTIONS:
+            _reason, allowed = REVERSE_EXEMPTIONS[bare]
+            if relative in allowed:
+                used.add(bare)
+                continue
+            problems.append(
+                f"{relative} line {line}: {token} is exempt in {list(allowed)} "
+                "but not in this document"
+            )
+            continue
         problems.append(f"{relative} line {line}: {token} matches no metric and no exemption")
     return problems
 
@@ -438,6 +524,7 @@ def _reverse_one(path: Path, relative: str, values: set[str], used: set[str]) ->
 def main() -> int:
     payload = load_metrics()
     problems = check_orphans(payload)
+    problems.extend(check_literals())
     problems.extend(check_relations(payload))
     problems.extend(check_anchor_hygiene(payload["anchors"]))
     problems.extend(check_anchor_overlap(payload))

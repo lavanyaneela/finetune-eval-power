@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import statistics
+
 import numpy as np
 import pytest
 
@@ -10,7 +12,12 @@ from finetune_eval_power.power.bootstrap import (
     bootstrap_drop_interval,
     bootstrap_seed_interval,
 )
-from finetune_eval_power.power.variance import MINIMUM_SEEDS, seed_variance
+from finetune_eval_power.power.variance import (
+    MINIMUM_SEEDS,
+    running_spread,
+    seed_variance,
+    seeds_to_settle,
+)
 
 SPREAD = [3.1, 2.4, 4.0, 2.9, 3.6]
 
@@ -224,3 +231,34 @@ def test_the_bootstrap_centre_is_exactly_the_observed_drop_not_a_resampled_mean(
     before = np.array([True] * 90 + [False] * 10)
     after = np.array([True] * 75 + [False] * 25)
     assert bootstrap_drop_interval(before, after, seed=1).drop_points == pytest.approx(15.0)
+
+
+def test_a_running_spread_needs_at_least_two_readings():
+    """One reading has no spread, and `statistics.stdev` would raise something a
+    caller cannot act on."""
+    with pytest.raises(ToolError, match="at least two readings"):
+        running_spread([1.0])
+
+
+def test_the_running_spread_reports_one_estimate_per_prefix():
+    history = running_spread([1.0, 3.0, 5.0, 7.0])
+    assert [count for count, _value in history] == [2, 3, 4]
+    assert history[-1][1] == pytest.approx(statistics.stdev([1.0, 3.0, 5.0, 7.0]))
+
+
+def test_retrainings_that_all_agree_settle_at_the_first_estimate():
+    """With a final spread of zero there is no band to be inside, and dividing by it
+    is how this returns a nonsense answer instead of the obvious one."""
+    assert seeds_to_settle([2.0, 2.0, 2.0, 2.0]) == 2
+
+
+def test_an_estimate_still_moving_at_the_end_settles_late_rather_than_early():
+    """The number is reported, not asserted: if it ever came out at the seed budget
+    the honest reading is that the budget is too small."""
+    readings = [1.0, 1.0, 1.0, 1.0, 40.0]
+    assert seeds_to_settle(readings) == len(readings)
+
+
+def test_a_wider_band_settles_no_later_than_a_narrower_one():
+    readings = [1.0, 1.2, 0.9, 4.0, 1.1, 1.0, 1.05, 0.98]
+    assert seeds_to_settle(readings, band=0.5) <= seeds_to_settle(readings, band=0.05)

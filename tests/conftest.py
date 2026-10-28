@@ -64,6 +64,7 @@ def build_synthetic_runs(
     held_out_drop_fraction: float = 0.25,
     rng_seed: int = 7,
     suite_drop_jitter: tuple[int, ...] = (),
+    suite_gain_cases: int = 0,
 ) -> SweepRuns:
     """A measurement with the answer planted in it.
 
@@ -75,6 +76,14 @@ def build_synthetic_runs(
     test builds a measurement whose retrainings disagree. With it absent every
     retraining agrees exactly and the seed spread is zero, which is useful for
     isolating the power path from the refusal path.
+
+    `suite_gain_cases` moves cases the other way, wrong before and right after.
+    Without it the only way to give the suite enough changed verdicts to have a
+    detection floor is to make it lose cases, which also makes it raise a flag, so
+    every test ran against a suite that either had no floor or was not quiet. The
+    real measurement is quiet AND has a floor, because its cases move in both
+    directions and nearly cancel. That is the shape the repository is about, and no
+    test could build it.
     """
     rng = np.random.default_rng(rng_seed)
     probe = build_probe(arm.space, arm.probe_repeats)
@@ -100,8 +109,13 @@ def build_synthetic_runs(
             else suite_drop_cases
         )
         for depth_position in range(len(depths)):
-            lost = rng.choice(arm.suite_size, size=per_seed_drop, replace=False)
+            moved = rng.choice(arm.suite_size, size=per_seed_drop + suite_gain_cases, replace=False)
+            lost = moved[:per_seed_drop]
+            gained = moved[per_seed_drop:]
             suite_after[seed_position, depth_position, lost] = False
+            # Wrong before and right after. The before vector has to say so too, or
+            # the case was right in both and nothing changed.
+            suite_before[seed_position, depth_position, gained] = False
             held_indices = np.flatnonzero(held_mask)
             count = int(len(held_indices) * held_out_drop_fraction)
             chosen = rng.choice(held_indices, size=count, replace=False)

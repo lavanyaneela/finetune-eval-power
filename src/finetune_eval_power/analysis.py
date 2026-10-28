@@ -27,7 +27,13 @@ from finetune_eval_power.power.paired import (
     minimum_detectable_points,
     required_suite_size,
 )
-from finetune_eval_power.power.variance import SeedVariance, seed_variance
+from finetune_eval_power.power.variance import (
+    MINIMUM_SEEDS,
+    SeedVariance,
+    running_spread,
+    seed_variance,
+    seeds_to_settle,
+)
 from finetune_eval_power.runs import SweepRuns
 from finetune_eval_power.slices.spec import CapabilitySlice, enumerate_slices
 from finetune_eval_power.slices.suite import ProbeSet, build_probe
@@ -116,6 +122,14 @@ class SliceFinding:
     interval: DropInterval
     case_interval_width_points: float
     discordance: float
+    #: The slice's rate of changed verdicts on the PROBE's cases. Every drop and
+    #: interval on this finding is measured there, so this is the discordance that
+    #: belongs beside them.
+    suite_discordance: float
+    #: The same rate measured on the suite's own cases for this slice. It is a
+    #: different number, usually smaller, and the two are not interchangeable: a
+    #: prescription about how large the suite should be has to come from the
+    #: suite's behaviour, not from the referee's.
     suite_mde_on_slice_points: float | None
 
     @property
@@ -260,6 +274,29 @@ class ArmAnalysis:
         return max(self.suite_class_findings, key=lambda item: item.drop_points)
 
     @property
+    def seed_readings_points(self) -> tuple[float, ...]:
+        """The measured drop from each retraining at the operating depth."""
+        return tuple(verdict.counts.drop_points for verdict in self.operating.verdicts)
+
+    @property
+    def seeds_to_settle(self) -> int:
+        """Retrainings after which the spread estimate stops moving materially."""
+        return seeds_to_settle(self.seed_readings_points)
+
+    @property
+    def short_budget_noise_floor_points(self) -> float:
+        """The refusal threshold a three retraining budget would have produced.
+
+        The threshold is computed from an estimate of the spread, so an estimate
+        taken from too few retrainings sets the bar in the wrong place and nothing
+        downstream can tell. Published because the alternative is asserting that
+        ten was chosen carefully and offering no number for it.
+        """
+        history = running_spread(self.seed_readings_points)
+        at_three = next(value for count, value in history if count == MINIMUM_SEEDS)
+        return self.variance.multiplier * at_three
+
+    @property
     def improving_regions(self) -> int:
         """Improving slices with nesting removed, so it compares with the missed count.
 
@@ -315,12 +352,21 @@ class ArmAnalysis:
         is not a corner case here: it is the extreme of exactly the condition that
         puts a slice in this list, and asking the power routine for a size at a
         discordance of zero used to raise.
+
+        The size comes from `suite_discordance`, the slice's rate of changed
+        verdicts on the suite's own cases, and not from `discordance`, which is the
+        rate on the probe. An audit caught the published figure being computed from
+        the probe while the sentence around it prescribed a suite size: the cheapest
+        slice read 140 cases from the probe's rate and 592 from the suite's. A
+        prescription about the suite has to be derived from the suite.
         """
         return tuple(
             (
                 item.name,
                 item.suite_cases,
-                smallest_suite_with_power(item.discordance) if item.discordance > 0.0 else None,
+                smallest_suite_with_power(item.suite_discordance)
+                if item.suite_discordance > 0.0
+                else None,
             )
             for item in self.findings
             if item.covered and not item.suite_has_power
@@ -412,6 +458,7 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
         summary for summary in depth_summaries if summary.freeze_depth == operating_depth
     )
 
+    suite_cells = runs.manifest.get("suite_cells", [])
     findings: list[SliceFinding] = []
     for item in slices:
         mask = masks[item.name]
@@ -438,6 +485,20 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
         )
         slice_discordance = float(np.mean(per_seed_discordance))
         suite_cases = int(suite_counts.get(item.name, 0))
+        suite_mask = np.array([item.matches(cell) for cell in suite_cells], dtype=bool)
+        suite_discordance = 0.0
+        if suite_mask.any():
+            suite_discordance = float(
+                np.mean(
+                    [
+                        paired_counts(
+                            runs.suite_before[position, operating_position][suite_mask],
+                            runs.suite_after[position, operating_position][suite_mask],
+                        ).discordance
+                        for position in range(len(runs.seeds))
+                    ]
+                )
+            )
         findings.append(
             SliceFinding(
                 name=item.name,
@@ -450,6 +511,7 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
                     case_interval.high_points - case_interval.low_points
                 ),
                 discordance=slice_discordance,
+                suite_discordance=suite_discordance,
                 suite_mde_on_slice_points=(
                     minimum_detectable_points(
                         suite_cases, slice_discordance, rule.alpha, rule.target_power
@@ -530,8 +592,10 @@ def _suite_class_findings(
     for class_name in arm.space.label_classes():
         item = CapabilitySlice.of(**{arm.space.label_attribute: class_name})
         mask = np.array([item.matches(cell) for cell in cells], dtype=bool)
-        if not mask.any():
-            continue
+        # No emptiness guard. `build_suite` refuses a coverage profile that selects
+        # no cells for a label class, so every class has suite cases by
+        # construction. A test asserts that invariant directly, which is better
+        # than a branch here that nothing can reach and coverage keeps pointing at.
         per_seed: list[float] = []
         per_seed_discordance: list[float] = []
         for position in range(len(runs.seeds)):

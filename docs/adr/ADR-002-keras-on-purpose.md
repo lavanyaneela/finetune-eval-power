@@ -6,7 +6,7 @@
 
 Freeze depth is the engineering knob this repository turns. For the knob to mean
 anything, "freeze the first k blocks" has to be a statement a reader can check
-against the model definition in a few seconds, and it has to be exactly true at
+against the model definition at a glance, and it has to be exactly true at
 runtime.
 
 ## Decision

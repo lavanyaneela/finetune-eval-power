@@ -43,6 +43,7 @@
       "shipped_in_region_gain_points": 0.0,
       "shipped_in_region_spread_points": 0.0,
       "shipped_outside_loss_points": 0.8355978260869564,
+      "shipped_outside_noise_floor_points": 1.768747868520413,
       "shipped_outside_spread_points": 0.9024223818981699
     },
     "vision": {
@@ -108,6 +109,7 @@
       "shipped_in_region_gain_points": 1.145833333333336,
       "shipped_in_region_spread_points": 1.42741699938156,
       "shipped_outside_loss_points": 1.9178921568627456,
+      "shipped_outside_noise_floor_points": 3.386513900847966,
       "shipped_outside_spread_points": 1.72781321471835
     }
   }

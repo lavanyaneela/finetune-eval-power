@@ -20,6 +20,45 @@ from dataclasses import dataclass
 from finetune_eval_power.errors import ToolError
 
 MINIMUM_SEEDS = 3
+#: How close a running estimate has to sit to the final one to count as settled.
+STABILITY_BAND = 0.10
+
+
+def running_spread(readings: Sequence[float]) -> list[tuple[int, float]]:
+    """Standard deviation of the first k readings, for every k from two upward.
+
+    The seed budget is the one configuration number in this repository that is a
+    judgement call, and the ADR that picked it argued qualitatively. This makes the
+    argument checkable: a variance estimate from a handful of retrainings is itself
+    noisy, and the refusal threshold is computed from it, so an unstable estimate
+    sets the bar in the wrong place and nothing downstream notices.
+    """
+    if len(readings) < 2:
+        raise ToolError("a running spread needs at least two readings")
+    return [
+        (count, float(statistics.stdev(readings[:count]))) for count in range(2, len(readings) + 1)
+    ]
+
+
+def seeds_to_settle(readings: Sequence[float], band: float = STABILITY_BAND) -> int:
+    """Fewest retrainings after which the estimate stays inside `band` of the final.
+
+    Reported rather than asserted. If it ever came out at or above the seed budget
+    the honest reading would be that the budget is too small, which is why the
+    number is published next to the budget instead of being hidden in a constant.
+    """
+    history = running_spread(readings)
+    final = history[-1][1]
+    if final <= 0.0:
+        return history[0][0]
+    # The last entry always satisfies the test against itself, so the loop always
+    # returns and a trailing fallback would be unreachable. There was one, and
+    # coverage pointed at it rather than at a missing test.
+    return next(
+        count
+        for position, (count, _value) in enumerate(history)
+        if all(abs(value - final) / final <= band for _count, value in history[position:])
+    )
 
 
 @dataclass(frozen=True)

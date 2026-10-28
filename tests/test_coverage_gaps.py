@@ -255,3 +255,23 @@ def test_with_no_floor_at_all_every_material_regression_counts_as_missed(tmp_pat
     assert set(analysis.undetected) == {
         item for item in analysis.findings if item.materially_regressed
     }
+
+
+def test_the_suite_cannot_be_built_without_cases_for_every_label_class(vision_arm):
+    """The invariant that lets the per-class loop carry no emptiness guard.
+
+    Per-class findings are measured on the suite's own cases, so a class with no
+    suite cases would mean a paired table over zero cases, which `PairedCounts`
+    refuses outright. Rather than a branch in the analysis that nothing can reach,
+    the suite builder refuses the profile and this pins that.
+    """
+
+    from finetune_eval_power.slices.spec import CoverageProfile
+    from finetune_eval_power.slices.suite import build_suite
+
+    label = vision_arm.space.label_attribute
+    classes = vision_arm.space.label_classes()
+    assert len(classes) > 2
+    profile = CoverageProfile(allowed={label: tuple(classes[:2])})
+    with pytest.raises(ToolError, match="selects no cells for class"):
+        build_suite(vision_arm.space, profile, vision_arm.suite_size, np.random.default_rng(1))

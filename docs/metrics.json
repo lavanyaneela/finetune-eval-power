@@ -99,6 +99,9 @@
     "seeds_declared": [
       "{} seeds"
     ],
+    "seeds_to_settle": [
+      "settles after {}"
+    ],
     "sequence_mde_points": [
       "sequence arm reaches {}"
     ],
@@ -117,8 +120,14 @@
     "shipped_depth": [
       "shipped depth {}"
     ],
+    "shipped_outside_noise_floor_points": [
+      "noise bar of {}"
+    ],
     "shipped_outside_spread_points": [
       "outside spread of {}"
+    ],
+    "short_budget_noise_floor_points": [
+      "would have set {}"
     ],
     "significant_verdict_seeds": [
       "significant verdict in {}"
@@ -202,9 +211,9 @@
   "metrics": {
     "case_interval_points": 3.54,
     "cases_for_one_point": 5385,
-    "cheapest_underpowered_slice_cases": 140,
-    "coverage_pct": 99.6,
-    "dearest_underpowered_slice_cases": 459,
+    "cheapest_underpowered_slice_cases": 301,
+    "coverage_pct": 99.9,
+    "dearest_underpowered_slice_cases": 592,
     "epoch_band_points": 6.25,
     "final_epoch_accuracy_span_points": 3.33,
     "finest_slice_floor_points": 0.115,
@@ -233,13 +242,16 @@
     "seed_noise_floor_points": 3.92,
     "seed_spread_points": 2.002,
     "seeds_declared": 10,
+    "seeds_to_settle": 8,
     "sequence_mde_points": 1.65,
     "sequence_slices_total": 29,
     "sequence_smallest_suite_with_power": 473,
     "sequence_suite_cases": 480,
     "sequence_undetected_slices": 9,
     "shipped_depth": 0,
+    "shipped_outside_noise_floor_points": 3.38,
     "shipped_outside_spread_points": 1.73,
+    "short_budget_noise_floor_points": 1.54,
     "significant_verdict_seeds": 2,
     "slices_total": 40,
     "slices_without_power": 19,
@@ -250,7 +262,7 @@
     "suite_worst_class_floor_points": 8.74,
     "suite_worst_class_interval_low_points": -1.09,
     "suite_worst_class_points": 4.75,
-    "tests_total": 357,
+    "tests_total": 372,
     "thinnest_slice_floor_points": 0.52,
     "underpowered_covered_slices": 3,
     "underpowered_slices_with_a_size": 3,
@@ -268,9 +280,9 @@
   "rendered": {
     "case_interval_points": "3.54",
     "cases_for_one_point": "5385",
-    "cheapest_underpowered_slice_cases": "140",
-    "coverage_pct": "99.6",
-    "dearest_underpowered_slice_cases": "459",
+    "cheapest_underpowered_slice_cases": "301",
+    "coverage_pct": "99.9",
+    "dearest_underpowered_slice_cases": "592",
     "epoch_band_points": "6.25",
     "final_epoch_accuracy_span_points": "3.33",
     "finest_slice_floor_points": "0.115",
@@ -299,13 +311,16 @@
     "seed_noise_floor_points": "3.92",
     "seed_spread_points": "2.002",
     "seeds_declared": "10",
+    "seeds_to_settle": "8",
     "sequence_mde_points": "1.65",
     "sequence_slices_total": "29",
     "sequence_smallest_suite_with_power": "473",
     "sequence_suite_cases": "480",
     "sequence_undetected_slices": "9",
     "shipped_depth": "0",
+    "shipped_outside_noise_floor_points": "3.38",
     "shipped_outside_spread_points": "1.73",
+    "short_budget_noise_floor_points": "1.54",
     "significant_verdict_seeds": "2",
     "slices_total": "40",
     "slices_without_power": "19",
@@ -316,7 +331,7 @@
     "suite_worst_class_floor_points": "8.74",
     "suite_worst_class_interval_low_points": "-1.09",
     "suite_worst_class_points": "4.75",
-    "tests_total": "357",
+    "tests_total": "372",
     "thinnest_slice_floor_points": "0.52",
     "underpowered_covered_slices": "3",
     "underpowered_slices_with_a_size": "3",

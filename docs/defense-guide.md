@@ -1,10 +1,14 @@
 # Defense guide: finetune-eval-power
 
-For the author, before an interview. Every figure here is checked against the
-committed measurement by `tools/check_numbers.py`, so if a number in this document
-has drifted the build fails.
+For the author, before an interview. Every figure here written in digits is checked
+against the committed measurement by `tools/check_numbers.py`, and the build fails if
+one has drifted. Know the limits of that before leaning on it in a room: a figure
+spelled as a word is guarded only where it sits inside an anchor phrase, and the
+checker guards digits and the relations listed in its table, not the verbs between
+them. The sentences in this document are the author's responsibility; only the
+numbers are the machine's.
 
-## The thirty second version
+## The short version
 
 "A passing eval suite gets read as evidence that fine-tuning broke nothing. It is not.
 I built a tool that computes how small a regression a suite could actually have
@@ -60,16 +64,24 @@ The suite's side agrees: at its case count for that class, and at the rate of ch
 verdicts the probe measures there, the suite's **own slice floor is 11.60** points, which
 is above the drop.
 
-**If pushed on the two different numbers for one class:** they are different
-denominators and both are published, with the floor that applies at each. The useful
+**If pushed on the two different numbers for one class:** be precise, because the
+easy answer is wrong. Both published floors are computed at the suite's own case
+count for that class. What differs is the rate of changed verdicts fed into each:
+8.74 uses the rate measured on the suite's cases, 11.60 the rate the probe measures
+for the same slice. The floor at the probe's own denominator is smaller than either
+and is not published, because no decision is taken at it. The useful
 conclusion is not that the suite averaged away a signal it had. It is that a suite this
 size cannot resolve a per-class regression of this size at all, so reporting per class
 would not have saved it either. That is an argument about suite design, not about
 aggregation.
 
-### Claim three: the detection floor is set by discordance, not by case count
+### Claim three: the floor is set by the cases that change verdict, not by cases alone
 
-**Command:** `python -m finetune_eval_power.cli curve --arm vision`
+**Command:** `python -m finetune_eval_power.cli curve --arm vision` shows the floor
+falling as the suite grows at a fixed rate of changed verdicts. The unpaired
+comparison and the required case count below are not on that screen: they are in
+[E1](../docs/experiments/e1_detection_floor.json). Do not read a number aloud that
+is not on the screen you are pointing at.
 
 The suite scores the same cases before and after, so the comparison is paired and all
 the information lives in the cases whose verdict changed. The **detection floor of 3.41**
@@ -102,12 +114,18 @@ first, since its model of the world contains one noise source.
 
 ### Claim five: the blindness is structural, not a property of this fixture
 
-**Command:** `python -m finetune_eval_power.cli suite --arm vision`
+**Command:** `python -m finetune_eval_power.cli suite --arm vision` prints the slice
+counts in the first sentence below. The per-slice sizes, the missed slices and the
+regions come from `blind --arm vision`, and the sequence arm needs `--arm sequence`.
+Three commands, not one.
 
 Of **40 named capability** slices the suite has **no usable power on 19**: **16 it never samples**
-at all, and **3 sampled too thinly**, meaning their cases almost never change verdict
-rather than that there are few of them, and **all 3 name a size**: the
-**cheapest needs 140** cases of its own slice and the **dearest needs 459**.
+at all, and **3 sampled too thinly**, meaning too few of their cases change verdict,
+which is how many cases they hold and how often those change, multiplied. Neither
+factor alone is the reason. They also **all 3 name a size**: the
+**cheapest needs 301** cases of its own slice and the **dearest needs 592**. Those
+sizes come from each slice's rate of changed verdicts on the suite's own cases, not
+on the probe's, because a prescription about the suite has to come from the suite.
 **8 slices regressed** unflagged, covering **3 regions once nesting** is removed, and
 **5 slices moved up** with intervals clear of zero, which is **2 regions the other**
 way under the same correction. The second arm reproduces the shape with a different architecture and a
@@ -174,17 +192,22 @@ guard nobody has seen fail should not be trusted.
 
 ## Things to say
 
-- "The suite's detection floor is set by how often its cases change their verdict, not
-  by how many there are."
-- "Retraining noise is wider than the suite's floor here, so a bigger eval set would
-  not have helped."
+- "The suite's floor is set by how many of its cases change their verdict, which is
+  the case count and the rate multiplied. Growing the suite does lower it. What a
+  bigger suite cannot do is get under retraining noise."
+- "For the aggregate claim, retraining noise is wider than the suite's floor, so a
+  bigger eval set would not have helped there. It is the remedy for the blind slices:
+  six of the eight missed ones have no suite cases at all, and the three underpowered
+  ones each name the size that would fix them."
 - "The suite and the probe disagree about the sign of what the fine-tune did."
 - "The aggregate stayed flat because two classes improved while a third got worse, and
   an aggregate cannot show a class."
 - "And a suite this size could not have resolved that class even per class, which is
   the stronger version of the same point."
-- "Every figure in the README is re-measured by CI and the build fails if the prose
-  drifts from it."
+- "Every figure in the README written in digits is re-measured by CI, along with the
+  relations the prose asserts between them, and the build fails if one drifts. It
+  does not check the verbs, and I will say which claims rest on the machine and which
+  rest on me."
 
 ## Things not to say
 
@@ -208,8 +231,10 @@ guard nobody has seen fail should not be trusted.
   case out of ninety-six and its spread is larger than itself. Say it bought nothing
   this measurement can resolve.
 - Do not quote a wall clock time for anything. The repository publishes counts and
-  ratios on purpose, and a sweep over all tracked files fails the build if a duration
-  appears.
+  ratios on purpose, and a sweep over every tracked text file fails the build if a
+  duration appears in digits or in words. It skips machine readable artifacts, where
+  a duration is data: the demo manifest records how long each captured command took
+  because the replay is paced by those numbers.
 
 ## Live demo, five commands
 
@@ -218,8 +243,11 @@ make install                                                  # core install, no
 python -m finetune_eval_power.cli suite --arm vision          # the shape of the problem
 python -m finetune_eval_power.cli blind --arm vision          # the headline: what it missed
 python -m finetune_eval_power.cli power --arm vision --claim 2  # the refusal, exit code 2
+python -m finetune_eval_power.cli power --arm vision --claim bad # a usage error, exit code 3
 make verify                                                   # lint, tests, every figure re-measured
 ```
 
-Run the third and fourth from a terminal where the exit code is visible: `echo $?`
-after the power command is the moment the point lands.
+Run these from a terminal where the exit code is visible: `echo $?` after the power
+command is the moment the point lands. The fifth line is worth running too. A usage
+error returns 3, not 2, so the refusal cannot be confused with a typo. It returned 2
+until an audit ran the parser, which is a good thing to be able to say.

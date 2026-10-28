@@ -14,13 +14,13 @@
       "framed_to": "detection-floor"
     },
     {
-      "bytes": 336132,
+      "bytes": 357606,
       "file": "missed-capabilities.png",
       "framed_from": "missed-capabilities",
       "framed_to": "freeze-depth"
     },
     {
-      "bytes": 91745,
+      "bytes": 91773,
       "file": "noise-sources.png",
       "framed_from": "noise-sources",
       "framed_to": null

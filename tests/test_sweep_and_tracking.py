@@ -63,8 +63,8 @@ def test_the_manifest_counts_suite_cases_for_every_named_slice(toy_arm):
 
 def test_the_manifest_is_json_serialisable_before_any_training_happens(toy_arm):
     """Pins a real incident. The manifest used to be built after the sweep, a
-    refactor renamed an attribute it reads, and the failure surfaced twelve minutes
-    of training later with nothing written. Anything that can fail cheaply has to
+    refactor renamed an attribute it reads, and the failure surfaced deep into the
+    training with nothing written to disk. Anything that can fail cheaply has to
     fail before anything expensive starts."""
     from finetune_eval_power.models.training import build_fixed_cases
 

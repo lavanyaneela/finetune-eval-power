@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Fails the build when any tracked file publishes an absolute duration.
+"""Fails the build when a tracked text file publishes an absolute duration.
 
 A millisecond is a fact about the machine that measured it, so this repository
-publishes counts and ratios instead. The sweep genuinely takes minutes and that
-number belongs in prose about what to expect, not in a claim, so the pattern list
-targets the shapes a claim takes.
+publishes counts and ratios instead. The pattern list targets the shapes a claim
+takes, in digits and in words.
+
+It does not sweep machine readable artifacts: the demo manifest records how long
+each captured command took because the replay is paced by those numbers. So the
+rule is "no duration reaches a reader as a claim", not "no duration exists in this
+repository", and the documents were corrected to say the narrower thing after an
+audit pointed out they claimed the wider one.
 
 It sweeps every tracked and untracked file rather than only the checked documents.
 A promise about "anywhere in this repository" needs a check over everything, and an
@@ -20,11 +25,35 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+#: Spelled-out quantities, because the sweep is about what a reader is told, not
+#: about which characters it is told in. Two durations written as words sat in the
+#: checked documents through three audits: "twelve minutes into a capture" and "the
+#: better part of an hour". A rule stated over "anything" has to catch those.
+#: Quantity words, without the indefinite article. "a second" is almost always the
+#: ordinal in this repository ("a second cost", "a second after it was written"),
+#: and an article-matching pattern reported six of those for every real duration.
+#: A rule nobody can keep green stops being a rule.
+_COUNT = (
+    r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|"
+    r"thirty|forty|fifty|sixty|half|several|a\s+few|the\s+better\s+part\s+of\s+an?)"
+)
 PATTERNS = (
     re.compile(r"\b\d+(?:\.\d+)?\s*(?:ms|milliseconds?|microseconds?|nanoseconds?)\b", re.I),
     re.compile(r"\b\d+(?:\.\d+)?\s*(?:seconds?|secs?)\s+(?:faster|slower|per)\b", re.I),
     re.compile(r"\btakes\s+\d+(?:\.\d+)?\s*(?:s|seconds?|minutes?|hours?)\b", re.I),
+    # Minutes and hours have no ordinal sense in prose, so the article is included
+    # for them and excluded for seconds.
+    re.compile(rf"\b(?:an?|{_COUNT})\s+(?:minutes?|hours?)\b", re.I),
+    re.compile(rf"\b{_COUNT}\s+seconds?\b", re.I),
+    re.compile(r"\b\d+(?:\.\d+)?[- ](?:second|minute|hour)\b", re.I),
 )
+#: Machine readable artifacts, where a duration is data rather than a claim. The
+#: demo manifest records how long each captured command took, and it has to: the
+#: replay is paced by those numbers and a reviewer checking the replay is honest
+#: needs them. The rule this file enforces is that no duration reaches a reader as
+#: a claim, which is narrower than "no duration appears anywhere", and the
+#: documents now say the narrower thing. The suffixes are listed in the output so
+#: the exception is visible rather than buried here.
 SKIP_SUFFIXES = {".npy", ".png", ".gif", ".mp4", ".webm", ".svg", ".json", ".xml"}
 SKIP_PARTS = {".git", "reports", "mlruns", "node_modules", "__pycache__", "docs/evidence"}
 #: This file necessarily contains the patterns it looks for.
@@ -67,7 +96,11 @@ def main() -> int:
         for problem in problems:
             print(f"  - {problem}")
         return 1
-    print(f"no published durations across {len(tracked_files())} files")
+    skipped = ", ".join(sorted(SKIP_SUFFIXES))
+    print(
+        f"no published durations across {len(tracked_files())} files "
+        f"(machine readable artifacts not swept: {skipped})"
+    )
     return 0
 
 

@@ -15,11 +15,25 @@ Each arm is trained with 10 seeds at every freeze depth. Training data is resamp
 per seed, while the eval suite and the referee probe are rendered once and shared,
 so the spread measures retraining and not the generator.
 
-Ten was chosen because the variance estimate has to be stable enough to divide by. A
-standard deviation from three runs is itself so noisy that the refusal rule would
-fire or not fire depending on which three. Running 10 keeps the estimate usable while
-keeping a full capture inside a single sitting, which matters because a capture
-nobody will rerun is a capture that silently goes stale.
+Ten was chosen because the variance estimate has to be stable enough to divide by,
+and that is a measurement rather than a feeling. Taking the standard deviation of the
+first k retrainings for every k and asking when it stops moving, the estimate
+**settles after 8** of them, in the sense that it and every later one sit within
+a tenth of the final value. Below that it is still travelling: it more than doubles
+between the fourth retraining and the fifth.
+
+The consequence is not academic, because the refusal threshold is computed from this
+estimate. A three retraining budget **would have set 1.54** points as the bar where
+the settled estimate puts it at the **noise floor reaches 3.92** points. The tool
+would have accepted, and confidently answered, claims between those two that the
+measurement cannot support, and nothing downstream would have noticed, because a
+threshold carries no record of how well it was estimated.
+
+So the budget is the settling point with margin, not a round number. Ten also keeps a
+full capture inside one sitting, which matters because a capture nobody will rerun is
+a capture that silently goes stale. An earlier version of this ADR argued all of this
+in words and recorded no measurement, while `config.py` told the reader that this
+document held one.
 
 The spread is not a diagnostic. It is the headline's companion, and the arithmetic
 has to be done in full or the claim is false. Retraining this configuration moves the
@@ -52,7 +66,7 @@ It publishes the difference rather than asserting there is none.
 
 That job is manual and non-blocking, and it is worth saying so rather than letting a
 reader assume otherwise. It is gated on a workflow dispatch and runs with
-`continue-on-error`, for two reasons. It takes the better part of an hour, which is
+`continue-on-error`, for two reasons. It is far and away the longest thing in the repository, which is
 not something to put on every push. And it exists to measure a difference this ADR
 already predicts, so wiring it to fail the build would paint the badge red for
 something documented, and a badge that is red for a known reason is a badge everybody

@@ -234,3 +234,69 @@ def test_the_relation_table_covers_the_comparisons_the_headline_makes():
         "retraining_interval_points",
     ):
         assert metric in expressions, metric
+
+
+def test_every_markdown_document_in_the_repository_is_a_checked_document():
+    """`CHECKED_DOCUMENTS` is a hand-written tuple, so a new document joins the
+    repository guarded by nothing. An audit added `docs/results-summary.md` full of
+    invented figures and the build stayed green."""
+    import subprocess
+
+    listed = subprocess.run(
+        ["git", "ls-files", "*.md"],
+        cwd=checker.ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.split()
+    tracked = {name for name in listed if not name.startswith(("node_modules/", "reports/"))}
+    checked = set(checker.load_metrics()["checked_documents"])
+    assert tracked - checked == set(), (
+        "these documents are tracked, publish prose, and nothing checks them: "
+        f"{sorted(tracked - checked)}"
+    )
+
+
+def test_the_exit_code_table_is_pinned_as_text_and_matches_what_the_cli_returns():
+    """The reverse sweep is a value allow-list: it asks whether a digit is one of
+    the measured values, not whether it is the right one here. Every exit code but
+    1 equals some measured value, so the published contract could be rewritten with
+    the build green. It is pinned as literal text, and the literal text is checked
+    against the codes the CLI actually uses, so the two cannot drift apart.
+    """
+    from finetune_eval_power import cli
+
+    assert checker.check_literals() == []
+    readme = (checker.ROOT / "README.md").read_text(encoding="utf-8")
+    for code in (
+        cli.EXIT_DETECTABLE,
+        cli.EXIT_NOT_DETECTABLE,
+        cli.EXIT_REFUSED,
+        cli.EXIT_TOOL_ERROR,
+    ):
+        assert f"| `{code}` |" in readme
+
+
+def test_a_pinned_line_that_is_edited_fails_the_build(tmp_path, monkeypatch):
+    """The guard is only worth having if it fails when the contract is edited."""
+    import shutil
+
+    clone = tmp_path / "repo"
+    clone.mkdir()
+    shutil.copy(checker.ROOT / "README.md", clone / "README.md")
+    text = (clone / "README.md").read_text(encoding="utf-8")
+    (clone / "README.md").write_text(
+        text.replace("| `2` | refused:", "| `7` | refused:"), encoding="utf-8"
+    )
+    monkeypatch.setattr(checker, "ROOT", clone)
+    assert checker.check_literals() != []
+
+
+def test_an_exemption_is_refused_in_a_document_it_is_not_allowed_in():
+    """`80`, `95` and `1.96` were accepted in any sentence of any document, which
+    let "the suite resolves 80 distinct capabilities" pass. An exemption now names
+    where it is allowed."""
+    for value, (_reason, allowed) in checker.REVERSE_EXEMPTIONS.items():
+        assert allowed, f"exemption {value} allows no document, so it guards nothing"
+        for name in allowed:
+            assert name in checker.load_metrics()["checked_documents"]

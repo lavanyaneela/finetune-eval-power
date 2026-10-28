@@ -53,7 +53,7 @@ def run_sweep(
     # Build and serialise the manifest before a single epoch runs. This ordering is
     # not stylistic: the first version of this function built the manifest after the
     # sweep, a refactor renamed an attribute the manifest reads, and the failure
-    # surfaced twelve minutes of training later with nothing written. Anything that
+    # surfaced deep into the training with nothing written to disk. Anything that
     # can fail cheaply should fail before anything expensive starts.
     manifest = _build_manifest(arm, cases)
     json.dumps(manifest)

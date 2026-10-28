@@ -385,7 +385,7 @@ def test_a_slice_whose_cases_never_change_verdict_names_no_size_instead_of_raisi
     raised a ToolError out of a property that documents read, so the measurement
     could not be collected at all on such a measurement.
     """
-    runs = build_synthetic_runs(vision_arm, held_out_drop_fraction=0.0)
+    runs = build_synthetic_runs(vision_arm, suite_drop_cases=0, held_out_drop_fraction=0.0)
     analysis = analyse(vision_arm, runs)
     rows = analysis.slices_short_of_power
     assert rows, "with nothing moving, every covered slice is short of power"
@@ -399,12 +399,12 @@ def test_that_zero_discordance_test_would_fail_against_the_unguarded_version(vis
     mode this portfolio has already shipped once, so the broken call is reconstructed
     here and asserted to raise.
     """
-    runs = build_synthetic_runs(vision_arm, held_out_drop_fraction=0.0)
+    runs = build_synthetic_runs(vision_arm, suite_drop_cases=0, held_out_drop_fraction=0.0)
     analysis = analyse(vision_arm, runs)
     unguarded = [item for item in analysis.findings if item.covered and not item.suite_has_power]
     assert unguarded
     with pytest.raises(ToolError, match="discordance must be in"):
-        smallest_suite_with_power(unguarded[0].discordance)
+        smallest_suite_with_power(unguarded[0].suite_discordance)
 
 
 def test_the_alpha_the_caller_passes_reaches_the_verdicts_and_not_only_the_floor(
@@ -433,3 +433,90 @@ def test_that_alpha_test_would_fail_against_a_hard_wired_default(vision_arm, syn
     loose = analyse(vision_arm, synthetic_runs, DecisionRule(alpha=0.5))
     default = analyse(vision_arm, synthetic_runs)
     assert loose.significant_verdict_seeds != default.significant_verdict_seeds
+
+
+def test_a_slice_prescription_comes_from_the_suites_own_rate_not_the_probes(vision_arm):
+    """The bug this pins: the published "cases it would need" was computed from the
+    slice's rate of changed verdicts on the PROBE while the sentence around it
+    prescribed a suite size.
+
+    The two rates differ by a factor of four on the shipped measurement, so the
+    README advertised 140 cases where the suite's own behaviour says 592. A
+    prescription about an instrument has to be derived from that instrument.
+    """
+    runs = build_synthetic_runs(vision_arm, held_out_drop_fraction=0.05)
+    analysis = analyse(vision_arm, runs)
+    rows = analysis.slices_short_of_power
+    assert rows
+    for name, _cases, needed in rows:
+        finding = next(item for item in analysis.findings if item.name == name)
+        from finetune_eval_power.analysis import smallest_suite_with_power
+
+        assert needed == smallest_suite_with_power(finding.suite_discordance)
+
+
+def test_the_two_rates_a_slice_carries_are_not_the_same_number(vision_arm, synthetic_runs):
+    """The companion. If the suite and probe rates were equal on this fixture the
+    test above would pass against the bug it was written for."""
+    analysis = analyse(vision_arm, synthetic_runs)
+    assert any(
+        abs(item.suite_discordance - item.discordance) > 1e-9
+        for item in analysis.findings
+        if item.suite_cases > 0
+    )
+
+
+def test_the_seed_budget_sits_above_the_point_the_spread_estimate_settles(
+    vision_arm, synthetic_runs
+):
+    """`config.py` told the reader that ADR-004 recorded a variance stability
+    measurement. ADR-004 argued it in words and recorded none, so the measurement
+    now exists and this asserts the property it was supposed to establish."""
+    analysis = analyse(vision_arm, synthetic_runs)
+    assert analysis.seeds_to_settle <= len(analysis.seed_readings_points)
+
+
+def test_a_short_seed_budget_sets_the_refusal_bar_somewhere_else(vision_arm):
+    """The point of measuring the budget at all: the refusal threshold is computed
+    from the spread estimate, so an estimate taken from too few retrainings moves
+    the bar and leaves no trace that it did."""
+    runs = build_synthetic_runs(
+        vision_arm,
+        seeds=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+        suite_drop_jitter=(2, 2, 2, 30, 2, 2, 2, 2, 2, 2),
+    )
+    analysis = analyse(vision_arm, runs)
+    assert analysis.short_budget_noise_floor_points != pytest.approx(
+        analysis.variance.noise_floor_points
+    )
+
+
+def test_a_slice_that_moved_but_not_past_the_floor_is_not_reported_as_missed(vision_arm):
+    """The materiality bar, on a measurement that actually has one.
+
+    Every other test in this suite runs against a fixture whose suite drops four
+    cases in four hundred and eighty, which is too little for the suite to have a
+    floor at all, so they all exercise the branch where there is no bar to clear.
+    The published headline uses the other branch: a slice counts as missed only if
+    it moved further than the suite's own floor. Coverage was what noticed that the
+    branch carrying the repository's main claim had no test.
+    """
+    runs = build_synthetic_runs(
+        vision_arm,
+        suite_drop_cases=18,
+        suite_gain_cases=20,
+        held_out_drop_fraction=0.06,
+        rng_seed=1,
+    )
+    analysis = analyse(vision_arm, runs)
+    floor = analysis.operating.mde_points
+    assert floor is not None, "this fixture is chosen to have a floor"
+    assert analysis.operating.suite_is_quiet
+
+    missed = set(analysis.undetected)
+    material = {item for item in analysis.findings if item.materially_regressed}
+    assert missed < material, "some slice must fall below the floor or this proves nothing"
+    for item in material - missed:
+        assert item.drop_points <= floor
+    for item in missed:
+        assert item.drop_points > floor

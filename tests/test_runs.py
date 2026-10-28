@@ -97,8 +97,8 @@ def test_writing_the_same_measurement_twice_produces_identical_bytes(tmp_path, v
     """Byte reproducibility is why the arrays are separate .npy files.
 
     A single .npz would embed a modification time in its zip container and the
-    fixture would differ from itself one second later, which makes a fixture diff in
-    CI useless.
+    fixture would differ from itself on the next write, which makes a fixture diff
+    in CI useless.
     """
     first = tmp_path / "first"
     second = tmp_path / "second"
