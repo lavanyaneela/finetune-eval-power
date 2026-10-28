@@ -150,5 +150,24 @@ def synthetic_runs(vision_arm: ArmConfig) -> SweepRuns:
 
 
 @pytest.fixture
+def realistic_runs(vision_arm: ArmConfig) -> SweepRuns:
+    """Quiet, and with a detection floor. The default fixture has neither.
+
+    Its suite loses four cases in four hundred and eighty, which is too few changed
+    verdicts for any floor to exist, so every test that guarded a comparison with
+    "if the floor is not None" was silently empty: an audit found five of them. The
+    real measurement is quiet AND has a floor, because its cases move in both
+    directions and nearly cancel, and that is the shape tests about floors need.
+    """
+    return build_synthetic_runs(
+        vision_arm,
+        suite_drop_cases=18,
+        suite_gain_cases=20,
+        held_out_drop_fraction=0.06,
+        rng_seed=1,
+    )
+
+
+@pytest.fixture
 def quiet_profile() -> CoverageProfile:
     return CoverageProfile(allowed={"scale": ("large",)})

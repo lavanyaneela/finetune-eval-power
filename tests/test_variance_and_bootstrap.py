@@ -14,9 +14,11 @@ from finetune_eval_power.power.bootstrap import (
 )
 from finetune_eval_power.power.variance import (
     MINIMUM_SEEDS,
+    SETTLE_PERMUTATIONS,
     running_spread,
     seed_variance,
     seeds_to_settle,
+    settling_distribution,
 )
 
 SPREAD = [3.1, 2.4, 4.0, 2.9, 3.6]
@@ -262,3 +264,35 @@ def test_an_estimate_still_moving_at_the_end_settles_late_rather_than_early():
 def test_a_wider_band_settles_no_later_than_a_narrower_one():
     readings = [1.0, 1.2, 0.9, 4.0, 1.1, 1.0, 1.05, 0.98]
     assert seeds_to_settle(readings, band=0.5) <= seeds_to_settle(readings, band=0.05)
+
+
+def test_the_settling_point_is_reported_over_orderings_and_not_one_of_them():
+    """The settling point is computed over prefixes, so it is a property of the
+    order the retrainings are listed in as much as of the estimator.
+
+    An audit shuffled the same ten readings and got answers from 3 to 10. A single
+    ordering presented as a measurement of the estimator is not one, so the
+    distribution is what the documents quote.
+    """
+    readings = [0.6, -0.6, 0.8, -1.2, -5.4, -2.1, -3.7, -1.0, 0.4, -0.4]
+    results = settling_distribution(readings)
+    assert len(results) == SETTLE_PERMUTATIONS
+    assert results[0] == seeds_to_settle(readings), "the listed order is reported first"
+    assert len(set(results)) > 1, "if every ordering agreed there would be nothing to report"
+    assert all(2 <= value <= len(readings) for value in results)
+
+
+def test_the_settling_distribution_is_reproducible():
+    """It is published, so it has to be the same number on every machine."""
+    readings = [0.6, -0.6, 0.8, -1.2, -5.4, -2.1, -3.7, -1.0, 0.4, -0.4]
+    assert settling_distribution(readings) == settling_distribution(readings)
+
+
+def test_a_stability_band_outside_zero_to_one_is_refused():
+    """A negative band made the search fall off the end of its own history and
+    raise StopIteration, which surfaces through the CLI as a tool error with no
+    explanation."""
+    with pytest.raises(ToolError, match="fraction in"):
+        seeds_to_settle([1.0, 2.0, 3.0], band=-0.1)
+    with pytest.raises(ToolError, match="fraction in"):
+        seeds_to_settle([1.0, 2.0, 3.0], band=1.5)

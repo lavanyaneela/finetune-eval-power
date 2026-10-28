@@ -55,7 +55,10 @@ def test_the_suite_drop_matches_the_cases_the_fixture_planted(analysis, vision_a
 
 def test_every_named_slice_gets_a_finding(analysis):
     assert len(analysis.findings) == analysis.slices_total
-    assert {item.name for item in analysis.findings} == {item.name for item in analysis.findings}
+    names = [item.name for item in analysis.findings]
+    # Was `set(names) == set(names)`, which cannot fail. The property meant was
+    # that no slice is measured twice under one name.
+    assert len(set(names)) == len(names)
 
 
 def test_held_out_slices_are_marked_as_not_covered(analysis):
@@ -139,12 +142,18 @@ def test_nothing_counts_as_missed_when_the_suite_did_flag_a_regression(vision_ar
     assert analyse(vision_arm, loud).undetected == ()
 
 
-def test_a_slice_counts_as_missed_only_when_it_moved_past_the_suites_own_floor(analysis):
+def test_a_slice_counts_as_missed_only_when_it_moved_past_the_suites_own_floor(
+    vision_arm, realistic_runs
+):
+    """On a measurement that has a floor. Guarded with "if floor is not None" and
+    run against a fixture whose floor is always None, this asserted nothing."""
+    analysis = analyse(vision_arm, realistic_runs)
     floor = analysis.operating.mde_points
+    assert floor is not None
+    assert analysis.undetected
     for item in analysis.undetected:
         assert item.materially_regressed
-        if floor is not None:
-            assert item.drop_points > floor
+        assert item.drop_points > floor
 
 
 def test_the_worst_missed_slice_is_the_one_with_the_largest_drop(analysis):
@@ -180,11 +189,15 @@ def test_the_variance_summary_covers_every_retraining(analysis):
     assert analysis.variance.seeds == len(analysis.seeds)
 
 
-def test_a_custom_decision_rule_changes_the_floor(vision_arm, synthetic_runs):
-    relaxed = analyse(vision_arm, synthetic_runs, DecisionRule(target_power=0.5))
-    strict = analyse(vision_arm, synthetic_runs, DecisionRule(target_power=0.95))
-    if relaxed.operating.mde_points and strict.operating.mde_points:
-        assert relaxed.operating.mde_points < strict.operating.mde_points
+def test_a_custom_decision_rule_changes_the_floor(vision_arm, realistic_runs):
+    """The guard here used to be "if both are not None", on a fixture where both
+    are always None, so the body never ran and target power threading was
+    untested."""
+    relaxed = analyse(vision_arm, realistic_runs, DecisionRule(target_power=0.5))
+    strict = analyse(vision_arm, realistic_runs, DecisionRule(target_power=0.95))
+    assert relaxed.operating.mde_points is not None
+    assert strict.operating.mde_points is not None
+    assert relaxed.operating.mde_points < strict.operating.mde_points
 
 
 def test_the_suite_size_curve_covers_every_size_requested():
@@ -276,24 +289,42 @@ def test_the_class_drops_average_to_the_published_aggregate(analysis):
     assert mean == pytest.approx(analysis.operating.suite_drop_points, abs=1e-6)
 
 
-def test_each_class_carries_the_floor_that_applies_at_its_own_case_count(analysis):
+def test_each_class_carries_the_floor_that_applies_at_its_own_case_count(
+    vision_arm, realistic_runs
+):
     """Not the aggregate's floor. Putting a per-class drop beside the aggregate's
     floor compares two numbers computed for different denominators, which is the
-    mistake this field exists to prevent."""
+    mistake this field exists to prevent.
+
+    This is the test for the claim ADR-005 and the README build an argument on, and
+    on the default fixture every class floor is None, so it asserted nothing.
+    """
     from finetune_eval_power.power.paired import minimum_detectable_points
 
+    analysis = analyse(vision_arm, realistic_runs)
+
+    checked = 0
     for item in analysis.suite_class_findings:
-        if item.floor_points is None:
-            continue
+        assert item.floor_points is not None, "this fixture is chosen to give every class a floor"
         expected = minimum_detectable_points(item.suite_cases, item.discordance)
         assert item.floor_points == pytest.approx(expected)
         assert item.suite_cases < analysis.suite_size
+        checked += 1
+    assert checked == analysis.label_classes
 
 
-def test_a_class_below_its_own_floor_is_not_reported_as_resolvable(analysis):
+def test_a_class_below_its_own_floor_is_not_reported_as_resolvable(vision_arm, realistic_runs):
+    """Every class on this fixture sits below its own floor, which is the situation
+    the README's worst-class paragraph is about. On the default fixture no class
+    has a floor at all, so this loop ran zero assertions."""
+    analysis = analyse(vision_arm, realistic_runs)
+    below = 0
     for item in analysis.suite_class_findings:
-        if item.floor_points is not None and item.drop_points <= item.floor_points:
+        assert item.floor_points is not None
+        if item.drop_points <= item.floor_points:
             assert not item.resolvable_by_the_suite
+            below += 1
+    assert below, "no class is below its floor here, so this proves nothing"
 
 
 def test_the_improving_total_counts_only_the_classes_that_improved(analysis):
@@ -314,13 +345,26 @@ def test_slices_nest_so_the_region_count_never_exceeds_the_slice_count(analysis)
         assert any(set(other.split(" & ")) < parts for other in names)
 
 
-def test_slices_that_moved_the_other_way_are_counted_too(analysis):
+def test_slices_that_moved_the_other_way_are_counted_too(vision_arm, synthetic_runs):
     """A list of eight selected from forty invites the question, so the count of
-    slices that moved up is published beside it."""
-    assert analysis.improving_slices >= 0
-    for item in analysis.findings:
+    slices that moved up is published beside it.
+
+    Asserted `improving_slices >= 0` on a sum of booleans, which cannot fail, and
+    then looped over a fixture where nothing improves. Built here by reversing the
+    measurement so the held-out slices move up instead of down.
+    """
+    improved = analyse(
+        vision_arm,
+        dataclasses.replace(
+            synthetic_runs,
+            probe_before=synthetic_runs.probe_after,
+            probe_after=synthetic_runs.probe_before,
+        ),
+    )
+    assert improved.improving_slices > 0
+    for item in improved.findings:
         if item.drop_points < 0.0 and item.interval.high_points < 0.0:
-            assert item not in analysis.undetected
+            assert item not in improved.undetected
 
 
 def test_a_significant_verdict_is_counted_even_when_it_is_an_improvement(analysis):
@@ -566,3 +610,27 @@ def test_a_prescribed_suite_size_is_priced_at_the_rule_it_was_selected_under(
     shared = set(strict_sizes) & set(default_sizes)
     assert shared, "the two rules must share a slice or this compares nothing"
     assert any(strict_sizes[name] != default_sizes[name] for name in shared)
+
+
+def test_the_settling_point_is_published_as_a_distribution_not_as_one_ordering(
+    vision_arm, synthetic_runs
+):
+    """ADR-004 used to quote a single ordering's settling point as a measurement of
+    the estimator. It is computed over prefixes, so it is partly a measurement of
+    which retraining happened to be listed fifth."""
+    analysis = analyse(vision_arm, synthetic_runs)
+    assert 2 <= analysis.seeds_to_settle_typical <= len(analysis.seed_readings_points)
+    assert 0.0 <= analysis.never_settles_share_pct <= 100.0
+
+
+def test_a_measurement_whose_retrainings_disagree_late_often_fails_to_settle(vision_arm):
+    """The uncomfortable half: on readings that keep moving, the share of orderings
+    that have not settled by the last retraining is large, which says the budget is
+    too small rather than that the estimate is fine."""
+    runs = build_synthetic_runs(
+        vision_arm,
+        seeds=tuple(range(1, 11)),
+        suite_drop_jitter=(2, 2, 2, 2, 2, 2, 2, 2, 2, 60),
+    )
+    analysis = analyse(vision_arm, runs)
+    assert analysis.never_settles_share_pct > 0.0

@@ -31,8 +31,11 @@ the effect under discussion, the remedy it offers is wrong.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
+import math
 import os
+import signal
 import sys
 from pathlib import Path
 
@@ -56,6 +59,26 @@ EXIT_TOOL_ERROR = 3
 
 DEBUG_VARIABLE = "FEP_DEBUG"
 CURVE_SIZES = (120, 240, 480, 960, 1920, 3840)
+
+
+def _finite_points(value: str) -> float:
+    """A claimed effect has to be a finite positive number of points.
+
+    `float("nan")` and `float("inf")` both parse, and every comparison downstream
+    is False for NaN, so `--claim nan` walked past the positivity guard, past the
+    refusal rule and past the power calculation, and printed "a nan point
+    regression is below this suite's floor" with exit code 1. Code 1 is pinned as
+    meaning the tool prints the suite size that would work, and it printed none.
+    """
+    try:
+        number = float(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{value!r} is not a number") from None
+    if not math.isfinite(number):
+        raise argparse.ArgumentTypeError(f"{value!r} is not a finite number of points")
+    if number <= 0.0:
+        raise argparse.ArgumentTypeError(f"a claimed effect must be positive, got {value!r}")
+    return number
 
 
 def _direction(drop_points: float) -> str:
@@ -349,7 +372,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     power = subparsers.add_parser("power", help="can this suite see a regression of this size")
     add_common(power)
-    power.add_argument("--claim", type=float, default=DEFAULT_CLAIM_POINTS)
+    power.add_argument("--claim", type=_finite_points, default=DEFAULT_CLAIM_POINTS)
     power.set_defaults(handler=command_power)
 
     blind = subparsers.add_parser("blind", help="which capabilities regressed unnoticed")
@@ -376,6 +399,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Restore the default disposition so that `fep blind | head` dies by SIGPIPE
+    # the way every other unix tool does, instead of surfacing as one of this
+    # tool's four documented codes. The codes are the product here, so none of
+    # them may be produced by something that is not an answer.
+    with contextlib.suppress(AttributeError, ValueError, OSError):
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     parser = build_parser()
     arguments = parser.parse_args(argv)
     try:
@@ -384,15 +413,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"REFUSED: {refusal}", file=sys.stderr)
         print(refusal.remedy, file=sys.stderr)
         return EXIT_REFUSED
-    except BrokenPipeError:
-        # `blind | head` closes the pipe early. Reporting that as code 3 would make
-        # a reviewer piping the output think the tool failed, and this repository's
-        # whole argument is that an exit code must not mean two things. stdout is
-        # redirected to devnull so the interpreter's own flush at shutdown does not
-        # raise the same error again on the way out.
+    except BrokenPipeError:  # pragma: no cover - unreachable where SIGPIPE restores
+        # Reached only if the signal could not be restored below. Returning any
+        # code from the table would be wrong: an earlier fix here returned 0, so
+        # `blind | head` reported "nothing fell past its floor unnoticed" on a
+        # measurement with eight missed slices, which is the exact collision this
+        # repository exists to argue against. 141 is the shell's convention for
+        # death by SIGPIPE and is deliberately outside the documented range.
         devnull = os.open(os.devnull, os.O_WRONLY)
         os.dup2(devnull, sys.stdout.fileno())
-        return EXIT_DETECTABLE
+        return 128 + signal.SIGPIPE
     except ToolError as failure:
         print(f"error: {failure}", file=sys.stderr)
         return EXIT_TOOL_ERROR

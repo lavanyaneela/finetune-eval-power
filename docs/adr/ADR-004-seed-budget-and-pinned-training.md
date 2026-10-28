@@ -18,9 +18,16 @@ so the spread measures retraining and not the generator.
 Ten was chosen because the variance estimate has to be stable enough to divide by,
 and that is a measurement rather than a feeling. Taking the standard deviation of the
 first k retrainings for every k and asking when it stops moving, the estimate
-**settles after 8** of them, in the sense that it and every later one sit within
-a tenth of the final value. Below that it is still travelling: it more than doubles
-between the fourth retraining and the fifth.
+**settles after 8** of them, in the sense that it and every later one sit within a
+tenth of the final value.
+
+That figure is computed over prefixes, so it is a property of the order the
+retrainings happen to be listed in as much as of the estimator, and an audit was
+right to say so. Repeating it over two thousand orderings of the same ten readings
+puts the **median ordering at 8**, and in **9.4% of orderings** the estimate has
+still not settled by the tenth retraining. So ten is the smallest defensible budget
+rather than a comfortable one, and the honest reading is that a team doing this
+properly should expect to need more, not fewer.
 
 The consequence is not academic, because the refusal threshold is computed from this
 estimate. A three retraining budget **would have set 1.54** points as the bar where

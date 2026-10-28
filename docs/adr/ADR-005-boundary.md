@@ -33,15 +33,32 @@ question of how many went the other way, and **5 slices moved up** with retraini
 intervals clear of zero. Both counts are published, because publishing only the first
 would be selecting the evidence.
 
-## A per-slice floor mixes two sources, and the column says so
+## Every floor comes from the suite, and that choice moved a published number
 
-The per-slice floor in the E3 table is computed from the slice's suite case count and
-the slice's discordance **as measured on the probe**, because many slices have too few
-suite cases to estimate a discordance from. For the label classes, where the suite has
-enough cases, the floor is computed entirely from the suite and those two figures
-differ: on the worst class the probe-based estimate is higher than the suite-based one.
-Neither is wrong, and a reader comparing the two columns is entitled to know they do
-not share an input.
+The per-slice floor in the E3 table and in the report is computed from the slice's
+suite case count and the slice's rate of changed verdicts **on the suite's own
+cases**. So is the per-class floor. Both columns share a convention, and a reader
+can compare them.
+
+It was not always so. An earlier version used the probe's rate at the suite's case
+count, on the reasoning that many slices hold too few suite cases to estimate a rate
+from and the probe's estimate is steadier. That is true and it is the wrong trade,
+because the question being asked is what the eval suite could have done, and the
+probe's rate is not a property of the eval suite. The referee is steadier in a
+particular direction: using it moved five slices out of "no usable power" and
+published 19 blind slices where the suite's own behaviour says 24. A convention that
+makes the instrument under test look better is not a neutral one.
+
+The probe-rate floor is still computed, under a name that says so, and exactly one
+published figure uses it: the floor for the worst missed class at the probe's rate,
+quoted in a sentence that says in words which rate it is. The README sets it beside
+the suite-rate floor for the same class so the disagreement is visible, and the
+conclusion there is built to survive either choice.
+
+What remains genuinely uncertain is that a rate estimated from roughly a hundred
+suite cases across the captured retrainings is noisy, and the floors inherit that
+noise. This
+repository does not quantify that, and it is the first thing to add.
 
 ## The effect sizes are about these models
 

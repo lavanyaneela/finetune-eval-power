@@ -13,6 +13,7 @@ unanswerable as asked, which is what exit code 2 says.
 
 from __future__ import annotations
 
+import random
 import statistics
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -38,6 +39,34 @@ def running_spread(readings: Sequence[float]) -> list[tuple[int, float]]:
     return [
         (count, float(statistics.stdev(readings[:count]))) for count in range(2, len(readings) + 1)
     ]
+
+
+#: Orderings sampled when reporting the settling point as a distribution. Fixed so
+#: the figure is reproducible, and large enough that the quantiles do not move.
+SETTLE_PERMUTATIONS = 2000
+SETTLE_SEED = 20260101
+
+
+def settling_distribution(
+    readings: Sequence[float], band: float = STABILITY_BAND
+) -> tuple[int, ...]:
+    """`seeds_to_settle` over many orderings of the same readings.
+
+    The settling point is computed over prefixes, so it is a property of the order
+    the retrainings happen to be listed in and not only of the estimator. On the
+    shipped measurement the listed order gives 8, and an audit found that over
+    random orderings of the same ten readings the answer ranges from 3 to 10 and
+    reaches 10 about one time in ten. A single-order figure presented as a
+    measurement of the estimator is therefore not one, and the honest version is
+    the distribution, including how often it does not settle inside the budget.
+    """
+    generator = random.Random(SETTLE_SEED)
+    pool = list(readings)
+    results = [seeds_to_settle(pool, band)]
+    for _ in range(SETTLE_PERMUTATIONS - 1):
+        generator.shuffle(pool)
+        results.append(seeds_to_settle(pool, band))
+    return tuple(results)
 
 
 def seeds_to_settle(readings: Sequence[float], band: float = STABILITY_BAND) -> int:

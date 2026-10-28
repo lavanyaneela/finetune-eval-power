@@ -265,3 +265,37 @@ def test_the_version_flag_prints_the_package_version(capsys):
         main(["--version"])
     assert exit_info.value.code == 0
     assert __version__ in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("claim", ["nan", "inf", "-inf", "0", "-5", "abc"])
+def test_a_claim_that_is_not_a_finite_positive_number_is_a_usage_error(claim, runs_root):
+    """`float("nan")` parses, and every comparison downstream is False for it, so
+    `--claim nan` walked past the positivity guard, past the refusal rule and past
+    the power calculation and printed "a nan point regression is below this suite's
+    floor" with exit code 1. Code 1 promises the suite size that would work."""
+    with pytest.raises(SystemExit) as raised:
+        run(["power", "--claim", claim], runs_root)
+    assert raised.value.code == EXIT_TOOL_ERROR
+
+
+def test_closing_the_pipe_early_does_not_produce_a_documented_exit_code():
+    """`blind | head` used to exit 0, which is pinned as meaning nothing fell past
+    the suite's floor unnoticed, on a measurement with eight missed slices. The
+    codes are the product here, so none of them may be produced by something that
+    is not an answer. 141 is the shell's convention for death by SIGPIPE."""
+    import subprocess
+    import sys
+
+    first = subprocess.Popen(
+        [sys.executable, "-m", "finetune_eval_power.cli", "blind", "--arm", "vision"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    )
+    second = subprocess.Popen(["head", "-3"], stdin=first.stdout, stdout=subprocess.DEVNULL)
+    first.stdout.close()
+    second.wait()
+    first.wait()
+    assert first.returncode not in (0, 1, 2, 3), (
+        f"a closed pipe returned {first.returncode}, which is one of the four "
+        "documented codes and therefore says something false"
+    )

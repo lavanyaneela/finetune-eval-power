@@ -10,6 +10,7 @@ was supposed to be watching it could resolve.
 
 from __future__ import annotations
 
+import statistics
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -33,6 +34,7 @@ from finetune_eval_power.power.variance import (
     running_spread,
     seed_variance,
     seeds_to_settle,
+    settling_distribution,
 )
 from finetune_eval_power.runs import SweepRuns
 from finetune_eval_power.slices.spec import CapabilitySlice, enumerate_slices
@@ -307,8 +309,29 @@ class ArmAnalysis:
 
     @property
     def seeds_to_settle(self) -> int:
-        """Retrainings after which the spread estimate stops moving materially."""
+        """Retrainings after which the spread estimate stops moving materially.
+
+        For the order the retrainings are listed in. Order dependent, which is why
+        the two figures below are the ones the documents quote.
+        """
         return seeds_to_settle(self.seed_readings_points)
+
+    @property
+    def seeds_to_settle_typical(self) -> int:
+        """The median settling point over orderings of the same readings."""
+        return int(statistics.median(settling_distribution(self.seed_readings_points)))
+
+    @property
+    def never_settles_share_pct(self) -> float:
+        """How often the estimate has not settled by the last retraining.
+
+        The uncomfortable half of the settling measurement: on this budget it is
+        about one ordering in ten, which says ten retrainings is the minimum
+        defensible number rather than a comfortable one.
+        """
+        results = settling_distribution(self.seed_readings_points)
+        budget = len(self.seed_readings_points)
+        return 100.0 * sum(1 for value in results if value >= budget) / len(results)
 
     @property
     def short_budget_noise_floor_points(self) -> float:

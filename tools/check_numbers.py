@@ -151,10 +151,18 @@ RELATIONS: tuple[tuple[str, str], ...] = (
         "repository's central claim is false",
     ),
     (
-        "seeds_to_settle < seeds_declared",
-        "the seed budget is above the point at which the spread estimate settles. "
-        "If this ever reversed, the budget would be too small and the refusal "
-        "threshold would rest on an estimate that is still moving",
+        "seeds_to_settle_typical < seeds_declared",
+        "the seed budget is above the TYPICAL settling point over orderings. The "
+        "single-order version of this relation held only because of which seed "
+        "happened to be fifth: on about one ordering in ten the estimate has not "
+        "settled by the last retraining, which is published beside it",
+    ),
+    (
+        "never_settles_share_pct > 0",
+        "the share of orderings that do not settle inside the budget is not zero, "
+        "so any sentence calling ten retrainings comfortable is false. If this "
+        "ever reached zero the budget would have become generous and the ADR "
+        "should say so instead",
     ),
     (
         "short_budget_noise_floor_points < seed_noise_floor_points",

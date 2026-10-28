@@ -116,16 +116,25 @@ def test_the_blind_command_prints_the_table_when_something_was_missed(tmp_path, 
     assert "probe" in captured
 
 
-def test_the_power_command_reports_a_suite_with_no_floor_as_not_detectable(
+def test_a_claim_far_above_both_bars_is_answered_yes_even_on_a_noisy_measurement(
     tmp_path, vision_arm, capsys
 ):
+    """Named for a suite with no floor, on a fixture whose floor is 2.11, and
+    asserted `code in (EXIT_NOT_DETECTABLE, 0)`, which accepts the answer and its
+    opposite, plus `"arm" in captured`, which is the first word the command always
+    prints. Neither half could fail and the name was wrong as well.
+
+    What this measurement actually exercises is a claim large enough to clear both
+    bars at once: well above the suite's floor and well above the retraining noise
+    that would otherwise refuse it.
+    """
     build_synthetic_runs(
         vision_arm, suite_drop_jitter=(1, 1, 1, 1, 60), held_out_drop_fraction=0.0
     ).write(tmp_path / "vision")
     code = main(["power", "--claim", "90", "--runs", str(tmp_path)])
     captured = capsys.readouterr().out
-    assert code in (EXIT_NOT_DETECTABLE, 0)
-    assert "arm" in captured
+    assert code == 0
+    assert "YES" in captured
 
 
 def test_loading_an_arm_the_registry_does_not_know_is_a_tool_error(tmp_path):

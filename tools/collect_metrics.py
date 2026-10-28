@@ -252,6 +252,8 @@ def main() -> int:
         "underpowered_covered_slices": analysis.underpowered_covered_slices,
         "seed_spread_points": round(analysis.variance.standard_deviation_points, 3),
         "seeds_to_settle": analysis.seeds_to_settle,
+        "seeds_to_settle_typical": analysis.seeds_to_settle_typical,
+        "never_settles_share_pct": round(analysis.never_settles_share_pct, 1),
         "short_budget_noise_floor_points": floor_to(analysis.short_budget_noise_floor_points, 2),
         "seed_noise_floor_points": round(analysis.variance.noise_floor_points, 2),
         "shipped_depth": vision_e5["shipped_depth"],
@@ -336,7 +338,7 @@ THREE_DECIMALS = {
     "probe_resolution_floor_points",
     "finest_slice_floor_points",
 }
-ONE_DECIMAL = {"coverage_pct"}
+ONE_DECIMAL = {"coverage_pct", "never_settles_share_pct"}
 
 
 def _render(name: str, value: object) -> str:
@@ -375,6 +377,8 @@ ANCHORS: dict[str, list[str]] = {
     "worst_undetected_points": ["worst lost {}"],
     "seed_spread_points": ["deviation of {}"],
     "seeds_to_settle": ["settles after {}"],
+    "seeds_to_settle_typical": ["median ordering at {}"],
+    "never_settles_share_pct": ["{}% of orderings"],
     "short_budget_noise_floor_points": ["would have set {}"],
     "worst_undetected_suite_cases": ["suite holds {}"],
     "seed_noise_floor_points": ["noise floor reaches {}"],
