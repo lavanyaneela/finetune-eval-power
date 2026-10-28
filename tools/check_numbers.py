@@ -134,6 +134,49 @@ RELATIONS: tuple[tuple[str, str], ...] = (
         "thinnest_slice_floor_points > probe_resolution_floor_points",
         "a thin slice resolves less finely than the whole probe",
     ),
+    (
+        "finest_slice_floor_points > probe_resolution_floor_points",
+        "no single slice resolves more finely than the whole probe does, so the "
+        "finest slice floor is the lower end of the slice range and not of all of it",
+    ),
+    (
+        "thinnest_slice_floor_points > 4 * finest_slice_floor_points",
+        "the factor the prose spells as a word rather than a digit, pinned here so "
+        "that a number written out is still machine checked",
+    ),
+    (
+        "worst_undetected_points < worst_undetected_slice_floor_points",
+        "the worst missed slice sits BELOW the floor the suite would have had on it, "
+        "which is the reason it was missed; a document that puts the drop above that "
+        "floor has quoted the floor computed from the suite's own discordance in a "
+        "sentence about the probe's",
+    ),
+    (
+        "improving_regions <= improving_slices",
+        "slices nest on the improving side too, so its region count cannot exceed "
+        "its slice count either",
+    ),
+    (
+        "dearest_underpowered_slice_cases > cheapest_underpowered_slice_cases",
+        "the two ends of the underpowered range are named the right way round",
+    ),
+    (
+        "underpowered_slices_with_a_size == underpowered_covered_slices",
+        "every underpowered slice names a suite size that would fix it; if one "
+        "stopped doing so, a document saying a larger suite closes all of them "
+        "would be false and nothing else here would catch it",
+    ),
+    (
+        "outside_loss_points > shipped_outside_spread_points",
+        "the outside-region loss is wider than its own retraining spread, which is "
+        "the asymmetry that lets one side of the trade be called a cost while the "
+        "in-region gain is explicitly not called a gain",
+    ),
+    (
+        "final_epoch_accuracy_span_points < epoch_band_points",
+        "the span of the final readings is not the span of the change since epoch "
+        "zero; a sentence that says reading and quotes the second one is false",
+    ),
 )
 
 

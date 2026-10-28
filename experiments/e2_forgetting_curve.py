@@ -69,6 +69,10 @@ def main() -> int:
             "epochs": curves.shape[1] - 1,
             "final_change_points": final[1],
             "final_band_points": final[3] - final[2],
+            # The span of the readings themselves, as distinct from the span of the
+            # change since epoch zero. Both are published because a sentence that
+            # says "reading" and quotes the second one is false.
+            "final_accuracy_span_points": float(np.max(curves[:, -1]) - np.min(curves[:, -1])),
             "widest_epoch": widest[0],
             "widest_band_points": widest[3] - widest[2],
             "per_depth": all_depths,

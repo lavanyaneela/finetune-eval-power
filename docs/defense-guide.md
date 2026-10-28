@@ -56,6 +56,9 @@ verdicts, **its own floor is 8.74** points, and its retraining interval
 **interval starts at -1.09**, which means it includes zero. The suite could not have
 resolved this class even if it had reported per class. The referee resolves it because
 it holds **432 referee cases** of the class and sees **worst lost 10.58** points there.
+The suite's side agrees: at its case count for that class, and at the rate of changed
+verdicts the probe measures there, the suite's **own slice floor is 11.60** points, which
+is above the drop.
 
 **If pushed on the two different numbers for one class:** they are different
 denominators and both are published, with the floor that applies at each. The useful
@@ -103,9 +106,11 @@ first, since its model of the world contains one noise source.
 
 Of **40 named capability** slices the suite has **no usable power on 19**: **16 it never samples**
 at all, and **3 sampled too thinly**, meaning their cases almost never change verdict
-rather than that there are few of them. **8 slices regressed** unflagged, covering
-**3 regions once nesting** is removed, and **5 slices moved up** with intervals clear of
-zero. The second arm reproduces the shape with a different architecture and a
+rather than that there are few of them, and **all 3 name a size**: the
+**cheapest needs 140** cases of its own slice and the **dearest needs 459**.
+**8 slices regressed** unflagged, covering **3 regions once nesting** is removed, and
+**5 slices moved up** with intervals clear of zero, which is **2 regions the other**
+way under the same correction. The second arm reproduces the shape with a different architecture and a
 different data type: the **sequence missed 9** of its **29 sequence slices named**.
 
 ## Questions that are meant to be hard

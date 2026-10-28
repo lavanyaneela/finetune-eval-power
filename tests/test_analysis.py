@@ -19,6 +19,7 @@ from finetune_eval_power.analysis import (
     REGRESSION,
     SuiteVerdict,
     analyse,
+    smallest_suite_with_power,
     suite_size_curve,
     suite_size_for,
 )
@@ -327,3 +328,80 @@ def test_a_significant_verdict_is_counted_even_when_it_is_an_improvement(analysi
     significant verdicts is published separately rather than letting a document say
     the suite found nothing."""
     assert analysis.significant_verdict_seeds >= analysis.operating.seeds_flagging_regression
+
+
+def test_the_improving_side_collapses_nested_slices_the_same_way(vision_arm, synthetic_runs):
+    """Built by reversing the fixture, so the held-out slices improve instead of
+    regressing and nest exactly as the missed ones do.
+
+    The missed count is corrected for nesting before it is published. Correcting
+    that side and not this one would be choosing which number gets the treatment
+    that makes it smaller.
+    """
+    improved = analyse(
+        vision_arm,
+        dataclasses.replace(
+            synthetic_runs,
+            probe_before=synthetic_runs.probe_after,
+            probe_after=synthetic_runs.probe_before,
+        ),
+    )
+    assert improved.improving_slices > improved.improving_regions
+    names = {item.name for item in improved.improving_findings}
+    expected = sum(
+        1
+        for name in names
+        if not any(
+            other != name and set(other.split(" & ")) < set(name.split(" & ")) for other in names
+        )
+    )
+    assert improved.improving_regions == expected
+
+
+def test_an_underpowered_slice_is_published_as_the_size_it_would_need(vision_arm):
+    """ "Sampled too thinly" reads as "nothing would help", which is not what was
+    measured. Each one is published with the suite size that would give it power."""
+    runs = build_synthetic_runs(vision_arm, held_out_drop_fraction=0.05)
+    analysis = analyse(vision_arm, runs)
+    rows = analysis.slices_short_of_power
+    assert len(rows) == analysis.underpowered_covered_slices
+    assert rows, "the fixture is meant to produce underpowered covered slices"
+    for name, cases, needed in rows:
+        finding = next(item for item in analysis.findings if item.name == name)
+        assert finding.covered and not finding.suite_has_power
+        assert cases == finding.suite_cases
+        assert needed is not None and needed > cases
+
+
+def test_a_slice_whose_cases_never_change_verdict_names_no_size_instead_of_raising(
+    vision_arm,
+):
+    """The bug this pins: the size was asked for at a discordance of zero.
+
+    `smallest_suite_with_power` rejects a discordance of zero, correctly, because no
+    suite size follows from a sample that carries no information. The caller asked
+    anyway, for every slice in the list, and a slice whose cases never change
+    verdict is the extreme of the very condition that puts it in that list. It
+    raised a ToolError out of a property that documents read, so the measurement
+    could not be collected at all on such a measurement.
+    """
+    runs = build_synthetic_runs(vision_arm, held_out_drop_fraction=0.0)
+    analysis = analyse(vision_arm, runs)
+    rows = analysis.slices_short_of_power
+    assert rows, "with nothing moving, every covered slice is short of power"
+    assert all(needed is None for _name, _cases, needed in rows)
+
+
+def test_that_zero_discordance_test_would_fail_against_the_unguarded_version(vision_arm):
+    """The guard above is only worth having if it fails when removed.
+
+    A regression test that passes against the bug it was written for is the failure
+    mode this portfolio has already shipped once, so the broken call is reconstructed
+    here and asserted to raise.
+    """
+    runs = build_synthetic_runs(vision_arm, held_out_drop_fraction=0.0)
+    analysis = analyse(vision_arm, runs)
+    unguarded = [item for item in analysis.findings if item.covered and not item.suite_has_power]
+    assert unguarded
+    with pytest.raises(ToolError, match="discordance must be in"):
+        smallest_suite_with_power(unguarded[0].discordance)

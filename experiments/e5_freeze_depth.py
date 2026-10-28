@@ -86,6 +86,7 @@ def main() -> int:
             "shipped_in_region_gain_points": shipped["in_region_gain_points"],
             "shipped_in_region_spread_points": shipped["in_region_spread_points"],
             "shipped_outside_loss_points": shipped["outside_region_loss_points"],
+            "shipped_outside_spread_points": shipped["outside_region_spread_points"],
             "in_region_cases": int(region.sum()),
             "outside_region_cases": int(outside.sum()),
             "safest_depth": safest["freeze_depth"],

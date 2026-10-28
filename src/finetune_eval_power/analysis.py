@@ -247,6 +247,24 @@ class ArmAnalysis:
         return max(self.suite_class_findings, key=lambda item: item.drop_points)
 
     @property
+    def improving_regions(self) -> int:
+        """Improving slices with nesting removed, so it compares with the missed count.
+
+        Applying the nesting correction to the unflattering count and not to the
+        flattering one would be selecting the evidence, so both are published in the
+        same form.
+        """
+        return len(_maximal(self.improving_findings))
+
+    @property
+    def improving_findings(self) -> tuple[SliceFinding, ...]:
+        return tuple(
+            item
+            for item in self.findings
+            if item.drop_points < 0.0 and item.interval.high_points < 0.0
+        )
+
+    @property
     def improving_slices(self) -> int:
         """Slices that moved the other way, with an interval clear of zero.
 
@@ -254,11 +272,7 @@ class ArmAnalysis:
         many went the other way, and because it is the first thing a statistician
         asks about a list of eight selected from forty.
         """
-        return sum(
-            1
-            for item in self.findings
-            if item.drop_points < 0.0 and item.interval.high_points < 0.0
-        )
+        return len(self.improving_findings)
 
     @property
     def significant_verdict_seeds(self) -> int:
@@ -273,15 +287,30 @@ class ArmAnalysis:
         named separately, so a raw count of eight is not a count of eight independent
         regions. This reports the regions.
         """
-        missed = self.undetected
-        constraints = {item.name: set(item.name.split(" & ")) for item in missed}
+        return _maximal(self.undetected)
+
+    @property
+    def slices_short_of_power(self) -> tuple[tuple[str, int, int | None], ...]:
+        """The covered slices with no usable power, and the size each would need.
+
+        Published as the size rather than as an adjective. Calling them "sampled too
+        thinly" invited the reading that nothing would help, and measuring it shows
+        that a larger suite fixes every one of them, two of them easily.
+
+        A slice whose cases never change verdict has a discordance of zero, and no
+        suite size follows from it, so its size is None rather than a number. That
+        is not a corner case here: it is the extreme of exactly the condition that
+        puts a slice in this list, and asking the power routine for a size at a
+        discordance of zero used to raise.
+        """
         return tuple(
-            item
-            for item in missed
-            if not any(
-                other.name != item.name and constraints[other.name] < constraints[item.name]
-                for other in missed
+            (
+                item.name,
+                item.suite_cases,
+                smallest_suite_with_power(item.discordance) if item.discordance > 0.0 else None,
             )
+            for item in self.findings
+            if item.covered and not item.suite_has_power
         )
 
     @property
@@ -451,6 +480,19 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
                 BOOTSTRAP_SEED,
             )
         ),
+    )
+
+
+def _maximal(items: tuple[SliceFinding, ...]) -> tuple[SliceFinding, ...]:
+    """Drop every slice that is contained in another slice of the same set."""
+    constraints = {item.name: set(item.name.split(" & ")) for item in items}
+    return tuple(
+        item
+        for item in items
+        if not any(
+            other.name != item.name and constraints[other.name] < constraints[item.name]
+            for other in items
+        )
     )
 
 

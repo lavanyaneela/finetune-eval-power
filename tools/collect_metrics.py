@@ -176,6 +176,30 @@ def main() -> int:
         "improving_slices": analysis.improving_slices,
         "significant_verdict_seeds": analysis.significant_verdict_seeds,
         "maximal_undetected_slices": len(analysis.maximal_undetected),
+        "improving_regions": analysis.improving_regions,
+        "worst_undetected_slice_floor_points": floor_to(
+            analysis.worst_undetected.suite_mde_on_slice_points, 2
+        )
+        if analysis.worst_undetected is not None
+        and analysis.worst_undetected.suite_mde_on_slice_points is not None
+        else None,
+        "cheapest_underpowered_slice_cases": min(
+            needed for _name, _cases, needed in analysis.slices_short_of_power if needed
+        ),
+        "dearest_underpowered_slice_cases": max(
+            needed for _name, _cases, needed in analysis.slices_short_of_power if needed
+        ),
+        # Published so that "all three name a size" is a checked relation rather
+        # than a sentence that happens to be true of this measurement. A slice
+        # whose cases never change verdict names no size at all.
+        "underpowered_slices_with_a_size": sum(
+            1 for _name, _cases, needed in analysis.slices_short_of_power if needed
+        ),
+        "finest_slice_floor_points": floor_to(
+            min(item.resolution_floor_points for item in analysis.findings), 3
+        ),
+        "shipped_outside_spread_points": round(vision_e5["shipped_outside_spread_points"], 2),
+        "final_epoch_accuracy_span_points": round(e2["vision"]["final_accuracy_span_points"], 2),
         "improving_class_points": round(analysis.improving_class_total_points, 2),
         "underpowered_covered_slices": analysis.underpowered_covered_slices,
         "seed_spread_points": round(analysis.variance.standard_deviation_points, 3),
@@ -241,6 +265,9 @@ TWO_DECIMALS = {
     "safest_outside_change_points",
     "safest_outside_spread_points",
     "worst_undetected_points",
+    "worst_undetected_slice_floor_points",
+    "shipped_outside_spread_points",
+    "final_epoch_accuracy_span_points",
     "seed_noise_floor_points",
     "in_region_gain_points",
     "outside_loss_points",
@@ -250,7 +277,11 @@ TWO_DECIMALS = {
     "widest_band_points",
     "sequence_mde_points",
 }
-THREE_DECIMALS = {"seed_spread_points", "probe_resolution_floor_points"}
+THREE_DECIMALS = {
+    "seed_spread_points",
+    "probe_resolution_floor_points",
+    "finest_slice_floor_points",
+}
 ONE_DECIMAL = {"coverage_pct"}
 
 
@@ -321,6 +352,14 @@ ANCHORS: dict[str, list[str]] = {
     "improving_slices": ["{} slices moved up"],
     "significant_verdict_seeds": ["significant verdict in {}"],
     "maximal_undetected_slices": ["{} regions once nesting"],
+    "improving_regions": ["{} regions the other"],
+    "worst_undetected_slice_floor_points": ["own slice floor is {}"],
+    "cheapest_underpowered_slice_cases": ["cheapest needs {}"],
+    "dearest_underpowered_slice_cases": ["dearest needs {}"],
+    "underpowered_slices_with_a_size": ["all {} name a size"],
+    "finest_slice_floor_points": ["finest slice resolves {}"],
+    "shipped_outside_spread_points": ["outside spread of {}"],
+    "final_epoch_accuracy_span_points": ["readings span {}"],
     "improving_class_points": ["together gain {}"],
     "underpowered_covered_slices": ["{} sampled too thinly"],
     "probe_resolution_floor_points": ["probe resolves {}"],
