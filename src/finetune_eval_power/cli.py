@@ -209,7 +209,7 @@ def command_blind(arguments: argparse.Namespace) -> int:
     print(f"probe measured drop: {analysis.probe_change_points:+.2f} points over the whole space")
     print(
         "suite detection floor: "
-        + ("unreachable at any effect size" if floor is None else f"{format_floor(floor)} points")
+        + ("no floor at any effect size" if floor is None else f"{format_floor(floor)} points")
     )
     print(
         f"slices: {analysis.slices_total} named, {analysis.slices_without_suite_power} with "
@@ -229,7 +229,7 @@ def command_blind(arguments: argparse.Namespace) -> int:
     print("per class, measured on the suite's own cases:")
     print(f"  {'class':<24} {'cases':>6} {'drop':>8} {'its own floor':>14} {'interval':>18}")
     for item in analysis.suite_class_findings:
-        floor = "none" if item.floor_points is None else f"{format_floor(item.floor_points)}p"
+        floor = "no floor" if item.floor_points is None else f"{format_floor(item.floor_points)}p"
         interval = f"[{item.interval_low_points:+.2f}, {item.interval_high_points:+.2f}]"
         print(
             f"  {item.name:<24} {item.suite_cases:>6} {item.drop_points:>7.2f}p "
@@ -284,7 +284,7 @@ def command_suite(arguments: argparse.Namespace) -> int:
     print("drop: positive is worse. in region: positive is better.")
     print(f"{'depth':>5} {'suite drop':>11} {'discordance':>12} {'floor':>9} {'in region':>10}")
     for summary in analysis.depths:
-        floor = "none" if summary.mde_points is None else f"{format_floor(summary.mde_points)}p"
+        floor = "no floor" if summary.mde_points is None else f"{format_floor(summary.mde_points)}p"
         print(
             f"{summary.freeze_depth:>5} {summary.suite_drop_points:>10.2f}p "
             f"{summary.discordance:>12.4f} {floor:>9} "
@@ -303,8 +303,8 @@ def command_curve(arguments: argparse.Namespace) -> int:
         normal = row["normal_points"]
         print(
             f"{row['suite_size']:>7} "
-            f"{format_floor(exact, 3) + 'p' if exact is not None else 'unreachable':>12} "
-            f"{format_floor(normal, 3) + 'p' if normal is not None else 'unreachable':>12}"
+            f"{format_floor(exact, 3) + 'p' if exact is not None else 'no floor':>12} "
+            f"{format_floor(normal, 3) + 'p' if normal is not None else 'no floor':>12}"
         )
     return EXIT_DETECTABLE
 

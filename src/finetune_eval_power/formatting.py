@@ -16,7 +16,14 @@ DEFAULT_DIGITS = 2
 
 
 def floor_to(value: float, digits: int = DEFAULT_DIGITS) -> float:
-    """Round toward zero's side of the value, so a floor stays a floor."""
+    """Round down, so a published minimum is never larger than the real one.
+
+    This is `math.floor`, which rounds toward negative infinity rather than
+    toward zero: for a negative value it rounds away from zero. No published
+    minimum is negative today, and a negative one would want the other direction,
+    so the caller that introduces one has to think about it rather than inherit a
+    docstring that says what this does not do.
+    """
     scale = 10**digits
     return math.floor(value * scale) / scale
 
@@ -24,5 +31,5 @@ def floor_to(value: float, digits: int = DEFAULT_DIGITS) -> float:
 def format_floor(value: float | None, digits: int = DEFAULT_DIGITS) -> str:
     """Render a minimum, or say plainly that there is not one."""
     if value is None:
-        return "unreachable"
+        return "no floor"
     return f"{floor_to(value, digits):.{digits}f}"

@@ -206,6 +206,10 @@ cases of the slice, or none that ever change verdict, and no larger suite drawn 
 would help. The three look alike in a table and have different remedies.</p>
 
 <h2 id="freeze-depth">What freezing buys and what it costs</h2>
+<p class="note">The two signed columns run in opposite directions by construction:
+a suite drop is positive when the model got worse, an in-region gain is positive
+when it got better. The CLI prints this note above the same table, because reading
+the two as the same kind of number is the easiest way to invert it.</p>
 <table><thead><tr><th>freeze depth</th><th>suite drop, points</th><th>discordance</th>
 <th>suite floor, points</th><th>in-region gain, points</th>
 <th>retrainings flagging</th></tr></thead>

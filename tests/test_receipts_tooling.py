@@ -255,12 +255,15 @@ def test_every_markdown_document_in_the_repository_is_a_checked_document():
     # full of invented figures, and every one passed `make verify`. A document a
     # reader reads has to be a document the checker reads, whatever it is called,
     # so the rule is about where a file lives rather than how it is spelled.
-    prose = {".md", ".markdown", ".mdown", ".txt", ".rst", ".html", ".htm", ""}
+    prose = {".md", ".markdown", ".mdown", ".txt", ".rst", ""}
+    # Anywhere in the repository, not only the top level and docs/. An audit put
+    # invented figures in experiments/RESULTS.md and docs/evidence/NOTES.md, both
+    # of which render on GitHub, and both passed. A prose file is a document
+    # wherever it sits.
     tracked = {
         name
         for name in listed
-        if not name.startswith(("node_modules/", "reports/", "docs/evidence/", "docs/video/"))
-        and (name.startswith("docs/") or "/" not in name)
+        if not name.startswith(("node_modules/", "reports/"))
         and pathlib.PurePosixPath(name).suffix.lower() in prose
         # Build files and the licence are not prose a reader takes figures from.
         # Named rather than pattern-matched, so adding one is a visible decision.
@@ -330,7 +333,11 @@ def test_the_coverage_denominator_is_exactly_what_the_readme_says_it_is():
     import tomllib
 
     config = tomllib.loads((checker.ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    omitted = set(config["tool"]["coverage"]["run"]["omit"])
+    coverage = config["tool"]["coverage"]
+    # Both keys. The test read `run.omit` alone, and an audit removed the core
+    # power modules from the denominator through `report.omit`, which coverage
+    # honours identically, and published a genuinely measured 100.0%.
+    omitted = set(coverage["run"].get("omit", [])) | set(coverage.get("report", {}).get("omit", []))
     assert omitted == {
         "*/finetune_eval_power/models/*",
         "*/finetune_eval_power/sweep.py",

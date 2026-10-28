@@ -115,6 +115,11 @@ def main() -> int:
                 # probe into the training stage, which is test-set leakage drawn as
                 # an arrow, and every label test stayed green.
                 "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
+                # And the rendered file. Hashing only the source caught an edit to
+                # the README and missed an edit to the SVG: an audit deleted an
+                # edge from the committed drawing and added a false caption to it,
+                # with every test green, because nothing looked at the output.
+                "output_sha256": hashlib.sha256(destination.read_bytes()).hexdigest(),
                 "renderer": library.name,
                 "output": destination.name,
                 "html_labels": False,

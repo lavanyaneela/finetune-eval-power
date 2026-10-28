@@ -89,8 +89,25 @@ def test_missed_slices_are_shaded_and_unmissed_ones_are_not(vision_arm):
 
 
 def test_a_slice_the_suite_never_samples_shows_no_floor(vision_arm):
+    """Asserted `"unreachable" in html`, a word the slice-floor column never emits:
+    it came from the overview figure and the depth table, so deleting the whole
+    slice-floor branch would not have failed this.
+
+    The column reads three ways and the test now checks the cell of a slice that
+    has no suite cases, by locating that slice's own row.
+    """
+    import re
+
+    analysis = analyse(vision_arm, build_synthetic_runs(vision_arm))
+    never = next(item for item in analysis.findings if item.suite_cases == 0)
     html = report_html(vision_arm)
-    assert "unreachable" in html
+    row = next(
+        match
+        for match in re.findall(r"<tr[^>]*>.*?</tr>", html, flags=re.S)
+        if f"<td>{never.name}</td>" in match
+    )
+    assert "no suite size" in row
+    assert "needs" not in row
 
 
 def test_slice_names_are_escaped_so_markup_cannot_be_injected(vision_arm):

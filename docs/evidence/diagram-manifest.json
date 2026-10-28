@@ -2,6 +2,7 @@
   "background": "#ffffff",
   "html_labels": false,
   "output": "architecture.svg",
+  "output_sha256": "89e02b51a48fdc95f5aaa80a427a03e5dfa7af373d5016b4ee1ff94041dcf652",
   "renderer": "mermaid.min.js",
   "source": "README.md fence labelled mermaid-source",
   "source_sha256": "7daa40b8f8993afc5db074a927aa23a8c400d292bed6d9ef8801034b9cf89ebb"

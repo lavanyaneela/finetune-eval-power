@@ -1,12 +1,15 @@
 # Defense guide: finetune-eval-power
 
-For the author, before an interview. Every figure here written in digits is checked
-against the committed measurement by `tools/check_numbers.py`, and the build fails if
-one has drifted. Know the limits of that before leaning on it in a room: a figure
-spelled as a word is guarded only where it sits inside an anchor phrase, and the
-checker guards digits and the relations listed in its table, not the verbs between
-them. The sentences in this document are the author's responsibility; only the
-numbers are the machine's.
+For the author, before an interview. A figure here that sits inside its anchor
+phrase is checked against the committed measurement by `tools/check_numbers.py`, and
+the build fails if it has drifted. Know the limits before leaning on it in a room.
+A figure quoted outside an anchor is held only by a sweep that asks whether a number
+is one of the measured values, not whether it is the right one here, so one measured
+figure can be swapped for another: 8.74 and 11.60 could trade places in this document
+and the build would stay green. A figure spelled as a word is guarded only inside an
+anchor. And the checker reads digits and the relations in its table, never the verbs
+between them. The sentences in this document are the author's responsibility; only
+the numbers are the machine's, and only some of them.
 
 ## The short version
 
@@ -114,10 +117,11 @@ first, since its model of the world contains one noise source.
 
 ### Claim five: the blindness is structural, not a property of this fixture
 
-**Command:** `python -m finetune_eval_power.cli suite --arm vision` prints the slice
-counts in the first sentence below. The per-slice sizes, the missed slices and the
-regions come from `blind --arm vision`, and the sequence arm needs `--arm sequence`.
-Three commands, not one.
+**Command:** `python -m finetune_eval_power.cli suite --arm vision` prints the first
+three counts below: 40 named, 16 never sampled, 24 with no usable power. It does not
+print the 8, which is the difference between the last two. Everything else here,
+including the per-slice sizes, comes from `blind --arm vision`, and the sequence arm
+needs `--arm sequence`. Three commands, not one.
 
 Of **40 named capability** slices the suite has **no usable power on 24**: **16 it never samples**
 at all, and **8 sampled too thinly**, meaning too few of their cases change verdict,

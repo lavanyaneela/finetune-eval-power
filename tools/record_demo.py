@@ -16,6 +16,7 @@ it. `tools/check_durations.py` enforces that over every tracked file.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
 import subprocess
@@ -240,6 +241,10 @@ def main() -> int:
                 ],
                 "total_seconds": round(total, 3),
                 "gif_bytes": gif.stat().st_size,
+                # The replay had no digest at all, so an audit replaced it with a
+                # blank one-pixel GIF and every evidence test still passed while
+                # the README went on describing what it showed.
+                "gif_sha256": hashlib.sha256(gif.read_bytes()).hexdigest(),
                 "mp4_bytes": mp4.stat().st_size,
             },
             indent=2,

@@ -83,6 +83,7 @@ def check_reports_are_fresh() -> None:
     junit = REPORTS / "junit.xml"
     if not junit.exists():
         raise SystemExit("no reports/junit.xml: run make test before make receipts")
+    _refuse_a_failing_run(junit)
     newest = max(
         (
             path.stat().st_mtime
@@ -96,6 +97,35 @@ def check_reports_are_fresh() -> None:
             "reports/junit.xml is older than the newest source file, so the test "
             "count and coverage would describe a tree that no longer exists. Run "
             "make test, or drop --skip-tests."
+        )
+
+
+#: Tests allowed to be red while the metrics are regenerated. They compare the
+#: documents against `docs/metrics.json`, so they are exactly the tests that are
+#: red *because* the metrics are stale. Without this exemption the honest loop
+#: deadlocks: the collector refuses because the suite is red, and the suite is red
+#: because the collector has not run. With it, every other failure still refuses,
+#: which is the fail-open an audit used to publish a count from a failing run.
+RECEIPTS_MODULE = "tests/test_receipts_tooling.py"
+
+
+def _refuse_a_failing_run(junit: Path) -> None:
+    """Refuse to publish figures read out of a failing test run."""
+    root = ElementTree.parse(junit).getroot()
+    broken: list[str] = []
+    for case in root.iter("testcase"):
+        if not any(child.tag in {"failure", "error"} for child in case):
+            continue
+        where = (case.get("file") or case.get("classname") or "").replace(".", "/")
+        if where.startswith(RECEIPTS_MODULE.removesuffix(".py")):
+            continue
+        broken.append(f"{case.get('classname', '')}::{case.get('name', '')}")
+    if broken:
+        listed = ", ".join(sorted(broken)[:3])
+        raise SystemExit(
+            f"{len(broken)} tests failed in the run these figures would come from "
+            f"({listed}). A test count and a coverage figure read out of a failing "
+            "run describe nothing. Fix the tests, or rerun make test."
         )
 
 

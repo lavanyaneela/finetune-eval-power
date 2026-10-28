@@ -277,7 +277,10 @@ def test_unpaired_power_agrees_with_statsmodels_on_the_same_comparison():
     effect = proportion_effectsize(0.90, 0.85)
     expected = NormalIndPower().power(effect_size=effect, nobs1=480, alpha=0.05, ratio=1.0)
     ours = unpaired_power(480, 0.90, 0.05)
-    assert ours == pytest.approx(expected, abs=0.03)
+    # Tightened from 0.03, which was about twenty times the real agreement, so the
+    # implementation could have picked up a wrong variance term and stayed green.
+    # ADR-003 and the defense guide both lean on this being a pin.
+    assert ours == pytest.approx(expected, abs=0.005)
 
 
 def test_an_impossible_unpaired_drop_is_refused():

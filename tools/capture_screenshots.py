@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -53,6 +54,31 @@ def build_report(arm: str) -> Path:
     destination = REPORTS / f"{arm}.html"
     write_report(analyse(configuration, runs), DecisionRule(), destination)
     return destination
+
+
+#: The WCAG AA ratio for large text. The guard used to be string equality of the
+#: two computed colours, which is unreachable for any stylesheet this report can
+#: emit, so a low-contrast class collision would have published silently.
+MINIMUM_CONTRAST = 3.0
+
+
+def _channel(value: float) -> float:
+    value /= 255.0
+    return value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4
+
+
+def _luminance(colour: str) -> float:
+    numbers = [float(part) for part in re.findall(r"[\d.]+", colour)[:3]]
+    if len(numbers) != 3:
+        return 0.0
+    red, green, blue = (_channel(part) for part in numbers)
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue
+
+
+def _contrast(foreground: str, background: str) -> float:
+    first, second = _luminance(foreground), _luminance(background)
+    high, low = max(first, second), min(first, second)
+    return (high + 0.05) / (low + 0.05)
 
 
 def main() -> int:
@@ -88,10 +114,10 @@ def main() -> int:
         )
         if badge is None or not badge["visible"]:
             raise SystemExit("the verdict badge is missing or has no box; refusing to publish")
-        if badge["colour"] == badge["background"]:
+        if _contrast(badge["colour"], badge["background"]) < MINIMUM_CONTRAST:
             raise SystemExit(
                 f"the verdict badge renders {badge['colour']} on {badge['background']}, "
-                "so the headline is invisible; refusing to publish"
+                "which is too little contrast to read; refusing to publish"
             )
         manifest["badge"] = badge
 

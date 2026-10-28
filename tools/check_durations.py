@@ -36,8 +36,8 @@ ROOT = Path(__file__).resolve().parents[1]
 _COUNT = (
     r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|"
     r"fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|"
-    r"fifty|sixty|ninety|half|several|a\s+few|a\s+couple\s+of|"
-    r"the\s+better\s+part\s+of\s+an?)"
+    r"fifty|sixty|seventy|eighty|ninety|a\s+hundred|a\s+thousand|half|several|"
+    r"a\s+few|a\s+couple\s+of|the\s+better\s+part\s+of\s+an?)"
 )
 PATTERNS = (
     re.compile(r"\b\d+(?:\.\d+)?\s*(?:ms|milliseconds?|microseconds?|nanoseconds?)\b", re.I),
@@ -45,12 +45,16 @@ PATTERNS = (
     re.compile(r"\btakes\s+\d+(?:\.\d+)?\s*(?:s|seconds?|minutes?|hours?)\b", re.I),
     # Minutes and hours have no ordinal sense in prose, so the article is included
     # for them and excluded for seconds.
-    re.compile(rf"\b(?:an?|{_COUNT})\s+(?:minutes?|hours?)\b", re.I),
-    re.compile(rf"\b{_COUNT}\s+seconds?\b", re.I),
+    re.compile(rf"\b(?:an?|{_COUNT})\s+(?:minutes?|mins?|hours?|hrs?)\b", re.I),
+    re.compile(rf"\b{_COUNT}\s+(?:seconds?|secs?)\b", re.I),
     # Plural as well as singular. The pattern was `(?:second|minute|hour)` with no
     # `s?`, so "40 seconds", "14 minutes" and "3 hours" all passed, which is the
     # most natural way anyone writes a duration.
-    re.compile(r"\b\d+(?:\.\d+)?[- ](?:seconds?|minutes?|hours?)\b", re.I),
+    re.compile(r"\b\d+(?:\.\d+)?[- ](?:seconds?|secs?|minutes?|mins?|hours?|hrs?)\b", re.I),
+    # Glued to the unit, which is how a duration is most often written in a note:
+    # "40s", "2m 30s", "90m". Bare "m" is excluded because it is also metres and
+    # this repository publishes no distances.
+    re.compile(r"\b\d+(?:\.\d+)?(?:s|sec|secs|min|mins|h|hr|hrs)\b", re.I),
 )
 #: Machine readable artifacts, where a duration is data rather than a claim. The
 #: demo manifest records how long each captured command took, and it has to: the
@@ -78,6 +82,7 @@ def tracked_files() -> list[Path]:
 
 def main() -> int:
     problems: list[str] = []
+    swept = 0
     for path in tracked_files():
         relative = path.relative_to(ROOT).as_posix()
         if relative in SKIP_FILES:
@@ -92,6 +97,7 @@ def main() -> int:
             text = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             continue
+        swept += 1
         for pattern in PATTERNS:
             for match in pattern.finditer(text):
                 line = text[: match.start()].count("\n") + 1
@@ -103,7 +109,7 @@ def main() -> int:
         return 1
     skipped = ", ".join(sorted(SKIP_SUFFIXES))
     print(
-        f"no published durations across {len(tracked_files())} files "
+        f"no published durations across {swept} files "
         f"(machine readable artifacts not swept: {skipped})"
     )
     return 0

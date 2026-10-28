@@ -261,6 +261,33 @@ def test_each_committed_screenshot_is_the_image_the_capture_recorded():
         assert data[:8] == b"\x89PNG\r\n\x1a\n", f"{shot['file']} is not a PNG"
 
 
+def test_the_committed_demo_is_the_replay_the_recorder_wrote():
+    """It had no digest: "is a GIF", "ends in `;`" and "under 5 MB" are all true of
+    a blank one-pixel GIF, which is what an audit replaced it with."""
+    import hashlib
+
+    manifest = json.loads((VIDEO / "manifest.json").read_text(encoding="utf-8"))
+    assert "gif_sha256" in manifest, "run make recording: the manifest predates the digest"
+    data = (VIDEO / "demo.gif").read_bytes()
+    assert hashlib.sha256(data).hexdigest() == manifest["gif_sha256"], (
+        "demo.gif is not the file the recorder wrote; run make recording"
+    )
+
+
+def test_the_committed_diagram_file_is_the_one_the_renderer_wrote():
+    """The fence digest catches an edit to the README and misses an edit to the
+    SVG. An audit deleted an edge from the committed drawing and added a false
+    caption to it, with every test green."""
+    import hashlib
+
+    manifest = json.loads((EVIDENCE / "diagram-manifest.json").read_text(encoding="utf-8"))
+    assert "output_sha256" in manifest, "run make diagrams: the manifest predates the digest"
+    data = (EVIDENCE / "architecture.svg").read_bytes()
+    assert hashlib.sha256(data).hexdigest() == manifest["output_sha256"], (
+        "architecture.svg is not the file the renderer wrote; run make diagrams"
+    )
+
+
 def test_the_demo_is_actually_a_gif():
     """`shutil.copy(a_png, demo.gif)` passed every test here: existence and a size
     bound say nothing about what the file is."""

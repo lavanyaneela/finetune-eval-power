@@ -34,7 +34,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 METRICS_PATH = ROOT / "docs" / "metrics.json"
 MAX_ANCHOR_WORDS = 4
-NUMBER_PATTERN = re.compile(r"(?<![\w.])[-+]?\d[\d,]*(?:\.\d+)?(?![\w])")
+#: A figure in prose. The trailing `(?![\w])` used to exclude anything glued to a
+#: letter, so "20x wider" and "40k cases" were never even tokenised and so never
+#: compared against the measurement. A unit suffix is now consumed and the digits
+#: are still checked. The leading `(?<![\w.])` likewise hid ".7777", so a decimal
+#: written without its leading zero is now matched too.
+NUMBER_PATTERN = re.compile(
+    r"(?<![\w])(?<!\d\.)[-+]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)"
+    r"(?:x|k|m|bn|pp|ms|s|h|%)?(?![\w])",
+    re.I,
+)
+#: Just the digits inside a match, for comparison against a rendered value.
+NUMBER_DIGITS = re.compile(r"[-+]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)")
 #: Numbers spelled as words are a real blind spot: the guard reads the digits and a
 #: sentence beside it says "forty" while the measurement says something else. These
 #: are matched in the placeholder so that spelling a guarded figure out fails the
@@ -104,6 +115,21 @@ LITERAL_GUARDS: tuple[tuple[str, str], ...] = (
 )
 
 
+LITERAL_BLOCKS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    (
+        "README.md",
+        (
+            "| code | meaning |",  # noqa: E501
+            "| --- | --- |",  # noqa: E501
+            "| `0` | the tool answered and the answer is the reassuring one: `power` means the suite can see a regression of the size claimed, `blind` means nothing fell past its floor unnoticed |",  # noqa: E501
+            "| `1` | the tool answered and the answer is the unwelcome one: `power` prints the suite size that would work, `blind` lists the capabilities it found |",  # noqa: E501
+            "| `2` | refused: no suite size fixes it. Either retraining noise alone is at least as wide as the claimed effect, or the suite's cases change verdict so rarely that no size reaches the target power against any effect |",  # noqa: E501
+            "| `3` | the tool itself failed, or was used wrongly. A mistyped subcommand or `--arm` lands here, not on `2`, so a typo cannot be mistaken for the refusal |",  # noqa: E501
+        ),
+    ),
+)
+
+
 def check_literals() -> list[str]:
     """Every pinned line is present as a WHOLE line, character for character.
 
@@ -120,13 +146,43 @@ def check_literals() -> list[str]:
             problems.append(f"{relative} does not exist")
             continue
         lines = [item.strip() for item in path.read_text(encoding="utf-8").splitlines()]
-        if line not in lines:
+        count = lines.count(line)
+        if count != 1:
             near = [item for item in lines if item.startswith(line[:28])]
             detail = f" The closest line is {near[0]!r}." if near else ""
             problems.append(
-                f"{relative}: the pinned line {line!r} is not present as a whole "
-                f"line. It is part of the published contract and is guarded as "
+                f"{relative}: the pinned line {line!r} appears {count} times, not "
+                f"once. It is part of the published contract and is guarded as "
                 f"text, not as a figure.{detail}"
+            )
+    problems.extend(_check_blocks())
+    return problems
+
+
+def _check_blocks() -> list[str]:
+    """Pinned blocks must appear contiguously, in order, with nothing inserted.
+
+    Pinning lines individually guards their wording and nothing about the table
+    they sit in. An audit rewrote the refusal row to say the opposite, hid the
+    original inside an HTML comment to satisfy the per-line guard, and separately
+    added a fabricated fifth exit code; both passed. A table is a contract, so the
+    whole table is pinned, not its rows.
+    """
+    problems: list[str] = []
+    for relative, block in LITERAL_BLOCKS:
+        path = ROOT / relative
+        if not path.exists():
+            problems.append(f"{relative} does not exist")
+            continue
+        lines = [item.strip() for item in path.read_text(encoding="utf-8").splitlines()]
+        windows = [
+            lines[index : index + len(block)] for index in range(len(lines) - len(block) + 1)
+        ]
+        if list(block) not in windows:
+            problems.append(
+                f"{relative}: the pinned block starting {block[0][:40]!r} is not "
+                "present as consecutive lines in this order. A row was changed, "
+                "inserted, removed or reordered"
             )
     return problems
 
@@ -244,8 +300,11 @@ RELATIONS: tuple[tuple[str, str], ...] = (
     ),
     (
         "thinnest_slice_floor_points > 4 * finest_slice_floor_points",
-        "the factor the prose spells as a word rather than a digit, pinned here so "
-        "that a number written out is still machine checked",
+        "the inequality the prose states as a word. This pins the MEASUREMENT, "
+        "not the word: a sentence saying a factor of ten would still pass, which "
+        "an audit demonstrated. It is here so the published ratio cannot drift "
+        "under a sentence nobody rereads, which is a smaller claim than the one "
+        "this comment used to make",
     ),
     (
         "suite_worst_class_points < worst_undetected_slice_floor_points",
@@ -489,6 +548,16 @@ def check_anchor_hygiene(anchors: dict[str, list[str]]) -> list[str]:
     return problems
 
 
+#: Sentence boundaries, for the rule that two metrics may not share a sentence.
+#: Table rows and list items count as sentences of their own, because a reader
+#: reads a row as one statement.
+SENTENCE_BREAK = re.compile(r"(?:[.!?](?:\s|$)|\n|\|)")
+
+
+def _sentence_index(text: str, position: int) -> int:
+    return len(SENTENCE_BREAK.findall(text[:position]))
+
+
 def check_documents(payload: dict) -> tuple[list[str], dict[str, int]]:
     """Each metric is quoted, and no two metrics are quoted by the same digits.
 
@@ -526,14 +595,21 @@ def check_documents(payload: dict) -> tuple[list[str], dict[str, int]]:
                         )
                         continue
                     occurrences[metric] += 1
-                    where = (relative, match.start(1), match.end(1))
+                    # Scoped to metrics that render the SAME string, because that
+                    # is the ambiguity: `suite_cases` and `sequence_suite_cases`
+                    # both render 480, and an audit satisfied both guards from
+                    # "the sequence ships 480 of the 480 eval cases" after
+                    # deleting the genuine statement of one of them. Two figures
+                    # that read differently may share a sentence; two that read
+                    # identically cannot, because nothing then says which is which.
+                    where = (relative, _sentence_index(text, match.start(1)), expected)
                     other = claimed.setdefault(where, metric)
                     if other != metric:
                         problems.append(
-                            f"{relative}: the digits {expected!r} at offset "
-                            f"{where[1]} are claimed by both {other} and {metric}. "
-                            "One occurrence cannot re-measure two figures, so each "
-                            "needs a sentence of its own"
+                            f"{relative}: {other} and {metric} both render "
+                            f"{expected!r} and are both quoted by one sentence, so "
+                            "nothing says which of them that sentence is about. "
+                            "Each needs a sentence of its own"
                         )
     return problems, occurrences
 
@@ -603,7 +679,10 @@ def _reverse_one(path: Path, relative: str, values: set[str], used: set[str]) ->
     stripped = re.sub(r"ADR-\d+", " ", stripped)
     for match in NUMBER_PATTERN.finditer(stripped):
         token = match.group(0)
-        bare = token.replace(",", "")
+        digits = NUMBER_DIGITS.search(token)
+        if digits is None:  # pragma: no cover - the pattern always contains digits
+            continue
+        bare = digits.group(0).replace(",", "")
         if bare in values or token in values:
             continue
         line = stripped[: match.start()].count("\n") + 1
