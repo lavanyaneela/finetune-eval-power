@@ -45,16 +45,24 @@ CASE_RESAMPLES = 1000
 
 @dataclass(frozen=True)
 class SuiteVerdict:
-    """What the eval suite reports at one freeze depth, for one retraining."""
+    """What the eval suite reports at one freeze depth, for one retraining.
+
+    Carries the alpha it was judged at. It used to build a fresh default
+    `DecisionRule` inside `significant`, so a caller passing a non-default alpha
+    got a detection floor at their alpha and every flag, operating depth and
+    missed-slice list at 0.05. The config calls alpha "the significance level for
+    every hypothesis test the tool runs", which was then not true of any of them.
+    """
 
     seed: int
     freeze_depth: int
     counts: PairedCounts
     p_value: float
+    alpha: float = DecisionRule().alpha
 
     @property
     def significant(self) -> bool:
-        return self.p_value <= DecisionRule().alpha
+        return self.p_value <= self.alpha
 
     @property
     def direction(self) -> str:
@@ -87,7 +95,12 @@ class DepthSummary:
 
     @property
     def suite_is_quiet(self) -> bool:
-        """True when a majority of retrainings produce no regression flag."""
+        """True when at most half the retrainings produce a regression flag.
+
+        Not "a majority are quiet": at five flags out of ten this is still true,
+        and half is not a majority. The documents say "at most half" for the same
+        reason.
+        """
         return self.seeds_flagging_regression * 2 <= self.seeds
 
 
@@ -362,6 +375,7 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
                     freeze_depth=freeze_depth,
                     counts=counts,
                     p_value=mcnemar_p_value(counts.only_before, counts.only_after),
+                    alpha=rule.alpha,
                 )
             )
             drops.append(counts.drop_points)
@@ -592,11 +606,15 @@ def smallest_suite_with_power(
 ) -> int | None:
     """Fewest cases at which this suite reaches the target power against any effect.
 
-    Below this size the exact test has too few discordant cases for any outcome to
-    be significant, so the suite cannot produce a positive result whatever the model
-    did. It is a different quantity from the detection floor and a more alarming
-    one: the floor says how large an effect must be, this says whether the question
-    is answerable at all.
+    Below this size no effect reaches the target power, which is not the same as
+    "no outcome can be significant": at the shipped discordance a suite of a
+    hundred cases still reaches about two thirds power against the largest effect
+    it can represent. An earlier version of this docstring claimed the stronger
+    thing, which would have been the sentence a reader quoted.
+
+    It is a different quantity from the detection floor and a more alarming one:
+    the floor says how large an effect must be, this says whether the target is
+    reachable at all.
     """
     rule = rule or DecisionRule()
 

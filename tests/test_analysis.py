@@ -405,3 +405,31 @@ def test_that_zero_discordance_test_would_fail_against_the_unguarded_version(vis
     assert unguarded
     with pytest.raises(ToolError, match="discordance must be in"):
         smallest_suite_with_power(unguarded[0].discordance)
+
+
+def test_the_alpha_the_caller_passes_reaches_the_verdicts_and_not_only_the_floor(
+    vision_arm, synthetic_runs
+):
+    """The bug this pins: `SuiteVerdict.significant` built a fresh default
+    `DecisionRule` instead of using the one `analyse` was given.
+
+    The alpha threaded correctly into `minimum_detectable_points`, so the detection
+    floor moved with it while every flag, operating depth and missed-slice list
+    stayed pinned at 0.05. A caller asking for a stricter test silently got two
+    different significance levels in one answer, which is worse than either. The
+    config calls alpha "the significance level for every hypothesis test the tool
+    runs", which was then true of none of them.
+    """
+    strict = analyse(vision_arm, synthetic_runs, DecisionRule(alpha=1e-6))
+    loose = analyse(vision_arm, synthetic_runs, DecisionRule(alpha=0.5))
+    assert loose.significant_verdict_seeds > strict.significant_verdict_seeds
+    assert all(verdict.alpha == 0.5 for verdict in loose.operating.verdicts)
+
+
+def test_that_alpha_test_would_fail_against_a_hard_wired_default(vision_arm, synthetic_runs):
+    """The companion. A verdict judged at the default alpha is a different verdict
+    from one judged at the alpha asked for, so comparing against the default is
+    what distinguishes the fix from the bug."""
+    loose = analyse(vision_arm, synthetic_runs, DecisionRule(alpha=0.5))
+    default = analyse(vision_arm, synthetic_runs)
+    assert loose.significant_verdict_seeds != default.significant_verdict_seeds

@@ -7,6 +7,8 @@ exercises, or a printed table nothing else reaches.
 
 from __future__ import annotations
 
+import dataclasses
+
 import numpy as np
 import pytest
 from tests.conftest import build_synthetic_runs
@@ -176,9 +178,15 @@ def test_a_slice_finding_reports_the_width_of_its_retraining_interval(vision_arm
 def test_the_power_command_says_so_when_no_effect_size_would_reach_the_target(
     tmp_path, vision_arm, capsys
 ):
-    """The branch where the suite has no floor at all: its cases almost never change
-    verdict, so there is nothing for the test to work with and a bigger claim does
-    not help either."""
+    """The branch where the suite has no floor at its current size.
+
+    This is an answer, not a refusal, and the distinction was wrong in both
+    directions at different times. Its cases change verdict rarely but not never,
+    so a larger suite does reach the target and that size is a real remedy. Code 1
+    promises to print the suite size that would work, so it has to print one here.
+    The sibling case, a discordance of exactly zero, has no such size and is the
+    refusal; `test_cli.py` holds that one.
+    """
     from finetune_eval_power.cli import EXIT_NOT_DETECTABLE, main
 
     build_synthetic_runs(
@@ -188,3 +196,62 @@ def test_the_power_command_says_so_when_no_effect_size_would_reach_the_target(
     captured = capsys.readouterr().out
     assert code == EXIT_NOT_DETECTABLE
     assert "cannot reach" in captured
+    assert "needs 3161 cases" in captured
+
+
+def test_the_word_beside_a_signed_drop_covers_all_three_directions():
+    """Positive is worse, negative is better, and zero is neither. The third case
+    printed "accuracy fell" until an audit ran the command on a measurement where
+    nothing moved."""
+    from finetune_eval_power.cli import _direction
+
+    assert _direction(-1.0) == "accuracy rose"
+    assert _direction(1.0) == "accuracy fell"
+    assert _direction(0.0) == "accuracy unchanged"
+
+
+def test_a_class_whose_interval_straddles_zero_is_not_called_resolvable(vision_arm, synthetic_runs):
+    """`resolvable_by_the_suite` is the property that decides whether a per-class
+    reading means anything, and it needs both halves: the drop must clear the
+    class's own floor and the interval across retrainings must stay off zero."""
+    from finetune_eval_power.analysis import ClassFinding, analyse
+
+    analysis = analyse(vision_arm, synthetic_runs)
+    straddling = ClassFinding(
+        name="shape=disc",
+        suite_cases=120,
+        drop_points=9.0,
+        discordance=0.2,
+        floor_points=4.0,
+        interval_low_points=-1.0,
+        interval_high_points=12.0,
+    )
+    assert not straddling.interval_excludes_zero
+    assert not straddling.resolvable_by_the_suite
+
+    clear = dataclasses.replace(straddling, interval_low_points=5.0)
+    assert clear.interval_excludes_zero
+    assert clear.resolvable_by_the_suite
+
+    below_its_floor = dataclasses.replace(clear, drop_points=3.0)
+    assert not below_its_floor.resolvable_by_the_suite
+
+    no_floor = dataclasses.replace(clear, floor_points=None)
+    assert not no_floor.resolvable_by_the_suite
+    assert analysis.worst_class_on_suite in analysis.suite_class_findings
+
+
+def test_with_no_floor_at_all_every_material_regression_counts_as_missed(tmp_path, vision_arm):
+    """When the suite has no floor there is no bar to clear, so the materiality
+    test falls back to the interval alone. Without this branch the comparison would
+    be against None."""
+    from finetune_eval_power.analysis import analyse
+
+    runs = build_synthetic_runs(
+        vision_arm, suite_drop_jitter=(1, 1, 1, 2, 1), held_out_drop_fraction=0.3
+    )
+    analysis = analyse(vision_arm, runs)
+    assert analysis.operating.mde_points is None
+    assert set(analysis.undetected) == {
+        item for item in analysis.findings if item.materially_regressed
+    }

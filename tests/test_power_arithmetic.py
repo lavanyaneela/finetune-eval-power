@@ -306,3 +306,39 @@ def test_a_power_evaluation_on_a_large_suite_completes_promptly():
     mcnemar_exact_power(8000, 0.2, 0.03)
     large = time.perf_counter() - start
     assert large < max(0.5, 40.0 * small)
+
+
+def test_the_one_sided_test_knows_which_direction_it_is_testing():
+    """The bug this pins: the one sided p was the two sided p halved.
+
+    Halving is correct only when the observation lies in the direction being
+    tested. The alternative here is a regression, so twelve regressions and zero
+    improvements must be significant, and twelve improvements against zero
+    regressions must not be. Both returned 0.000244 before the fix, which would let
+    a one sided regression test reject on an unambiguous improvement. ADR-003 says
+    the one sided variant is available and is a parameter rather than a rewrite,
+    so it has to be correct even though the analysis only ever calls it two sided.
+    """
+    regression = mcnemar_p_value(12, 0, two_sided=False)
+    improvement = mcnemar_p_value(0, 12, two_sided=False)
+    assert regression == pytest.approx(0.5**12)
+    assert improvement == pytest.approx(1.0)
+    assert regression < improvement
+
+
+def test_the_one_sided_test_is_not_simply_half_the_two_sided_one():
+    """The companion that fails against the bug: on a symmetric table the halving
+    rule and the correct tail give different answers, so a test written only
+    against the regression direction would have passed against the old code."""
+    assert mcnemar_p_value(6, 6, two_sided=False) != pytest.approx(mcnemar_p_value(6, 6) / 2.0)
+
+
+def test_the_one_sided_tail_matches_the_binomial_it_claims_to_be():
+    """Checked against the distribution directly rather than against the library,
+    because the library call is the thing being replaced on this path."""
+    for only_before, only_after in ((9, 3), (3, 9), (7, 7), (1, 0), (0, 0)):
+        discordant = only_before + only_after
+        expected = (
+            1.0 if discordant == 0 else float(stats.binom.sf(only_before - 1, discordant, 0.5))
+        )
+        assert mcnemar_p_value(only_before, only_after, two_sided=False) == pytest.approx(expected)

@@ -247,17 +247,27 @@ def required_suite_size(
 def mcnemar_p_value(only_before: int, only_after: int, two_sided: bool = True) -> float:
     """Exact McNemar p-value for one measured table.
 
-    Delegates the test itself to statsmodels. The power arithmetic above is this
-    repository's own work; the hypothesis test is a library call and is labelled as
-    one so that the two are not confused.
+    The two sided test is delegated to statsmodels. The power arithmetic above is
+    this repository's own work; the hypothesis test is a library call and is
+    labelled as one so that the two are not confused.
+
+    The one sided test is computed here rather than by halving the two sided p,
+    because halving is right only when the observation lies in the direction being
+    tested. The alternative here is a regression, so the tail is
+    `P(X >= only_before)` under `Binomial(discordant, 0.5)`. An audit found the
+    halved version returning the same p for twelve regressions and for twelve
+    improvements, which would have let a one sided regression test reject on an
+    unambiguous improvement.
     """
     from statsmodels.stats.contingency_tables import mcnemar as statsmodels_mcnemar
 
     if only_before < 0 or only_after < 0:
         raise ToolError("discordant counts cannot be negative")
-    if only_before + only_after == 0:
+    discordant = only_before + only_after
+    if discordant == 0:
         return 1.0
+    if not two_sided:
+        return float(stats.binom.sf(only_before - 1, discordant, 0.5))
     table = [[0, only_before], [only_after, 0]]
     result = statsmodels_mcnemar(table, exact=True, correction=False)
-    p_value = float(result.pvalue)
-    return p_value if two_sided else p_value / 2.0
+    return float(result.pvalue)

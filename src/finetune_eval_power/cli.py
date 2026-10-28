@@ -10,9 +10,14 @@ a team reading a green pipeline cannot tell which one it got.
     1  the tool answered, and the answer is the unwelcome one: `power` means the
        suite cannot see it and prints the suite size that could, `blind` means it
        found capabilities that regressed unflagged and lists them.
-    2  refused. Retraining noise alone is larger than the claimed effect, so no
-       suite size fixes it. The number of retrainings that would is printed.
-    3  the tool itself failed
+    2  refused: no suite size fixes this, by either of two routes. Retraining
+       noise alone is larger than the claimed effect, and the number of
+       retrainings that would settle it is printed; or the suite's cases change
+       verdict so rarely that no size reaches the target power against any
+       effect, and there is no size to print.
+    3  the tool itself failed, or was used wrongly. A mistyped subcommand or
+       `--arm` lands here rather than on 2, which would otherwise make a typo
+       indistinguishable from the refusal this whole tool is about.
 
 `suite`, `curve`, `report` and `metrics` describe the measurement rather than
 judging it, so they return 0 unless the tool fails.
@@ -32,7 +37,13 @@ import sys
 from pathlib import Path
 
 from finetune_eval_power import __version__
-from finetune_eval_power.analysis import ArmAnalysis, analyse, suite_size_curve, suite_size_for
+from finetune_eval_power.analysis import (
+    ArmAnalysis,
+    analyse,
+    smallest_suite_with_power,
+    suite_size_curve,
+    suite_size_for,
+)
 from finetune_eval_power.config import ARMS, DEFAULT_CLAIM_POINTS, RUNS_DIRECTORY, DecisionRule
 from finetune_eval_power.errors import ToolError, Unanswerable
 from finetune_eval_power.formatting import format_floor
@@ -45,6 +56,20 @@ EXIT_TOOL_ERROR = 3
 
 DEBUG_VARIABLE = "FEP_DEBUG"
 CURVE_SIZES = (120, 240, 480, 960, 1920, 3840)
+
+
+def _direction(drop_points: float) -> str:
+    """The word that goes beside a signed drop, including the word for zero.
+
+    Positive is worse. An unsigned noun over a signed number is how a reader
+    reaches the opposite conclusion, so the direction is spelled out every time it
+    is printed, and a drop of exactly zero did not fall.
+    """
+    if drop_points < 0.0:
+        return "accuracy rose"
+    if drop_points > 0.0:
+        return "accuracy fell"
+    return "accuracy unchanged"
 
 
 def _runs_root(arguments: argparse.Namespace) -> Path:
@@ -97,10 +122,30 @@ def command_power(arguments: argparse.Namespace) -> int:
 
     floor = operating.mde_points
     if floor is None:
+        # This suite has no floor at its current size. Whether that is an answer or
+        # a refusal depends on something the earlier version of this branch did not
+        # ask: at a discordance above zero a larger suite still reaches the target,
+        # and that size is a real remedy, so it is code 1 with the size printed. At
+        # a discordance of exactly zero nothing changes verdict, no size produces a
+        # verdict, and that is code 2. Collapsing the two printed "NO" with no size
+        # attached, which is the one thing code 1 promises never to do.
+        larger = (
+            smallest_suite_with_power(operating.discordance, rule)
+            if operating.discordance > 0.0
+            else None
+        )
+        if larger is None:
+            print(
+                f"\nREFUSED: at a discordance of {operating.discordance:.4f} no suite "
+                f"size reaches {rule.target_power:.0%} power against any effect. The "
+                "suite's cases change verdict too rarely for the test to have anything "
+                "to work with, so there is no suite size to recommend."
+            )
+            return EXIT_REFUSED
         print(
             f"\nNO: at a discordance of {operating.discordance:.4f} this suite cannot "
-            f"reach {rule.target_power:.0%} power at any effect size. Its cases almost "
-            "never change verdict, so there is nothing for the test to work with."
+            f"reach {rule.target_power:.0%} power at any effect size. Reaching it at this "
+            f"discordance needs {larger} cases."
         )
         return EXIT_NOT_DETECTABLE
 
@@ -132,7 +177,7 @@ def command_blind(arguments: argparse.Namespace) -> int:
     # under an unsigned noun is how a reader ends up with the opposite conclusion.
     print(
         f"suite measured drop: {operating.suite_drop_points:+.2f} points "
-        f"({'accuracy rose' if operating.suite_drop_points < 0 else 'accuracy fell'})"
+        f"({_direction(operating.suite_drop_points)})"
     )
     print(
         f"  regression flags: {operating.seeds_flagging_regression} of {operating.seeds} "
@@ -161,7 +206,19 @@ def command_blind(arguments: argparse.Namespace) -> int:
 
     missed = analysis.undetected
     if not missed:
-        print("\nNo capability slice regressed beyond what the suite could resolve.")
+        # `undetected` is empty for two different reasons and they must not print
+        # the same sentence. When the suite raised flags there is nothing hidden
+        # from it by construction, and claiming nothing regressed would be false:
+        # on a loud measurement every class can be past its own floor.
+        if not operating.suite_is_quiet:
+            print(
+                f"\nThe suite raised a regression flag in "
+                f"{operating.seeds_flagging_regression} of {operating.seeds} retrainings, "
+                "so nothing here is hidden from it. This command reports what regressed "
+                "unnoticed, and that question only arises while the suite is quiet."
+            )
+            return EXIT_DETECTABLE
+        print("\nNo capability slice regressed beyond what the suite could resolve unflagged.")
         return EXIT_DETECTABLE
     print(
         f"\n{len(missed)} slices regressed past the suite's own floor without being "
@@ -189,6 +246,10 @@ def command_suite(arguments: argparse.Namespace) -> int:
     print(f"no usable power       {analysis.slices_without_suite_power}")
     print(f"accuracy before       {analysis.suite_accuracy_before:.4f}")
     print()
+    # The two signed columns run in opposite directions by construction, so the
+    # header says so. Scanning "-1.27p" beside "1.15p" and reading both as the
+    # same kind of number is the single easiest way to invert this table.
+    print("drop: positive is worse. in region: positive is better.")
     print(f"{'depth':>5} {'suite drop':>11} {'discordance':>12} {'floor':>9} {'in region':>10}")
     for summary in analysis.depths:
         floor = "none" if summary.mde_points is None else f"{format_floor(summary.mde_points)}p"
@@ -243,13 +304,35 @@ def command_metrics(arguments: argparse.Namespace) -> int:
     return EXIT_DETECTABLE
 
 
+class _Parser(argparse.ArgumentParser):
+    """An argument parser that exits 3, not 2, when the user mistypes something.
+
+    argparse calls `parser.error` for an unknown subcommand, a bad `--arm` or a
+    `--claim` that is not a number, and `ArgumentParser.error` exits with status 2.
+    This tool has defined 2 to mean "refused: no suite size fixes this", which is
+    the single exit code the whole repository is about, and the defense guide tells
+    the candidate to demonstrate it with `echo $?`. A typo producing the headline
+    code is the kind of collision the Makefile already warns about for `make`, and
+    it was live in the console script itself until an audit ran the parser.
+    """
+
+    def error(self, message: str) -> None:  # type: ignore[override]
+        self.print_usage(sys.stderr)
+        print(f"{self.prog}: error: {message}", file=sys.stderr)
+        raise SystemExit(EXIT_TOOL_ERROR)
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
+    parser = _Parser(
         prog="finetune-eval-power",
         description="Computes what a model eval suite could have detected, and what it missed.",
     )
     parser.add_argument("--version", action="version", version=__version__)
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # Subparsers inherit the class of the parser that created them only if it is
+    # named here; without it every subcommand goes back to exiting 2.
+    subparsers.parser_class = _Parser  # type: ignore[attr-defined]
 
     def add_common(target: argparse.ArgumentParser) -> None:
         target.add_argument("--arm", default="vision", choices=sorted(ARMS))

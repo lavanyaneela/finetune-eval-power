@@ -29,7 +29,7 @@ On the vision arm, at the freeze depth the eval suite waves through, the suite a
 
 Of **40 named capability** slices the suite has **no usable power on 19**: **16 it never samples** at all, and another **3 sampled too thinly** in the sense that matters here, which is that their cases almost never change verdict rather than that there are few of them. That is a size rather than a verdict, and **all 3 name a size**: the **cheapest needs 140** cases of its own slice and the **dearest needs 459**, against the counts they carry today. A slice whose cases never changed verdict at all would name no size, which is the sharper form of the same problem and is why the count is published next to them. Separately, with **power below 118** cases nothing at this discordance reaches 80% power at any effect size, and the suite that ships is larger than that, so its problem is not its size.
 
-Every figure above and below is re-measured from a committed measurement by `make verify`, which also runs **333 tests** at **99.1% statement and branch** coverage, evaluates the relations the prose asserts between those figures, and fails the build if any of the seven checked documents quotes a figure the code no longer produces. That coverage figure is over the modules a core install executes; the training, sweep and tracking modules are excluded from its denominator on purpose, because `make verify` has to run from a bare clone without a deep learning framework, and a figure a reviewer cannot reproduce is worse than no figure. They are exercised by the CI jobs that install the training extra.
+Every figure above and below is re-measured from a committed measurement by `make verify`, which also runs **357 tests** at **99.6% statement and branch** coverage, evaluates the relations the prose asserts between those figures, and fails the build if any of the seven checked documents quotes a figure the code no longer produces. That coverage figure is over the modules a core install executes; the training, sweep and tracking modules are excluded from its denominator on purpose, because `make verify` has to run from a bare clone without a deep learning framework, and a figure a reviewer cannot reproduce is worse than no figure. They are exercised by the CI jobs that install the training extra.
 
 ## Quickstart
 
@@ -68,7 +68,7 @@ See [E1](docs/experiments/e1_detection_floor.json) and [ADR-003](docs/adr/ADR-00
 
 The suite is **480 eval cases** drawn from a coverage region. The referee is a probe that enumerates the whole attribute space rather than sampling it, so every slice has an exact denominator: **1728 probe cases** for the vision arm. Denominators differ by slice and the floors differ with them, so the range across slices is published rather than one end of it: across the whole probe one case is a little over what the **probe resolves 0.057** points, while among the slices themselves the **finest slice resolves 0.115** points and the **thinnest slice resolves 0.52** points, coarser than the finest by more than a factor of four.
 
-A slice counts as missed when three things hold together: the suite raised no regression flag in a majority of retrainings, the slice's drop exceeds the suite's own detection floor, and its interval across retrainings stays clear of zero. The materiality bar is the suite's floor rather than a number somebody picked, so the comparison is against the thing that was supposed to be watching, and the interval condition is there so a slice cannot be called regressed on the strength of one unlucky retraining.
+A slice counts as missed when three things hold together: the suite raised a regression flag in at most half the retrainings, the slice's drop exceeds the suite's own detection floor, and its interval across retrainings stays clear of zero. The materiality bar is the suite's floor rather than a number somebody picked, so the comparison is against the thing that was supposed to be watching, and the interval condition is there so a slice cannot be called regressed on the strength of one unlucky retraining.
 
 | what the suite reports | what the probe reports |
 | --- | --- |
@@ -188,8 +188,8 @@ fixtures/runs/ the committed measurement, hashed
 | --- | --- |
 | `0` | the tool answered and the answer is the reassuring one: `power` means the suite can see a regression of the size claimed, `blind` means nothing fell past its floor unnoticed |
 | `1` | the tool answered and the answer is the unwelcome one: `power` prints the suite size that would work, `blind` lists the capabilities it found |
-| `2` | refused. Retraining noise alone is wider than the claimed effect, so no suite size fixes it |
-| `3` | the tool itself failed |
+| `2` | refused: no suite size fixes it. Either retraining noise alone is at least as wide as the claimed effect, or the suite's cases change verdict so rarely that no size reaches the target power against any effect |
+| `3` | the tool itself failed, or was used wrongly. A mistyped subcommand or `--arm` lands here, not on `2`, so a typo cannot be mistaken for the refusal |
 
 `suite`, `curve`, `report` and `metrics` describe the measurement rather than judging it, so they return `0` unless the tool fails. The headline command in the quickstart is `blind`, and on this measurement it exits `1`, because it found something.
 

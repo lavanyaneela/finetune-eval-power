@@ -40,7 +40,12 @@ class SeedVariance:
 
     @property
     def noise_floor_points(self) -> float:
-        """Smallest claim that retraining noise alone does not swallow."""
+        """Largest claim that retraining noise alone swallows.
+
+        Inclusive at the boundary on purpose: a claim exactly at the floor is
+        refused, because the boundary is not evidence. A test pins that, and the
+        documented wording is "at least as wide as", never "wider than".
+        """
         return self.multiplier * self.standard_deviation_points
 
     def swallows(self, claim_points: float) -> bool:

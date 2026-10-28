@@ -136,6 +136,83 @@ def test_an_unknown_arm_is_rejected_by_the_parser(runs_root):
         run(["power", "--arm", "olfactory"], runs_root)
 
 
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        ["power", "--arm", "olfactory"],
+        ["notacommand"],
+        [],
+        ["power", "--claim", "notanumber"],
+    ],
+)
+def test_a_usage_error_exits_three_and_never_collides_with_the_refusal(arguments, runs_root):
+    """The bug this pins: argparse exits 2 on `parser.error`, and 2 is this tool's
+    "refused" code, the single result the whole repository is about.
+
+    A mistyped arm name therefore produced the headline exit code, and the defense
+    guide tells the candidate to demonstrate that code with `echo $?` in front of an
+    interviewer. The Makefile carries a comment warning about exactly this collision
+    for `make`, while the console script had it. Nothing caught it because the test
+    above asserts only that SystemExit is raised, never which code it carries.
+    """
+    with pytest.raises(SystemExit) as raised:
+        run(arguments, runs_root)
+    assert raised.value.code == EXIT_TOOL_ERROR
+
+
+def test_that_usage_errors_are_not_merely_nonzero(runs_root):
+    """The companion to the test above: it would pass against the bug if it only
+    asserted a non-zero code, because the bug returned 2, which is non-zero."""
+    with pytest.raises(SystemExit) as raised:
+        run(["power", "--arm", "olfactory"], runs_root)
+    assert raised.value.code != EXIT_REFUSED
+
+
+def test_a_suite_whose_cases_never_change_verdict_is_refused_not_answered(
+    tmp_path, vision_arm, capsys
+):
+    """Code 1 promises the suite size that would work. At a discordance of zero
+    there is none, so the branch that prints no size now returns the refusal code
+    instead of the answer code. It is the second route into "no suite size fixes
+    this", the first being retraining noise."""
+    runs = build_synthetic_runs(vision_arm, suite_drop_cases=0, held_out_drop_fraction=0.0)
+    runs.write(tmp_path / "vision")
+    code = run(["power", "--claim", "2"], tmp_path)
+    captured = capsys.readouterr().out
+    assert code == EXIT_REFUSED
+    assert "REFUSED" in captured
+    assert "no suite size to recommend" in captured
+
+
+def test_blind_does_not_claim_nothing_regressed_when_the_suite_was_loud(
+    tmp_path, vision_arm, capsys
+):
+    """`undetected` is empty for two different reasons and they printed the same
+    sentence. On a measurement where the suite flags every retraining, nothing is
+    hidden from it, but "no capability slice regressed" is false: classes can be
+    several times past their own floor. The question the command answers only
+    arises while the suite is quiet, and it now says so."""
+    runs = build_synthetic_runs(vision_arm, suite_drop_cases=90, held_out_drop_fraction=0.6)
+    runs.write(tmp_path / "vision")
+    code = run(["blind"], tmp_path)
+    captured = capsys.readouterr().out
+    assert code == EXIT_DETECTABLE
+    assert "No capability slice regressed" not in captured
+    assert "nothing here is hidden from it" in captured
+
+
+def test_a_drop_of_exactly_zero_is_not_described_as_a_fall(tmp_path, vision_arm, capsys):
+    """An unsigned noun over a signed number is how a reader inverts a conclusion,
+    which the repository is careful about everywhere except at zero, where the
+    branch read `accuracy rose if drop < 0 else accuracy fell`."""
+    runs = build_synthetic_runs(vision_arm, suite_drop_cases=0, held_out_drop_fraction=0.0)
+    runs.write(tmp_path / "vision")
+    run(["blind"], tmp_path)
+    captured = capsys.readouterr().out
+    assert "accuracy unchanged" in captured
+    assert "accuracy fell" not in captured
+
+
 def test_an_unexpected_failure_becomes_a_tool_error_rather_than_a_no(
     monkeypatch, runs_root, capsys
 ):
