@@ -11,19 +11,22 @@
       "bytes": 58717,
       "file": "suite-verdict.png",
       "framed_from": "overview",
-      "framed_to": "detection-floor"
+      "framed_to": "detection-floor",
+      "sha256": "0020911db1318150be9d0b1975052af3d7ab460c31629c7760bab3dd3fb5ee85"
     },
     {
-      "bytes": 357606,
+      "bytes": 362749,
       "file": "missed-capabilities.png",
       "framed_from": "missed-capabilities",
-      "framed_to": "freeze-depth"
+      "framed_to": "freeze-depth",
+      "sha256": "ac0ccb7c3f486c101f96e9ebb817900cc6697cdd6d79aac84de85e2c830465be"
     },
     {
       "bytes": 91773,
       "file": "noise-sources.png",
       "framed_from": "noise-sources",
-      "framed_to": null
+      "framed_to": null,
+      "sha256": "5bd280a84ba7d2ba70bf1ce40187e0f8f66b26a1529cbb66656a0f65196bdd50"
     }
   ]
 }

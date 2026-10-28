@@ -120,6 +120,12 @@
     "shipped_depth": [
       "shipped depth {}"
     ],
+    "shipped_in_region_mean_bar_points": [
+      "gain bar of {}"
+    ],
+    "shipped_outside_mean_bar_points": [
+      "averaged bar of {}"
+    ],
     "shipped_outside_noise_floor_points": [
       "noise bar of {}"
     ],
@@ -137,6 +143,9 @@
     ],
     "slices_without_power": [
       "no usable power on {}"
+    ],
+    "slices_without_power_at_probe_rate": [
+      "rate instead reports {}"
     ],
     "smallest_suite_with_any_power": [
       "power below {}"
@@ -211,8 +220,8 @@
   "metrics": {
     "case_interval_points": 3.54,
     "cases_for_one_point": 5385,
-    "cheapest_underpowered_slice_cases": 301,
-    "coverage_pct": 99.9,
+    "cheapest_underpowered_slice_cases": 124,
+    "coverage_pct": 99.6,
     "dearest_underpowered_slice_cases": 592,
     "epoch_band_points": 6.25,
     "final_epoch_accuracy_span_points": 3.33,
@@ -249,12 +258,15 @@
     "sequence_suite_cases": 480,
     "sequence_undetected_slices": 9,
     "shipped_depth": 0,
+    "shipped_in_region_mean_bar_points": 0.88,
+    "shipped_outside_mean_bar_points": 1.07,
     "shipped_outside_noise_floor_points": 3.38,
     "shipped_outside_spread_points": 1.73,
     "short_budget_noise_floor_points": 1.54,
     "significant_verdict_seeds": 2,
     "slices_total": 40,
-    "slices_without_power": 19,
+    "slices_without_power": 24,
+    "slices_without_power_at_probe_rate": 19,
     "smallest_suite_with_any_power": 118,
     "suite_cases": 480,
     "suite_drop_points": -1.27,
@@ -262,10 +274,10 @@
     "suite_worst_class_floor_points": 8.74,
     "suite_worst_class_interval_low_points": -1.09,
     "suite_worst_class_points": 4.75,
-    "tests_total": 374,
+    "tests_total": 380,
     "thinnest_slice_floor_points": 0.52,
-    "underpowered_covered_slices": 3,
-    "underpowered_slices_with_a_size": 3,
+    "underpowered_covered_slices": 8,
+    "underpowered_slices_with_a_size": 8,
     "undetected_covered_slices": 2,
     "undetected_slices": 8,
     "widest_band_epoch": 2,
@@ -280,8 +292,8 @@
   "rendered": {
     "case_interval_points": "3.54",
     "cases_for_one_point": "5385",
-    "cheapest_underpowered_slice_cases": "301",
-    "coverage_pct": "99.9",
+    "cheapest_underpowered_slice_cases": "124",
+    "coverage_pct": "99.6",
     "dearest_underpowered_slice_cases": "592",
     "epoch_band_points": "6.25",
     "final_epoch_accuracy_span_points": "3.33",
@@ -318,12 +330,15 @@
     "sequence_suite_cases": "480",
     "sequence_undetected_slices": "9",
     "shipped_depth": "0",
+    "shipped_in_region_mean_bar_points": "0.88",
+    "shipped_outside_mean_bar_points": "1.07",
     "shipped_outside_noise_floor_points": "3.38",
     "shipped_outside_spread_points": "1.73",
     "short_budget_noise_floor_points": "1.54",
     "significant_verdict_seeds": "2",
     "slices_total": "40",
-    "slices_without_power": "19",
+    "slices_without_power": "24",
+    "slices_without_power_at_probe_rate": "19",
     "smallest_suite_with_any_power": "118",
     "suite_cases": "480",
     "suite_drop_points": "-1.27",
@@ -331,10 +346,10 @@
     "suite_worst_class_floor_points": "8.74",
     "suite_worst_class_interval_low_points": "-1.09",
     "suite_worst_class_points": "4.75",
-    "tests_total": "374",
+    "tests_total": "380",
     "thinnest_slice_floor_points": "0.52",
-    "underpowered_covered_slices": "3",
-    "underpowered_slices_with_a_size": "3",
+    "underpowered_covered_slices": "8",
+    "underpowered_slices_with_a_size": "8",
     "undetected_covered_slices": "2",
     "undetected_slices": "8",
     "widest_band_epoch": "2",

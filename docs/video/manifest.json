@@ -1,6 +1,6 @@
 {
-  "gif_bytes": 1375677,
-  "mp4_bytes": 144433,
+  "gif_bytes": 1603019,
+  "mp4_bytes": 151548,
   "note": "Every line in the recording is real captured stdout. Each segment is paced by the wall time its command took. Durations pace the playback and are not published as claims.",
   "segments": [
     {
@@ -8,29 +8,29 @@
       "exit_code": 0,
       "label": "What the suite reported",
       "lines_captured": 15,
-      "seconds": 2.081
+      "seconds": 1.705
     },
     {
       "command": "python -m finetune_eval_power.cli blind --arm vision",
       "exit_code": 1,
       "label": "What it missed",
-      "lines_captured": 25,
-      "seconds": 1.871
+      "lines_captured": 34,
+      "seconds": 2.049
     },
     {
       "command": "python -m finetune_eval_power.cli power --arm vision --claim 2",
       "exit_code": 2,
       "label": "Can it see a two point regression?",
       "lines_captured": 10,
-      "seconds": 1.749
+      "seconds": 1.611
     },
     {
       "command": "python tools/check_numbers.py",
       "exit_code": 1,
       "label": "And the receipts, with one figure corrupted",
       "lines_captured": 4,
-      "seconds": 0.276
+      "seconds": 0.253
     }
   ],
-  "total_seconds": 5.977
+  "total_seconds": 5.618
 }

@@ -194,6 +194,15 @@ def command_blind(arguments: argparse.Namespace) -> int:
         f"{analysis.underpowered_covered_slices} whose cases change verdict too rarely"
     )
     print(f"slices that moved the other way, interval clear of zero: {analysis.improving_slices}")
+    # The sizes were printed nowhere, while the defense guide pointed at this
+    # command for them and told its reader never to say a number that is not on the
+    # screen. Only this command and the HTML report carry them now.
+    short = analysis.slices_short_of_power
+    if short:
+        print("covered slices with no usable power, and the size each would need:")
+        for name, cases, needed in sorted(short, key=lambda row: (row[2] is None, row[2] or 0)):
+            size = f"{needed} cases" if needed else "no size helps: its cases never change verdict"
+            print(f"  {name:<40} has {cases:>5}, needs {size}")
     print("per class, measured on the suite's own cases:")
     print(f"  {'class':<24} {'cases':>6} {'drop':>8} {'its own floor':>14} {'interval':>18}")
     for item in analysis.suite_class_findings:
@@ -375,6 +384,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"REFUSED: {refusal}", file=sys.stderr)
         print(refusal.remedy, file=sys.stderr)
         return EXIT_REFUSED
+    except BrokenPipeError:
+        # `blind | head` closes the pipe early. Reporting that as code 3 would make
+        # a reviewer piping the output think the tool failed, and this repository's
+        # whole argument is that an exit code must not mean two things. stdout is
+        # redirected to devnull so the interpreter's own flush at shutdown does not
+        # raise the same error again on the way out.
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
+        return EXIT_DETECTABLE
     except ToolError as failure:
         print(f"error: {failure}", file=sys.stderr)
         return EXIT_TOOL_ERROR

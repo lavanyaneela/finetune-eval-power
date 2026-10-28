@@ -3,5 +3,6 @@
   "html_labels": false,
   "output": "architecture.svg",
   "renderer": "mermaid.min.js",
-  "source": "README.md fence labelled mermaid-source"
+  "source": "README.md fence labelled mermaid-source",
+  "source_sha256": "7daa40b8f8993afc5db074a927aa23a8c400d292bed6d9ef8801034b9cf89ebb"
 }

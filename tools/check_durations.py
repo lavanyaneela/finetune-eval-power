@@ -34,8 +34,10 @@ ROOT = Path(__file__).resolve().parents[1]
 #: and an article-matching pattern reported six of those for every real duration.
 #: A rule nobody can keep green stops being a rule.
 _COUNT = (
-    r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|"
-    r"thirty|forty|fifty|sixty|half|several|a\s+few|the\s+better\s+part\s+of\s+an?)"
+    r"(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|"
+    r"fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|"
+    r"fifty|sixty|ninety|half|several|a\s+few|a\s+couple\s+of|"
+    r"the\s+better\s+part\s+of\s+an?)"
 )
 PATTERNS = (
     re.compile(r"\b\d+(?:\.\d+)?\s*(?:ms|milliseconds?|microseconds?|nanoseconds?)\b", re.I),
@@ -45,7 +47,10 @@ PATTERNS = (
     # for them and excluded for seconds.
     re.compile(rf"\b(?:an?|{_COUNT})\s+(?:minutes?|hours?)\b", re.I),
     re.compile(rf"\b{_COUNT}\s+seconds?\b", re.I),
-    re.compile(r"\b\d+(?:\.\d+)?[- ](?:second|minute|hour)\b", re.I),
+    # Plural as well as singular. The pattern was `(?:second|minute|hour)` with no
+    # `s?`, so "40 seconds", "14 minutes" and "3 hours" all passed, which is the
+    # most natural way anyone writes a duration.
+    re.compile(r"\b\d+(?:\.\d+)?[- ](?:seconds?|minutes?|hours?)\b", re.I),
 )
 #: Machine readable artifacts, where a duration is data rather than a claim. The
 #: demo manifest records how long each captured command took, and it has to: the

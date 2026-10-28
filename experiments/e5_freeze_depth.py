@@ -10,6 +10,7 @@ depth costs in capabilities it cannot see.
 
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 
@@ -91,6 +92,16 @@ def main() -> int:
             # ADR-004 insists on. Published because a paragraph compared the loss
             # against the raw standard deviation and concluded the opposite.
             "shipped_outside_noise_floor_points": 1.96 * shipped["outside_region_spread_points"],
+            # The same bar for the MEAN over the captured retrainings. Averaging
+            # shrinks it by the square root of the count, which is what the seed
+            # budget buys, and it is the bar that decides whether these two
+            # figures are resolved at all.
+            "shipped_outside_mean_bar_points": 1.96
+            * shipped["outside_region_spread_points"]
+            / math.sqrt(len(runs.seeds)),
+            "shipped_in_region_mean_bar_points": 1.96
+            * shipped["in_region_spread_points"]
+            / math.sqrt(len(runs.seeds)),
             "in_region_cases": int(region.sum()),
             "outside_region_cases": int(outside.sum()),
             "safest_depth": safest["freeze_depth"],

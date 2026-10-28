@@ -71,15 +71,14 @@ def check_reports_are_fresh() -> None:
     """Refuse to publish a test count or a coverage figure from a stale report.
 
     With `--skip-tests` these two figures come from `reports/`, which is gitignored
-    and is the only input to this file that is not the committed measurement. An
-    audit edited `junit.xml` to say 999 tests and `make receipts` published it.
-    `make verify` runs the tests first so it is safe there, but `receipts` is a
-    documented target of its own and was not self-sufficient.
+    and is the only input to this file that is not the committed measurement.
 
-    Comparing against the newest source file catches the case that actually
-    happens, which is running `receipts` after editing code without rerunning the
-    tests. It does not defend against someone editing the reports on purpose, and
-    nothing short of running the tests would.
+    This guard catches the case that actually happens, which is running the
+    collector by hand after editing code without rerunning the tests. It does not
+    and cannot catch deliberate tampering: editing `junit.xml` refreshes its own
+    mtime, which is exactly how an audit published a count of 999 tests. Nothing
+    short of running the tests catches that, so the `receipts` make target now
+    depends on `test` and this stays as the guard for a direct invocation.
     """
     junit = REPORTS / "junit.xml"
     if not junit.exists():
@@ -186,6 +185,7 @@ def main() -> int:
         "slices_total": vision_e3["slices_total"],
         "held_out_slices": vision_e3["held_out_slices"],
         "slices_without_power": vision_e3["slices_without_suite_power"],
+        "slices_without_power_at_probe_rate": analysis.slices_without_power_at_probe_rate,
         "undetected_slices": vision_e3["undetected_slices"],
         "undetected_covered_slices": vision_e3["undetected_covered_slices"],
         "worst_undetected_name": vision_e3["worst_undetected_name"],
@@ -212,11 +212,15 @@ def main() -> int:
         "significant_verdict_seeds": analysis.significant_verdict_seeds,
         "maximal_undetected_slices": len(analysis.maximal_undetected),
         "improving_regions": analysis.improving_regions,
+        # The floor for that slice computed at the PROBE's rate. The sentence that
+        # quotes it says so in words; the companion figure at the suite's own rate
+        # is `suite_worst_class_floor_points`, which is the same number by
+        # construction because both use the suite's cases and the suite's rate.
         "worst_undetected_slice_floor_points": floor_to(
-            analysis.worst_undetected.suite_mde_on_slice_points, 2
+            analysis.worst_undetected.probe_rate_mde_on_slice_points, 2
         )
         if analysis.worst_undetected is not None
-        and analysis.worst_undetected.suite_mde_on_slice_points is not None
+        and analysis.worst_undetected.probe_rate_mde_on_slice_points is not None
         else None,
         "cheapest_underpowered_slice_cases": min(
             needed for _name, _cases, needed in analysis.slices_short_of_power if needed
@@ -236,6 +240,12 @@ def main() -> int:
         "shipped_outside_spread_points": round(vision_e5["shipped_outside_spread_points"], 2),
         "shipped_outside_noise_floor_points": floor_to(
             vision_e5["shipped_outside_noise_floor_points"], 2
+        ),
+        "shipped_outside_mean_bar_points": floor_to(
+            vision_e5["shipped_outside_mean_bar_points"], 2
+        ),
+        "shipped_in_region_mean_bar_points": floor_to(
+            vision_e5["shipped_in_region_mean_bar_points"], 2
         ),
         "final_epoch_accuracy_span_points": round(e2["vision"]["final_accuracy_span_points"], 2),
         "improving_class_points": round(analysis.improving_class_total_points, 2),
@@ -308,6 +318,8 @@ TWO_DECIMALS = {
     "worst_undetected_slice_floor_points",
     "shipped_outside_spread_points",
     "shipped_outside_noise_floor_points",
+    "shipped_outside_mean_bar_points",
+    "shipped_in_region_mean_bar_points",
     "final_epoch_accuracy_span_points",
     "seed_noise_floor_points",
     "short_budget_noise_floor_points",
@@ -356,6 +368,7 @@ ANCHORS: dict[str, list[str]] = {
     "slices_total": ["{} named capability"],
     "held_out_slices": ["{} it never samples"],
     "slices_without_power": ["no usable power on {}"],
+    "slices_without_power_at_probe_rate": ["rate instead reports {}"],
     "undetected_slices": ["{} slices regressed"],
     "undetected_covered_slices": ["{} sit inside"],
     "worst_undetected_name": ["worst is {}"],
@@ -404,6 +417,8 @@ ANCHORS: dict[str, list[str]] = {
     "finest_slice_floor_points": ["finest slice resolves {}"],
     "shipped_outside_spread_points": ["outside spread of {}"],
     "shipped_outside_noise_floor_points": ["noise bar of {}"],
+    "shipped_outside_mean_bar_points": ["averaged bar of {}"],
+    "shipped_in_region_mean_bar_points": ["gain bar of {}"],
     "final_epoch_accuracy_span_points": ["readings span {}"],
     "improving_class_points": ["together gain {}"],
     "underpowered_covered_slices": ["{} sampled too thinly"],

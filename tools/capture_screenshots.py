@@ -23,6 +23,7 @@ The report is rebuilt before it is photographed, so a stale report cannot be sho
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -131,6 +132,9 @@ def main() -> int:
                     "framed_from": start_id,
                     "framed_to": end_id,
                     "bytes": destination.stat().st_size,
+                    # A byte count can be reconciled by hand after swapping one
+                    # shot for another; a digest cannot, without rerunning this.
+                    "sha256": hashlib.sha256(destination.read_bytes()).hexdigest(),
                 }
             )
             print(f"wrote {destination} ({destination.stat().st_size} bytes)")

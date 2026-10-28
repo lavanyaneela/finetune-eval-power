@@ -83,8 +83,12 @@ rule depend on which particular seeds were drawn.
 
 **A larger seed budget.** The variance estimate improves as the square root, so doubling the
 capture buys a modest tightening. The tool prices this for the user: when it refuses
-a claim it prints how many further retrainings would be needed to resolve it, and that
-number is usually large enough to be the real answer to the question.
+a claim it prints the TOTAL number of retrainings whose mean would resolve it, not a
+number of further ones, because averaging shrinks the bar as one over the square root
+of the count. On this measurement a two point claim needs four, which is fewer than
+the ten already captured. That is the useful shape of the answer, not a large number:
+it says a team that retrains a handful of times can settle a question the eval suite
+cannot, and that the obstacle was never the size of the eval set.
 
 **Retraining in CI and rounding the published figures to one decimal place.** This
 only moves the problem. A figure rounded until it is portable is a figure that has

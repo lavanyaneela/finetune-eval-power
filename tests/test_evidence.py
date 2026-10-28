@@ -47,6 +47,25 @@ def test_the_diagram_paints_a_background_rather_than_leaving_it_transparent():
     assert re.search(r'<rect x="0" y="0" width="\d+" height="\d+" fill="#', svg)
 
 
+def test_the_committed_diagram_was_rendered_from_the_fence_as_it_stands_now():
+    """Node labels catch a renamed box and miss a rewired edge.
+
+    An audit redirected the referee probe into the training stage, which draws
+    test-set leakage into the architecture, and dropped the edge the measurement
+    flows along. Every label was untouched, so the label test passed. The fence is
+    now hashed at render time, which catches any edit to it.
+    """
+    import hashlib
+
+    manifest = json.loads((EVIDENCE / "diagram-manifest.json").read_text(encoding="utf-8"))
+    assert "source_sha256" in manifest, "run make diagrams: the manifest predates the digest"
+    readme = README.read_text(encoding="utf-8")
+    fence = readme.split("```mermaid-source", 1)[1].split("```", 1)[0].strip()
+    assert hashlib.sha256(fence.encode("utf-8")).hexdigest() == manifest["source_sha256"], (
+        "the diagram source in the README has changed since the SVG was rendered; run make diagrams"
+    )
+
+
 def test_the_diagram_matches_the_source_fence_in_the_readme():
     """Named for a match it did not check: it asserted the fence exists, so the
     committed SVG could drift arbitrarily from the source the README displays.
@@ -141,15 +160,30 @@ def test_the_demo_shows_the_refusal_and_the_checker_failing():
 
 
 def test_no_placeholder_handle_is_left_in_a_badge_or_a_clone_url():
-    """A placeholder in a badge renders as "unknown" and is the first thing a reviewer
-    notices, so no badge carries one. Exactly one ships, in the clone URL, with the
-    README telling the reader to run make set-handle, which also adds the CI badge.
+    """A placeholder in a badge renders as "unknown" and is the first thing a
+    reviewer notices, so no badge carries one.
+
+    Two states are valid and the test has to accept both, which it did not. As
+    shipped, exactly one placeholder sits in the clone URL and there is no CI
+    badge. After `make set-handle`, there is no placeholder and there is a badge.
+    Asserting the first state alone meant the README's own first instruction left
+    the suite red, so the documented sequence of clone, set-handle, verify could
+    not pass. An audit ran it.
     """
     text = README.read_text(encoding="utf-8")
-    assert text.count("GITHUB_USERNAME") == 1, (
-        "exactly one placeholder should ship, in the clone URL, and the README must "
-        "tell the reader how to fill it"
-    )
+    placeholders = text.count("GITHUB_USERNAME")
+    has_badge = "actions/workflows/ci.yml/badge.svg" in text
+    if placeholders:
+        assert placeholders == 1, (
+            "exactly one placeholder should ship, in the clone URL, and the README "
+            "must tell the reader how to fill it"
+        )
+        assert not has_badge, "a badge must not ship carrying a placeholder handle"
+    else:
+        assert has_badge, (
+            "with the placeholder filled, make set-handle must have added the CI "
+            "badge the README promises"
+        )
     assert "make set-handle" in text
     for forbidden in ("YOUR_USERNAME", "yourname", "<username>"):
         assert forbidden not in text
@@ -208,3 +242,28 @@ def test_the_committed_screenshot_byte_counts_match_the_files_on_disk():
             f"{shot['file']} is {path.stat().st_size} bytes, manifest says {shot['bytes']}; "
             "run make evidence"
         )
+
+
+def test_each_committed_screenshot_is_the_image_the_capture_recorded():
+    """Byte counts alone let a shot be swapped for another of the same size, and an
+    audit swapped the README's headline evidence image for a different one and
+    reconciled the manifest. A digest cannot be reconciled without rerunning the
+    capture, which is the point."""
+    import hashlib
+
+    manifest = json.loads((EVIDENCE / "manifest.json").read_text(encoding="utf-8"))
+    for shot in manifest["shots"]:
+        assert "sha256" in shot, "run make evidence: the manifest predates the digest"
+        data = (EVIDENCE / shot["file"]).read_bytes()
+        assert hashlib.sha256(data).hexdigest() == shot["sha256"], (
+            f"{shot['file']} is not the file the capture wrote; run make evidence"
+        )
+        assert data[:8] == b"\x89PNG\r\n\x1a\n", f"{shot['file']} is not a PNG"
+
+
+def test_the_demo_is_actually_a_gif():
+    """`shutil.copy(a_png, demo.gif)` passed every test here: existence and a size
+    bound say nothing about what the file is."""
+    data = (VIDEO / "demo.gif").read_bytes()
+    assert data[:6] in (b"GIF87a", b"GIF89a"), "demo.gif is not a GIF"
+    assert data[-1:] == b";", "the GIF is truncated"

@@ -119,13 +119,15 @@ counts in the first sentence below. The per-slice sizes, the missed slices and t
 regions come from `blind --arm vision`, and the sequence arm needs `--arm sequence`.
 Three commands, not one.
 
-Of **40 named capability** slices the suite has **no usable power on 19**: **16 it never samples**
-at all, and **3 sampled too thinly**, meaning too few of their cases change verdict,
-which is how many cases they hold and how often those change, multiplied. Neither
-factor alone is the reason. They also **all 3 name a size**: the
-**cheapest needs 301** cases of its own slice and the **dearest needs 592**. Those
-sizes come from each slice's rate of changed verdicts on the suite's own cases, not
-on the probe's, because a prescription about the suite has to come from the suite.
+Of **40 named capability** slices the suite has **no usable power on 24**: **16 it never samples**
+at all, and **8 sampled too thinly**, meaning too few of their cases change verdict,
+which is how many cases they hold and how often those change, multiplied. They
+**all 8 name a size**: the **cheapest needs 124** cases of its own slice and the
+**dearest needs 592**, which is more than the whole suite ships. Those sizes, and
+the decision about which slices have power at all, come from each slice's rate of
+changed verdicts on the suite's own cases rather than the probe's, because the
+question is what this suite could have done. At the probe's **rate instead reports 19**,
+and if asked why the smaller number is not the published one, that is the answer.
 **8 slices regressed** unflagged, covering **3 regions once nesting** is removed, and
 **5 slices moved up** with intervals clear of zero, which is **2 regions the other**
 way under the same correction. The second arm reproduces the shape with a different architecture and a
@@ -197,8 +199,11 @@ guard nobody has seen fail should not be trusted.
   bigger suite cannot do is get under retraining noise."
 - "For the aggregate claim, retraining noise is wider than the suite's floor, so a
   bigger eval set would not have helped there. It is the remedy for the blind slices:
-  six of the eight missed ones have no suite cases at all, and the three underpowered
-  ones each name the size that would fix them."
+  six of the eight missed ones have no suite cases at all, and for those the remedy is
+  a differently DRAWN suite rather than a bigger one, because growing a suite inside
+  the same coverage region adds no cases to a slice it never samples. The eight
+  underpowered covered slices are the ones a bigger suite does fix, and each names its
+  size. Those are two different groups and they do not add up to the eight."
 - "The suite and the probe disagree about the sign of what the fine-tune did."
 - "The aggregate stayed flat because two classes improved while a third got worse, and
   an aggregate cannot show a class."

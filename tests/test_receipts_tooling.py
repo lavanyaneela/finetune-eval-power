@@ -9,6 +9,7 @@ that fail against the broken form.
 from __future__ import annotations
 
 import importlib.util
+import pathlib
 import sys
 from pathlib import Path
 
@@ -243,13 +244,28 @@ def test_every_markdown_document_in_the_repository_is_a_checked_document():
     import subprocess
 
     listed = subprocess.run(
-        ["git", "ls-files", "*.md"],
+        ["git", "ls-files"],
         cwd=checker.ROOT,
         check=True,
         capture_output=True,
         text=True,
     ).stdout.split()
-    tracked = {name for name in listed if not name.startswith(("node_modules/", "reports/"))}
+    # Not just `*.md`. An audit added docs/RESULTS.MD, docs/results.markdown,
+    # docs/RESULTS.txt, docs/results.html and an extensionless CONTRIBUTING, each
+    # full of invented figures, and every one passed `make verify`. A document a
+    # reader reads has to be a document the checker reads, whatever it is called,
+    # so the rule is about where a file lives rather than how it is spelled.
+    prose = {".md", ".markdown", ".mdown", ".txt", ".rst", ".html", ".htm", ""}
+    tracked = {
+        name
+        for name in listed
+        if not name.startswith(("node_modules/", "reports/", "docs/evidence/", "docs/video/"))
+        and (name.startswith("docs/") or "/" not in name)
+        and pathlib.PurePosixPath(name).suffix.lower() in prose
+        # Build files and the licence are not prose a reader takes figures from.
+        # Named rather than pattern-matched, so adding one is a visible decision.
+        and name not in {"LICENSE", ".gitignore", "Makefile"}
+    }
     checked = set(checker.load_metrics()["checked_documents"])
     assert tracked - checked == set(), (
         "these documents are tracked, publish prose, and nothing checks them: "
@@ -300,3 +316,28 @@ def test_an_exemption_is_refused_in_a_document_it_is_not_allowed_in():
         assert allowed, f"exemption {value} allows no document, so it guards nothing"
         for name in allowed:
             assert name in checker.load_metrics()["checked_documents"]
+
+
+def test_the_coverage_denominator_is_exactly_what_the_readme_says_it_is():
+    """Nothing constrained which modules the coverage figure is measured over.
+
+    An audit added the two core power modules to the omit list, ran the real test
+    suite, and published a genuinely measured 100.0% while the README's adjacent
+    sentence still said the exclusions were the training, sweep and tracking
+    modules. A measured number can still be a false one if the denominator moves,
+    and that sentence is the thing this pins.
+    """
+    import tomllib
+
+    config = tomllib.loads((checker.ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    omitted = set(config["tool"]["coverage"]["run"]["omit"])
+    assert omitted == {
+        "*/finetune_eval_power/models/*",
+        "*/finetune_eval_power/sweep.py",
+        "*/finetune_eval_power/tracking/*",
+    }, (
+        "the coverage denominator changed. The README names the excluded modules, "
+        "so either change that sentence or put this back"
+    )
+    readme = (checker.ROOT / "README.md").read_text(encoding="utf-8")
+    assert "the training, sweep and tracking modules are excluded from its denominator" in readme

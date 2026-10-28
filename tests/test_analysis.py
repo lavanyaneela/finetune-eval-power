@@ -520,3 +520,49 @@ def test_a_slice_that_moved_but_not_past_the_floor_is_not_reported_as_missed(vis
         assert item.drop_points <= floor
     for item in missed:
         assert item.drop_points > floor
+
+
+def test_the_referees_rate_reports_fewer_blind_slices_than_the_suites_own(vision_arm):
+    """Why the published count uses the suite's rate and not the probe's.
+
+    Both are computed from the slice's suite case count; they differ only in whose
+    rate of changed verdicts goes in. The probe's rate is steadier, which makes the
+    suite look more powered than it is, and the published blindness count was
+    smaller than the measurement supports because of it. Publishing both makes the
+    choice visible rather than buried, and this asserts the direction the prose
+    claims.
+    """
+    runs = build_synthetic_runs(
+        vision_arm, suite_drop_cases=18, suite_gain_cases=20, held_out_drop_fraction=0.2
+    )
+    analysis = analyse(vision_arm, runs)
+    at_probe_rate = analysis.slices_without_power_at_probe_rate
+    at_suite_rate = sum(1 for item in analysis.findings if not item.suite_has_power)
+    assert at_suite_rate >= at_probe_rate
+    assert any(
+        item.suite_mde_on_slice_points != item.probe_rate_mde_on_slice_points
+        for item in analysis.findings
+        if item.suite_cases > 0
+    ), "the two rates must differ somewhere or this proves nothing"
+
+
+def test_a_prescribed_suite_size_is_priced_at_the_rule_it_was_selected_under(
+    vision_arm, synthetic_runs
+):
+    """The bug this pins: slices were SELECTED into the underpowered list at the
+    caller's rule and then PRICED at the default 0.05 and 80%.
+
+    It is the same defect as the hard-wired alpha in `SuiteVerdict`, one layer out,
+    and it produced prescriptions smaller than the case count the slice already
+    has: "this slice has 120 cases and no power at your rule; it needs 68 cases".
+    """
+    strict = analyse(vision_arm, synthetic_runs, DecisionRule(alpha=1e-4, target_power=0.99))
+    default = analyse(vision_arm, synthetic_runs)
+    for _name, cases, needed in strict.slices_short_of_power:
+        if needed is not None:
+            assert needed > cases, "a prescription below the current size is not a prescription"
+    strict_sizes = {name: needed for name, _c, needed in strict.slices_short_of_power}
+    default_sizes = {name: needed for name, _c, needed in default.slices_short_of_power}
+    shared = set(strict_sizes) & set(default_sizes)
+    assert shared, "the two rules must share a slice or this compares nothing"
+    assert any(strict_sizes[name] != default_sizes[name] for name in shared)

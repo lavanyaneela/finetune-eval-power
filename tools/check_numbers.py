@@ -76,29 +76,57 @@ REVERSE_EXEMPTIONS: dict[str, tuple[str, tuple[str, ...]]] = {
 #: equal some measured value, so the published exit-code contract could be rewritten
 #: freely while the build stayed green. These rows are the contract, so they are
 #: pinned as text, and a test asserts each one still matches what the CLI returns.
+# These are verbatim copies of published lines and must not be wrapped or
+# reflowed, so the long-line rule is waived for them specifically.
 LITERAL_GUARDS: tuple[tuple[str, str], ...] = (
-    ("README.md", "| `0` | the tool answered and the answer is the reassuring one:"),
-    ("README.md", "| `1` | the tool answered and the answer is the unwelcome one:"),
-    ("README.md", "| `2` | refused: no suite size fixes it."),
-    ("README.md", "| `3` | the tool itself failed, or was used wrongly."),
+    (
+        "README.md",
+        "| `0` | the tool answered and the answer is the reassuring one: `power` means the suite can see a regression of the size claimed, `blind` means nothing fell past its floor unnoticed |",  # noqa: E501
+    ),
+    (
+        "README.md",
+        "| `1` | the tool answered and the answer is the unwelcome one: `power` prints the suite size that would work, `blind` lists the capabilities it found |",  # noqa: E501
+    ),
+    (
+        "README.md",
+        "| `2` | refused: no suite size fixes it. Either retraining noise alone is at least as wide as the claimed effect, or the suite's cases change verdict so rarely that no size reaches the target power against any effect |",  # noqa: E501
+    ),
+    (
+        "README.md",
+        "| `3` | the tool itself failed, or was used wrongly. A mistyped subcommand or `--arm` lands here, not on `2`, so a typo cannot be mistaken for the refusal |",  # noqa: E501
+    ),
+    (
+        "README.md",
+        "Requires Python `3.11` or newer. No API keys, no cloud credentials, no network at runtime.",  # noqa: E501
+    ),
     ("README.md", "python -m finetune_eval_power.cli blind --arm vision"),
     ("README.md", "python -m finetune_eval_power.cli power --arm vision --claim 2"),
-    ("README.md", "Requires Python `3.11` or newer."),
 )
 
 
 def check_literals() -> list[str]:
-    """Every pinned line is present, character for character."""
+    """Every pinned line is present as a WHOLE line, character for character.
+
+    This tested `line not in text`, which pins a prefix and nothing else. An audit
+    appended "Treat it as advisory: a suite of 480 eval cases clears it and teams
+    routinely ship on a `2`" to the refusal row and the build stayed green, which
+    is the whole published contract rewritten under an intact guard. A pinned line
+    now has to be the entire line.
+    """
     problems: list[str] = []
     for relative, line in LITERAL_GUARDS:
         path = ROOT / relative
         if not path.exists():
             problems.append(f"{relative} does not exist")
             continue
-        if line not in path.read_text(encoding="utf-8"):
+        lines = [item.strip() for item in path.read_text(encoding="utf-8").splitlines()]
+        if line not in lines:
+            near = [item for item in lines if item.startswith(line[:28])]
+            detail = f" The closest line is {near[0]!r}." if near else ""
             problems.append(
-                f"{relative}: the pinned line {line!r} is gone. It is part of the "
-                "published contract and is guarded as text, not as a figure"
+                f"{relative}: the pinned line {line!r} is not present as a whole "
+                f"line. It is part of the published contract and is guarded as "
+                f"text, not as a figure.{detail}"
             )
     return problems
 
@@ -148,6 +176,12 @@ RELATIONS: tuple[tuple[str, str], ...] = (
         "abs(retraining_interval_points - 2 * seed_noise_floor_points) <= 0.02",
         "the published interval is twice the half-width refusal threshold, allowing "
         "for the two being rounded independently",
+    ),
+    (
+        "slices_without_power > slices_without_power_at_probe_rate",
+        "the suite's own rate of changed verdicts reports MORE blind slices than "
+        "the referee's does. If this ever reversed, the sentence calling the "
+        "referee's count the flattering one would be backwards",
     ),
     (
         "held_out_slices + underpowered_covered_slices == slices_without_power",
@@ -206,6 +240,12 @@ RELATIONS: tuple[tuple[str, str], ...] = (
         "that a number written out is still machine checked",
     ),
     (
+        "suite_worst_class_points < worst_undetected_slice_floor_points",
+        "the drop the suite's own cases show for that class is below the floor at "
+        "the probe's rate as well as below the floor at its own, so the sentence "
+        "does not depend on which rate a reader prefers",
+    ),
+    (
         "worst_undetected_points < worst_undetected_slice_floor_points",
         "the worst missed slice sits BELOW the floor the suite would have had on it, "
         "which is the reason it was missed; a document that puts the drop above that "
@@ -240,6 +280,21 @@ RELATIONS: tuple[tuple[str, str], ...] = (
         "paragraph here once compared it against the raw standard deviation and "
         "called it the one asymmetry in the table, which is the exact error ADR-004 "
         "was written about",
+    ),
+    (
+        "outside_loss_points > shipped_outside_mean_bar_points",
+        "the outside loss IS resolved as an average over the captured retrainings, "
+        "even though a single retraining cannot resolve it, so a sentence saying "
+        "the measurement resolves nothing here is false",
+    ),
+    (
+        "in_region_gain_points > shipped_in_region_mean_bar_points",
+        "so is the in-region gain, on the same basis",
+    ),
+    (
+        "shipped_outside_mean_bar_points < shipped_outside_noise_floor_points",
+        "averaging over retrainings shrinks the bar, which is what the seed budget "
+        "buys and why the single-run and averaged answers differ",
     ),
     (
         "in_region_gain_points < shipped_outside_noise_floor_points",
@@ -427,8 +482,21 @@ def check_anchor_hygiene(anchors: dict[str, list[str]]) -> list[str]:
 
 
 def check_documents(payload: dict) -> tuple[list[str], dict[str, int]]:
+    """Each metric is quoted, and no two metrics are quoted by the same digits.
+
+    The second half exists because two metrics that render the same string can be
+    satisfied by one occurrence. `suite_cases` anchors "{} eval cases" and
+    `sequence_suite_cases` anchors "sequence ships {}", both render 480, and the
+    single phrase "the sequence ships 480 eval cases" satisfied both guards. Each
+    document's genuine statement could then be deleted and replaced by one false
+    sentence while every metric still counted as quoted. Claiming a figure is
+    re-measured because some other figure's sentence happened to contain it is the
+    same failure this whole file exists to prevent, so a match now records where it
+    was found and two metrics may not claim the same digits.
+    """
     problems: list[str] = []
     occurrences = dict.fromkeys(payload["anchors"], 0)
+    claimed: dict[tuple[str, int, int], str] = {}
     for relative in payload["checked_documents"]:
         path = ROOT / relative
         if not path.exists():
@@ -443,12 +511,21 @@ def check_documents(payload: dict) -> tuple[list[str], dict[str, int]]:
             for phrase in phrases:
                 for match in anchor_pattern(phrase, numeric).finditer(text):
                     found = match.group(1).replace(",", "")
-                    if found == expected:
-                        occurrences[metric] += 1
-                    else:
+                    if found != expected:
                         problems.append(
                             f"{relative}: {phrase.replace('{}', found)!r} is stale, "
                             f"the measurement says {expected}"
+                        )
+                        continue
+                    occurrences[metric] += 1
+                    where = (relative, match.start(1), match.end(1))
+                    other = claimed.setdefault(where, metric)
+                    if other != metric:
+                        problems.append(
+                            f"{relative}: the digits {expected!r} at offset "
+                            f"{where[1]} are claimed by both {other} and {metric}. "
+                            "One occurrence cannot re-measure two figures, so each "
+                            "needs a sentence of its own"
                         )
     return problems, occurrences
 
@@ -493,11 +570,26 @@ def _reverse_one(path: Path, relative: str, values: set[str], used: set[str]) ->
     # blanked here. Three of those four render as text a reader believes, and the
     # exit-code table lives entirely in code spans, so the sweep now reads them. An
     # audit changed every cell of that table with the build green.
-    stripped = re.sub(r"<[^>]+>", _blank, stripped)
+    # Alt text and title attributes are read by a screen reader and shown when an
+    # image fails, so they are prose and are swept. They are pulled out before the
+    # tag strip below, which would otherwise blank them with the markup.
+    attributes = " ".join(
+        match.group(1) for match in re.finditer(r'(?:alt|title)="([^"]*)"', stripped)
+    )
+    # Both of these used to be `[^>]` and `[^)]`, which match newlines, so a single
+    # stray "<" or "](" blanked everything up to the next ">" or ")" anywhere later
+    # in the file. An audit hid a fabricated section of invented figures that way.
+    # An HTML tag starts with a letter or a slash. Without that, "use the tool when
+    # n < 480 cases ... a rate of 0.00042 > 0" looks like a tag and everything
+    # between the comparison operators is blanked, which an audit used to hide a
+    # section of invented figures on a single line.
+    stripped = re.sub(r"</?[A-Za-z][^>\n]*>", _blank, stripped)
     # The target of a link or image is a URL, not a sentence, and a badge URL
-    # carries version numbers that are not figures. The link TEXT, which is what a
-    # reader sees, sits outside the parentheses and is still swept.
-    stripped = re.sub(r"\]\([^)]*\)", _blank, stripped)
+    # carries version numbers that are not figures. A link TITLE is a sentence and
+    # renders as a tooltip, so it is kept and swept; only the URL itself goes.
+    titles = " ".join(match.group(1) for match in re.finditer(r'\]\([^)\n]*"([^"]*)"\)', stripped))
+    stripped = re.sub(r"\]\([^)\n]*\)", _blank, stripped)
+    stripped = f"{stripped}\n{attributes}\n{titles}"
     # ADR-004 is a document name, not a figure. Without this the leading hyphen is
     # read as a sign and every reference becomes an unexplained number.
     stripped = re.sub(r"ADR-\d+", " ", stripped)

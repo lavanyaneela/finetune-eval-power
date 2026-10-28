@@ -47,6 +47,8 @@ def seeds_to_settle(readings: Sequence[float], band: float = STABILITY_BAND) -> 
     the honest reading would be that the budget is too small, which is why the
     number is published next to the budget instead of being hidden in a constant.
     """
+    if not 0.0 <= band <= 1.0:
+        raise ToolError(f"a stability band must be a fraction in [0, 1], got {band}")
     history = running_spread(readings)
     final = history[-1][1]
     if final <= 0.0:

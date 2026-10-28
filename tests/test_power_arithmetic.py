@@ -214,8 +214,19 @@ def test_a_negative_discordant_count_is_refused():
         mcnemar_p_value(-1, 2)
 
 
-def test_the_one_sided_p_value_is_half_the_two_sided_one():
+def test_the_one_sided_p_value_is_half_the_two_sided_one_in_the_tested_direction():
+    """Half is the right answer ONLY when the observation lies in the direction
+    being tested, which is why the name carries that clause.
+
+    Named without it, this test asserted the general halving rule as a property of
+    the code, and it passes against the bug two tests below exist to exclude. Two
+    tests in one file then said opposite things about the same function.
+    """
     assert mcnemar_p_value(20, 5, two_sided=False) == pytest.approx(mcnemar_p_value(20, 5) / 2.0)
+    # And the other direction, where halving is wrong, is the complement.
+    assert mcnemar_p_value(5, 20, two_sided=False) == pytest.approx(
+        1.0 - mcnemar_p_value(20, 5, two_sided=False) + stats.binom.pmf(20, 25, 0.5)
+    )
 
 
 def test_the_paired_test_sees_a_smaller_effect_than_the_unpaired_one_at_low_discordance():

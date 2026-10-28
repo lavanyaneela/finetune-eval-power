@@ -138,9 +138,12 @@ def mcnemar_normal_power(
 ) -> float:
     """Closed-form power, the Connor normal approximation.
 
-    Kept because it is what a reader will reach for, and because the suite size
-    curve needs thousands of evaluations. Its optimism against the exact value is
-    measured in E1 rather than asserted here.
+    Kept because it is what a reader will reach for, and published beside the
+    exact value rather than instead of it, so the two can be compared. Nothing in
+    this repository decides anything on it. Its optimism against the exact value is
+    measured in E1 rather than asserted here. An earlier version of this docstring
+    justified keeping it by a cost the suite size curve does not have, which is the
+    claim ADR-003 retracted and this sentence outlived.
     """
     if suite_size <= 0:
         raise ToolError(f"suite size must be positive, got {suite_size}")

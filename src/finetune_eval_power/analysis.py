@@ -10,7 +10,7 @@ was supposed to be watching it could resolve.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -121,16 +121,23 @@ class SliceFinding:
     drop_points: float
     interval: DropInterval
     case_interval_width_points: float
-    discordance: float
     #: The slice's rate of changed verdicts on the PROBE's cases. Every drop and
-    #: interval on this finding is measured there, so this is the discordance that
-    #: belongs beside them.
+    #: interval on this finding is measured there, so this is the rate that belongs
+    #: beside them.
+    discordance: float
+    #: The same rate measured on the eval suite's own cases for this slice. It is a
+    #: different number, usually smaller, and the two are not interchangeable.
     suite_discordance: float
-    #: The same rate measured on the suite's own cases for this slice. It is a
-    #: different number, usually smaller, and the two are not interchangeable: a
-    #: prescription about how large the suite should be has to come from the
-    #: suite's behaviour, not from the referee's.
+    #: The smallest regression the SUITE could resolve on this slice: its own case
+    #: count at its own rate. None when no effect reaches the target power. Both
+    #: inputs are properties of the suite, because the question is what the suite
+    #: could have done. This used to take the probe's rate, which moved five slices
+    #: from "no power" into "has power" and made the published blindness count
+    #: smaller than the measurement supports.
     suite_mde_on_slice_points: float | None
+    #: The same floor computed at the PROBE's rate instead. Kept because the two
+    #: disagree and the disagreement is worth publishing, never to decide anything.
+    probe_rate_mde_on_slice_points: float | None
 
     @property
     def interval_width_points(self) -> float:
@@ -199,6 +206,11 @@ class ArmAnalysis:
     suite_case_interval_width_points: float
     probe_change_points: float
     suite_class_findings: tuple[ClassFinding, ...]
+    #: The rule every published quantity here was computed under. Carried rather
+    #: than defaulted, because `slices_short_of_power` used to select slices at the
+    #: caller's rule and then price them at 0.05 and 80%, which produced
+    #: prescriptions smaller than the case count the slice already has.
+    rule: DecisionRule = field(default_factory=DecisionRule)
 
     def depth(self, freeze_depth: int) -> DepthSummary:
         for summary in self.depths:
@@ -237,6 +249,21 @@ class ArmAnalysis:
     @property
     def slices_without_suite_power(self) -> int:
         return sum(1 for item in self.findings if not item.suite_has_power)
+
+    @property
+    def slices_without_power_at_probe_rate(self) -> int:
+        """The same count computed at the referee's rate instead of the suite's.
+
+        Published so the choice is visible rather than buried. It is the more
+        flattering number, and it answers a different question: what a suite with
+        the referee's rate of changed verdicts could have done, which is not this
+        suite.
+        """
+        return sum(
+            1
+            for item in self.findings
+            if item.probe_rate_mde_on_slice_points is None or item.suite_cases == 0
+        )
 
     @property
     def underpowered_covered_slices(self) -> int:
@@ -364,7 +391,7 @@ class ArmAnalysis:
             (
                 item.name,
                 item.suite_cases,
-                smallest_suite_with_power(item.suite_discordance)
+                smallest_suite_with_power(item.suite_discordance, self.rule)
                 if item.suite_discordance > 0.0
                 else None,
             )
@@ -514,6 +541,13 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
                 suite_discordance=suite_discordance,
                 suite_mde_on_slice_points=(
                     minimum_detectable_points(
+                        suite_cases, suite_discordance, rule.alpha, rule.target_power
+                    )
+                    if suite_cases > 0 and suite_discordance > 0.0
+                    else None
+                ),
+                probe_rate_mde_on_slice_points=(
+                    minimum_detectable_points(
                         suite_cases, slice_discordance, rule.alpha, rule.target_power
                     )
                     if suite_cases > 0 and slice_discordance > 0.0
@@ -549,6 +583,7 @@ def analyse(arm: ArmConfig, runs: SweepRuns, rule: DecisionRule | None = None) -
             )
         ),
         suite_class_findings=_suite_class_findings(arm, runs, operating_position, rule),
+        rule=rule,
         suite_case_interval_width_points=_interval_width(
             bootstrap_drop_interval(
                 runs.suite_before[0, operating_position],

@@ -21,6 +21,7 @@ Four details, each from a rendering that shipped broken:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -109,6 +110,11 @@ def main() -> int:
         json.dumps(
             {
                 "source": "README.md fence labelled mermaid-source",
+                # The fence itself, hashed. Comparing node labels catches a renamed
+                # box and misses a rewired edge: an audit redirected the referee
+                # probe into the training stage, which is test-set leakage drawn as
+                # an arrow, and every label test stayed green.
+                "source_sha256": hashlib.sha256(source.encode("utf-8")).hexdigest(),
                 "renderer": library.name,
                 "output": destination.name,
                 "html_labels": False,

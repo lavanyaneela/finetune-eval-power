@@ -15,7 +15,7 @@ help:
 	@echo "lint         ruff check and format check"
 	@echo "test         pytest with junit and coverage reports, skipping the slow tests"
 	@echo "test-all     every test, including the ones that need the training extra"
-	@echo "receipts     re-measure every published figure and check the documents"
+	@echo "receipts     run the tests, re-measure every published figure, check the documents"
 	@echo "verify       lint + test + receipts, offline, from a fresh clone"
 	@echo "experiments  run the five experiments and print their tables"
 	@echo "report       write the HTML report for both arms"
@@ -47,12 +47,17 @@ test:
 test-all:
 	$(PYTHON) -m pytest -q
 
-receipts:
+# Depends on `test` rather than trusting whatever is in reports/. The test count
+# and the coverage are the only published figures that do not come from the
+# committed measurement, and an audit published 999 tests by editing junit.xml and
+# running this target. The mtime guard inside collect_metrics cannot catch that,
+# because editing the file refreshes its mtime. Running the tests can.
+receipts: test
 	$(PYTHON) tools/collect_metrics.py --skip-tests
 	$(PYTHON) tools/check_numbers.py
 	$(PYTHON) tools/check_durations.py
 
-verify: lint test receipts
+verify: lint receipts
 	@echo "verify passed"
 
 experiments:
