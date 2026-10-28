@@ -27,6 +27,14 @@ from finetune_eval_power.runs import load_runs  # noqa: E402
 from finetune_eval_power.slices.suite import build_probe  # noqa: E402
 
 
+def _crossing(value: float, spread: float, ceiling: int = 1000) -> int | None:
+    """Fewest retrainings whose mean clears 1.96 standard errors."""
+    for count in range(1, ceiling + 1):
+        if value > 1.96 * spread / math.sqrt(count):
+            return count
+    return None
+
+
 def main() -> int:
     rule = DecisionRule()
     payload: dict = {"arms": {}}
@@ -102,6 +110,15 @@ def main() -> int:
             "shipped_in_region_mean_bar_points": 1.96
             * shipped["in_region_spread_points"]
             / math.sqrt(len(runs.seeds)),
+            # How many retrainings have to be averaged before each figure clears
+            # its own bar. They are not the same number, and a sentence saying
+            # they change at the same place is what this exists to stop.
+            "retrainings_to_resolve_loss": _crossing(
+                shipped["outside_region_loss_points"], shipped["outside_region_spread_points"]
+            ),
+            "retrainings_to_resolve_gain": _crossing(
+                shipped["in_region_gain_points"], shipped["in_region_spread_points"]
+            ),
             "in_region_cases": int(region.sum()),
             "outside_region_cases": int(outside.sum()),
             "safest_depth": safest["freeze_depth"],

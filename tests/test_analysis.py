@@ -9,6 +9,7 @@ whatever a trained model happened to do.
 from __future__ import annotations
 
 import dataclasses
+from pathlib import Path
 
 import pytest
 from tests.conftest import build_synthetic_runs
@@ -26,6 +27,8 @@ from finetune_eval_power.analysis import (
 from finetune_eval_power.config import DecisionRule
 from finetune_eval_power.errors import ToolError
 from finetune_eval_power.power.counts import PairedCounts
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.fixture
@@ -514,10 +517,20 @@ def test_the_seed_budget_sits_above_the_point_the_spread_estimate_settles(
     vision_arm, synthetic_runs
 ):
     """`config.py` told the reader that ADR-004 recorded a variance stability
-    measurement. ADR-004 argued it in words and recorded none, so the measurement
-    now exists and this asserts the property it was supposed to establish."""
-    analysis = analyse(vision_arm, synthetic_runs)
-    assert analysis.seeds_to_settle <= len(analysis.seed_readings_points)
+    measurement. ADR-004 argued it in words and recorded none.
+
+    This asserted `seeds_to_settle <= len(readings)`, which the function's own
+    construction guarantees, and `<=` permits equality, which is the opposite of
+    "sits above". The property worth asserting is on the shipped measurement.
+    """
+    from pathlib import Path as _Path
+
+    from finetune_eval_power.runs import load_runs
+
+    shipped = analyse(vision_arm, load_runs(_Path(ROOT / "fixtures" / "runs" / "vision")))
+    assert shipped.seeds_to_settle_typical < len(shipped.seed_readings_points)
+    local = analyse(vision_arm, synthetic_runs)
+    assert 2 <= local.seeds_to_settle <= len(local.seed_readings_points)
 
 
 def test_a_short_seed_budget_sets_the_refusal_bar_somewhere_else(vision_arm):
@@ -617,10 +630,27 @@ def test_the_settling_point_is_published_as_a_distribution_not_as_one_ordering(
 ):
     """ADR-004 used to quote a single ordering's settling point as a measurement of
     the estimator. It is computed over prefixes, so it is partly a measurement of
-    which retraining happened to be listed fifth."""
-    analysis = analyse(vision_arm, synthetic_runs)
-    assert 2 <= analysis.seeds_to_settle_typical <= len(analysis.seed_readings_points)
-    assert 0.0 <= analysis.never_settles_share_pct <= 100.0
+    which retraining happened to be listed fifth.
+
+    This asserted a count is inside its own range and a percentage is between zero
+    and a hundred, on a fixture whose five readings are identical so both are
+    degenerate. The property is that orderings disagree and the published figure is
+    the middle of them, which needs readings that differ.
+    """
+    from finetune_eval_power.power.variance import settling_distribution
+
+    runs = build_synthetic_runs(
+        vision_arm, seeds=tuple(range(1, 11)), suite_drop_jitter=(2, 9, 3, 8, 14, 4)
+    )
+    analysis = analyse(vision_arm, runs)
+    spread = settling_distribution(analysis.seed_readings_points)
+    assert len(set(spread)) > 1, "orderings must disagree or there is nothing to report"
+    assert min(spread) <= analysis.seeds_to_settle_typical <= max(spread)
+    assert analysis.never_settles_share_pct == pytest.approx(
+        100.0
+        * sum(1 for value in spread if value >= len(analysis.seed_readings_points))
+        / len(spread)
+    )
 
 
 def test_a_measurement_whose_retrainings_disagree_late_often_fails_to_settle(vision_arm):

@@ -294,3 +294,58 @@ def test_the_demo_is_actually_a_gif():
     data = (VIDEO / "demo.gif").read_bytes()
     assert data[:6] in (b"GIF87a", b"GIF89a"), "demo.gif is not a GIF"
     assert data[-1:] == b";", "the GIF is truncated"
+
+
+def test_every_image_the_readme_shows_carries_a_digest():
+    """The digest tests iterate the manifest's shots, so an image added to the
+    README and to no manifest is outside the loop entirely. An audit added one
+    captioned with the opposite of the finding and nothing looked at it."""
+    import hashlib
+    import re
+
+    readme = README.read_text(encoding="utf-8")
+    referenced = {
+        path
+        for path in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", readme)
+        + re.findall(r'<img[^>]+src="([^"]+)"', readme)
+        if path.startswith("docs/")
+    }
+    shots = json.loads((EVIDENCE / "manifest.json").read_text(encoding="utf-8"))["shots"]
+    digests = {f"docs/evidence/{shot['file']}": shot["sha256"] for shot in shots}
+    diagram = json.loads((EVIDENCE / "diagram-manifest.json").read_text(encoding="utf-8"))
+    digests["docs/evidence/architecture.svg"] = diagram["output_sha256"]
+    video = json.loads((VIDEO / "manifest.json").read_text(encoding="utf-8"))
+    digests["docs/video/demo.gif"] = video["gif_sha256"]
+
+    unguarded = sorted(referenced - set(digests))
+    assert unguarded == [], (
+        f"these images are shown in the README and carry no digest: {unguarded}. "
+        "An image a reader believes has to be one the capture tool wrote"
+    )
+    for path in referenced:
+        data = (ROOT / path).read_bytes()
+        assert hashlib.sha256(data).hexdigest() == digests[path], f"{path} is stale"
+
+
+def test_the_guard_tests_are_in_the_selection_make_verify_runs():
+    """`make verify` runs `-m "not slow"`. Marking a guard test slow drops it from
+    the build and leaves no trace but the published test count, which the author
+    updates anyway. An audit did exactly that to the coverage-denominator test."""
+    import subprocess
+    import sys
+
+    listed = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "-m", "not slow", "--collect-only"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout
+    for guard in (
+        "test_the_coverage_denominator_is_exactly_what_the_readme_says_it_is",
+        "test_every_markdown_document_in_the_repository_is_a_checked_document",
+        "test_the_exit_code_table_is_pinned_as_text_and_matches_what_the_cli_returns",
+        "test_each_committed_screenshot_is_the_image_the_capture_recorded",
+        "test_every_image_the_readme_shows_carries_a_digest",
+    ):
+        assert guard in listed, f"{guard} is not in the selection make verify runs"

@@ -48,8 +48,17 @@ def test_a_claim_below_the_floor_is_reported_as_not_detectable(stable_runs_root,
 
 
 def test_a_not_detectable_answer_prices_the_suite_that_would_work(stable_runs_root, capsys):
-    run(["power", "--claim", "1.0"], stable_runs_root)
-    assert "cases" in capsys.readouterr().out
+    """Asserted `"cases" in out`, which the header line `suite cases 480` satisfies
+    on every invocation including the YES path. This is the only test guarding the
+    contract that code 1 names a size, so it has to read the size."""
+    import re
+
+    code = run(["power", "--claim", "1.0"], stable_runs_root)
+    captured = capsys.readouterr().out
+    assert code == EXIT_NOT_DETECTABLE
+    priced = re.search(r"needs (\d+) cases", captured)
+    assert priced, f"no suite size was printed under code 1:\n{captured}"
+    assert int(priced.group(1)) > 0
 
 
 def test_a_claim_smaller_than_the_retraining_noise_is_refused(runs_root, capsys):
@@ -65,8 +74,18 @@ def test_the_refusal_says_no_suite_size_fixes_it(runs_root, capsys):
 
 
 def test_the_refusal_offers_the_remedy_that_would_actually_work(runs_root, capsys):
-    run(["power", "--claim", "0.05"], runs_root)
-    assert "retrainings" in capsys.readouterr().out
+    """Asserted `"retrainings" in out`, which the header line `retrainings 5`
+    satisfies on every invocation. The remedy is a count of retrainings to average,
+    and the point of code 2 is that it offers one instead of a suite size."""
+    import re
+
+    code = run(["power", "--claim", "0.05"], runs_root)
+    captured = capsys.readouterr().out
+    assert code == EXIT_REFUSED
+    offered = re.search(r"average over about (\d+) retrainings", captured)
+    assert offered, f"the refusal named no remedy:\n{captured}"
+    assert int(offered.group(1)) > 1
+    assert "cases" not in captured.split("REFUSED")[1]
 
 
 def test_refusal_is_checked_before_power_so_a_noise_problem_is_never_read_as_a_size_problem(
@@ -80,11 +99,28 @@ def test_refusal_is_checked_before_power_so_a_noise_problem_is_never_read_as_a_s
     assert "minimum detectable" not in capsys.readouterr().out
 
 
-def test_the_blind_command_lists_what_the_suite_missed(runs_root, capsys):
-    run(["blind"], runs_root)
+def test_the_blind_command_lists_what_the_suite_missed(tmp_path, vision_arm, capsys):
+    """Asserted two strings the command prints whether or not anything was missed,
+    so it passed on a measurement where nothing was. It has to name the slices."""
+    from finetune_eval_power.analysis import analyse
+    from finetune_eval_power.config import VISION_ARM
+    from finetune_eval_power.runs import load_runs
+
+    root = tmp_path
+    build_synthetic_runs(
+        vision_arm,
+        suite_drop_cases=18,
+        suite_gain_cases=20,
+        held_out_drop_fraction=0.06,
+        rng_seed=1,
+    ).write(root / "vision")
+    code = run(["blind"], root)
     captured = capsys.readouterr().out
-    assert "slice" in captured
-    assert "suite detection floor" in captured
+    missed = analyse(VISION_ARM, load_runs(root / "vision")).undetected
+    assert missed, "this measurement is built to be quiet and to have missed slices"
+    assert code == EXIT_NOT_DETECTABLE
+    for item in missed:
+        assert item.name in captured, f"{item.name} was missed and is not listed"
 
 
 def test_the_blind_command_reports_success_when_nothing_was_missed(tmp_path, vision_arm, capsys):

@@ -67,7 +67,7 @@ def run_tests() -> None:
         raise SystemExit("the test suite failed, so no metrics were written")
 
 
-def check_reports_are_fresh() -> None:
+def check_reports_are_fresh(allow_failures: bool = False) -> None:
     """Refuse to publish a test count or a coverage figure from a stale report.
 
     With `--skip-tests` these two figures come from `reports/`, which is gitignored
@@ -83,7 +83,15 @@ def check_reports_are_fresh() -> None:
     junit = REPORTS / "junit.xml"
     if not junit.exists():
         raise SystemExit("no reports/junit.xml: run make test before make receipts")
-    _refuse_a_failing_run(junit)
+    if allow_failures:
+        print(
+            "--regenerate: publishing from a run that may have failed. This is the "
+            "maintainer's loop for a legitimate change to the test count or the "
+            "coverage, and `make verify` never passes it.",
+            file=sys.stderr,
+        )
+    else:
+        _refuse_a_failing_run(junit)
     newest = max(
         (
             path.stat().st_mtime
@@ -100,24 +108,22 @@ def check_reports_are_fresh() -> None:
         )
 
 
-#: Tests allowed to be red while the metrics are regenerated. They compare the
-#: documents against `docs/metrics.json`, so they are exactly the tests that are
-#: red *because* the metrics are stale. Without this exemption the honest loop
-#: deadlocks: the collector refuses because the suite is red, and the suite is red
-#: because the collector has not run. With it, every other failure still refuses,
-#: which is the fail-open an audit used to publish a count from a failing run.
-RECEIPTS_MODULE = "tests/test_receipts_tooling.py"
-
-
 def _refuse_a_failing_run(junit: Path) -> None:
-    """Refuse to publish figures read out of a failing test run."""
+    """Refuse to publish figures read out of a failing test run.
+
+    This had an exemption for the receipts tests, on the reasoning that they are
+    red precisely when the metrics are stale and the honest loop would otherwise
+    deadlock. Two things were wrong with that. The `receipts` make target depends
+    on `test`, so make aborts on any red suite before this is reached and the
+    deadlock it described cannot occur: the exemption was dead code that only
+    widened the hole. And its prefix match had no boundary, so a failure in a file
+    merely starting with that name was exempted too. The honest loop runs the
+    collector directly, which is what `--skip-tests` is for.
+    """
     root = ElementTree.parse(junit).getroot()
     broken: list[str] = []
     for case in root.iter("testcase"):
         if not any(child.tag in {"failure", "error"} for child in case):
-            continue
-        where = (case.get("file") or case.get("classname") or "").replace(".", "/")
-        if where.startswith(RECEIPTS_MODULE.removesuffix(".py")):
             continue
         broken.append(f"{case.get('classname', '')}::{case.get('name', '')}")
     if broken:
@@ -125,7 +131,10 @@ def _refuse_a_failing_run(junit: Path) -> None:
         raise SystemExit(
             f"{len(broken)} tests failed in the run these figures would come from "
             f"({listed}). A test count and a coverage figure read out of a failing "
-            "run describe nothing. Fix the tests, or rerun make test."
+            "run describe nothing. Fix the tests and rerun make test. If the only "
+            "failures are the receipts tests themselves, they are red because this "
+            "file has not run yet: pass --regenerate to break that cycle, then run "
+            "make verify, which never passes it."
         )
 
 
@@ -171,10 +180,21 @@ def main() -> int:
         action="store_true",
         help="read existing junit and coverage reports instead of running pytest",
     )
+    parser.add_argument(
+        "--regenerate",
+        action="store_true",
+        help=(
+            "publish even if that run failed. For the one cycle this cannot "
+            "otherwise escape: the receipts tests are red because the metrics are "
+            "stale, and the metrics are stale because this has not run. Named and "
+            "printed rather than hidden in an exemption list, and never used by "
+            "the Makefile."
+        ),
+    )
     arguments = parser.parse_args()
 
     if arguments.skip_tests:
-        check_reports_are_fresh()
+        check_reports_are_fresh(allow_failures=arguments.regenerate)
     else:
         run_tests()
     experiments = run_experiments()
@@ -277,6 +297,8 @@ def main() -> int:
         "shipped_in_region_mean_bar_points": floor_to(
             vision_e5["shipped_in_region_mean_bar_points"], 2
         ),
+        "retrainings_to_resolve_loss": vision_e5["retrainings_to_resolve_loss"],
+        "retrainings_to_resolve_gain": vision_e5["retrainings_to_resolve_gain"],
         "final_epoch_accuracy_span_points": round(e2["vision"]["final_accuracy_span_points"], 2),
         "improving_class_points": round(analysis.improving_class_total_points, 2),
         "underpowered_covered_slices": analysis.underpowered_covered_slices,
@@ -453,6 +475,8 @@ ANCHORS: dict[str, list[str]] = {
     "shipped_outside_noise_floor_points": ["noise bar of {}"],
     "shipped_outside_mean_bar_points": ["averaged bar of {}"],
     "shipped_in_region_mean_bar_points": ["gain bar of {}"],
+    "retrainings_to_resolve_loss": ["bar once {} are"],
+    "retrainings_to_resolve_gain": ["the gain once {}"],
     "final_epoch_accuracy_span_points": ["readings span {}"],
     "improving_class_points": ["together gain {}"],
     "underpowered_covered_slices": ["{} sampled too thinly"],

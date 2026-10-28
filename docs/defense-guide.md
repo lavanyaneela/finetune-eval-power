@@ -5,8 +5,10 @@ phrase is checked against the committed measurement by `tools/check_numbers.py`,
 the build fails if it has drifted. Know the limits before leaning on it in a room.
 A figure quoted outside an anchor is held only by a sweep that asks whether a number
 is one of the measured values, not whether it is the right one here, so one measured
-figure can be swapped for another: 8.74 and 11.60 could trade places in this document
-and the build would stay green. A figure spelled as a word is guarded only inside an
+figure can be swapped for another. Both of those figures appear here twice, once
+inside an anchor and once not, and swapping only the unanchored pair leaves the
+build green. Swapping both pairs fails, which is worth knowing before offering the
+demonstration. A figure spelled as a word is guarded only inside an
 anchor. And the checker reads digits and the relations in its table, never the verbs
 between them. The sentences in this document are the author's responsibility; only
 the numbers are the machine's, and only some of them.
@@ -213,10 +215,11 @@ guard nobody has seen fail should not be trusted.
   an aggregate cannot show a class."
 - "And a suite this size could not have resolved that class even per class, which is
   the stronger version of the same point."
-- "Every figure in the README written in digits is re-measured by CI, along with the
-  relations the prose asserts between them, and the build fails if one drifts. It
-  does not check the verbs, and I will say which claims rest on the machine and which
-  rest on me."
+- "Every figure in the README that sits inside its anchor phrase is re-measured by
+  CI, along with the relations the prose asserts between them, and the build fails if
+  one drifts. A figure quoted outside an anchor is only checked against the set of
+  measured values, and the verbs are not checked at all. I will say which claims rest
+  on the machine and which rest on me."
 
 ## Things not to say
 

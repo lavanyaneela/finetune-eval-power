@@ -32,6 +32,12 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _checked_documents() -> tuple[str, ...]:
+    return tuple(load_metrics()["checked_documents"])
+
+
 METRICS_PATH = ROOT / "docs" / "metrics.json"
 MAX_ANCHOR_WORDS = 4
 #: A figure in prose. The trailing `(?![\w])` used to exclude anything glued to a
@@ -40,9 +46,7 @@ MAX_ANCHOR_WORDS = 4
 #: are still checked. The leading `(?<![\w.])` likewise hid ".7777", so a decimal
 #: written without its leading zero is now matched too.
 NUMBER_PATTERN = re.compile(
-    r"(?<![\w])(?<!\d\.)[-+]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)"
-    r"(?:x|k|m|bn|pp|ms|s|h|%)?(?![\w])",
-    re.I,
+    r"(?<![\w])(?<!\d\.)[-+]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)[A-Za-z%]*",
 )
 #: Just the digits inside a match, for comparison against a rendered value.
 NUMBER_DIGITS = re.compile(r"[-+]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)")
@@ -130,6 +134,37 @@ LITERAL_BLOCKS: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 
+#: A fenced block or a four-space indent turns a table into code, and an HTML
+#: comment removes it from the page entirely. All three satisfied a guard that
+#: only asked whether the pinned text existed somewhere in the file: an audit
+#: inverted the published refusal row and left the original inside a comment.
+def _rendered_lines(path: Path) -> list[str]:
+    """Every line a reader sees, including code blocks. Comments are not seen."""
+    text = re.sub(r"<!--.*?-->", "", path.read_text(encoding="utf-8"), flags=re.S)
+    return [raw.strip() for raw in text.splitlines()]
+
+
+def _prose_lines(path: Path) -> list[str]:
+    """The lines a reader sees as prose: no comments, and no code.
+
+    A pinned table has to be pinned as a table. Indenting it four spaces, or
+    wrapping it in a fence, leaves every pinned line present while turning the
+    visible table into whichever copy was left unindented, which is how an audit
+    replaced the published refusal row with its opposite.
+    """
+    text = re.sub(r"<!--.*?-->", "", path.read_text(encoding="utf-8"), flags=re.S)
+    kept: list[str] = []
+    fenced = False
+    for raw in text.splitlines():
+        if raw.strip().startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced or raw.startswith("    ") or raw.startswith("\t"):
+            continue
+        kept.append(raw.strip())
+    return kept
+
+
 def check_literals() -> list[str]:
     """Every pinned line is present as a WHOLE line, character for character.
 
@@ -145,7 +180,7 @@ def check_literals() -> list[str]:
         if not path.exists():
             problems.append(f"{relative} does not exist")
             continue
-        lines = [item.strip() for item in path.read_text(encoding="utf-8").splitlines()]
+        lines = _rendered_lines(path)
         count = lines.count(line)
         if count != 1:
             near = [item for item in lines if item.startswith(line[:28])]
@@ -157,6 +192,11 @@ def check_literals() -> list[str]:
             )
     problems.extend(_check_blocks())
     return problems
+
+
+#: A table row whose first cell is a bare code in backticks. Used to assert the
+#: exit-code contract is stated in exactly one place.
+EXIT_ROW = re.compile(r"^\|\s*`\d+`\s*\|")
 
 
 def _check_blocks() -> list[str]:
@@ -174,7 +214,7 @@ def _check_blocks() -> list[str]:
         if not path.exists():
             problems.append(f"{relative} does not exist")
             continue
-        lines = [item.strip() for item in path.read_text(encoding="utf-8").splitlines()]
+        lines = _prose_lines(path)
         windows = [
             lines[index : index + len(block)] for index in range(len(lines) - len(block) + 1)
         ]
@@ -183,6 +223,52 @@ def _check_blocks() -> list[str]:
                 f"{relative}: the pinned block starting {block[0][:40]!r} is not "
                 "present as consecutive lines in this order. A row was changed, "
                 "inserted, removed or reordered"
+            )
+            continue
+        # And nothing may be bolted on either end. Pinning the rows alone let an
+        # audit append a fabricated fifth exit code after the last pinned row and
+        # a second, contradicting table elsewhere in the same document.
+        start = windows.index(list(block))
+        before = lines[start - 1] if start else ""
+        after = lines[start + len(block)] if start + len(block) < len(lines) else ""
+        for side, neighbour in (("above", before), ("below", after)):
+            if neighbour.startswith("|"):
+                problems.append(
+                    f"{relative}: a table row sits {side} the pinned block "
+                    f"({neighbour[:50]!r}). The published contract is the whole "
+                    "table, so nothing may be added to either end"
+                )
+        if sum(1 for item in lines if EXIT_ROW.match(item)) != len(block) - 2:
+            problems.append(
+                f"{relative}: there are exit-code-shaped rows outside the pinned "
+                "block, so the document states the contract more than once"
+            )
+    problems.extend(_check_no_rival_contract())
+    return problems
+
+
+def _check_no_rival_contract() -> list[str]:
+    """No checked document may state the exit codes anywhere but the pinned table.
+
+    The block guard is scoped to the document that holds the table, so an audit
+    appended a second, contradicting exit-code table to the defense guide, where
+    every code it quotes is also a measured value and the reverse sweep waves them
+    through. A contract stated twice is a contract stated once and contradicted.
+    """
+    problems: list[str] = []
+    pinned = {relative for relative, _block in LITERAL_BLOCKS}
+    for relative in _checked_documents():
+        if relative in pinned:
+            continue
+        path = ROOT / relative
+        if not path.exists():
+            continue
+        rival = [item for item in _prose_lines(path) if EXIT_ROW.match(item)]
+        if rival:
+            problems.append(
+                f"{relative}: {len(rival)} exit-code-shaped table rows "
+                f"({rival[0][:40]!r}). The contract lives in one table, in the "
+                "README, and nowhere else"
             )
     return problems
 
@@ -215,7 +301,7 @@ RELATIONS: tuple[tuple[str, str], ...] = (
     ),
     (
         "never_settles_share_pct > 0",
-        "the share of orderings that do not settle inside the budget is not zero, "
+        "the share of orderings that settle only at the last retraining is not zero, "
         "so any sentence calling ten retrainings comfortable is false. If this "
         "ever reached zero the budget would have become generous and the ADR "
         "should say so instead",
@@ -347,6 +433,20 @@ RELATIONS: tuple[tuple[str, str], ...] = (
         "paragraph here once compared it against the raw standard deviation and "
         "called it the one asymmetry in the table, which is the exact error ADR-004 "
         "was written about",
+    ),
+    (
+        "retrainings_to_resolve_gain > retrainings_to_resolve_loss",
+        "the two figures do not become resolvable at the same number of averaged "
+        "retrainings, which a sentence here once said they did",
+    ),
+    (
+        "retrainings_to_resolve_loss < retrainings",
+        "both crossings sit inside the captured budget, which is what lets the "
+        "paragraph call either figure real",
+    ),
+    (
+        "retrainings_to_resolve_gain <= retrainings",
+        "the same for the later of the two",
     ),
     (
         "outside_loss_points > shipped_outside_mean_bar_points",

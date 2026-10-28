@@ -39,18 +39,26 @@ _COUNT = (
     r"fifty|sixty|seventy|eighty|ninety|a\s+hundred|a\s+thousand|half|several|"
     r"a\s+few|a\s+couple\s+of|the\s+better\s+part\s+of\s+an?)"
 )
+#: Every unit a duration is written in here, including the ones an audit used:
+#: days, weeks and months, which the first version stopped short of.
+_UNIT = r"(?:seconds?|secs?|minutes?|mins?|hours?|hrs?|days?|weeks?|months?)"
 PATTERNS = (
     re.compile(r"\b\d+(?:\.\d+)?\s*(?:ms|milliseconds?|microseconds?|nanoseconds?)\b", re.I),
     re.compile(r"\b\d+(?:\.\d+)?\s*(?:seconds?|secs?)\s+(?:faster|slower|per)\b", re.I),
     re.compile(r"\btakes\s+\d+(?:\.\d+)?\s*(?:s|seconds?|minutes?|hours?)\b", re.I),
     # Minutes and hours have no ordinal sense in prose, so the article is included
     # for them and excluded for seconds.
-    re.compile(rf"\b(?:an?|{_COUNT})\s+(?:minutes?|mins?|hours?|hrs?)\b", re.I),
-    re.compile(rf"\b{_COUNT}\s+(?:seconds?|secs?)\b", re.I),
+    re.compile(
+        rf"\b(?:an?|{_COUNT})\s+(?:[a-z]+-[a-z]+\s+)?(?:minutes?|mins?|hours?|hrs?|days?|weeks?|months?)\b",
+        re.I,
+    ),
+    re.compile(rf"\b{_COUNT}\s+(?:[a-z]+-[a-z]+\s+)?(?:seconds?|secs?)\b", re.I),
     # Plural as well as singular. The pattern was `(?:second|minute|hour)` with no
     # `s?`, so "40 seconds", "14 minutes" and "3 hours" all passed, which is the
     # most natural way anyone writes a duration.
-    re.compile(r"\b\d+(?:\.\d+)?[- ](?:seconds?|secs?|minutes?|mins?|hours?|hrs?)\b", re.I),
+    # A number, optionally with a hyphenated word between it and the unit
+    # ("5400 wall-clock seconds"), then the unit.
+    re.compile(rf"\b\d+(?:\.\d+)?[- ](?:[a-z]+-[a-z]+\s+)?{_UNIT}\b", re.I),
     # Glued to the unit, which is how a duration is most often written in a note:
     # "40s", "2m 30s", "90m". Bare "m" is excluded because it is also metres and
     # this repository publishes no distances.

@@ -49,9 +49,11 @@ test-all:
 
 # Depends on `test` rather than trusting whatever is in reports/. The test count
 # and the coverage are the only published figures that do not come from the
-# committed measurement, and an audit published 999 tests by editing junit.xml and
-# running this target. The mtime guard inside collect_metrics cannot catch that,
-# because editing the file refreshes its mtime. Running the tests can.
+# committed measurement, and an audit published a false count by editing junit.xml
+# and running this target. The mtime guard inside collect_metrics cannot catch that,
+# because editing the file refreshes its mtime. Running the tests closes that
+# route and not the one the README records, where a conftest hook rewrites the
+# report the run has just written.
 receipts: test
 	$(PYTHON) tools/collect_metrics.py --skip-tests
 	$(PYTHON) tools/check_numbers.py

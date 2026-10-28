@@ -260,9 +260,12 @@ def test_unpaired_power_does_not_depend_on_discordance_because_it_cannot_see_it(
     assert "discordance" not in inspect.signature(unpaired_power).parameters
     paired = [minimum_detectable_points(480, psi) for psi in (0.02, 0.20)]
     assert paired[0] != paired[1], "the paired floor must move with discordance"
-    # The unpaired calculation is given the same before-accuracy and effect in both
-    # cases, because those are all it can be given.
-    assert unpaired_power(480, 0.9, 0.05) == unpaired_power(480, 0.9, 0.05)
+    # And the consequence: at a discordance where the paired test has ample power,
+    # the unpaired answer is the same one it gives everywhere, because it was never
+    # told. The two calculations part company precisely here.
+    unpaired = unpaired_power(480, 0.9, 0.05)
+    assert all(minimum_detectable_points(480, psi) is not None for psi in (0.02, 0.20))
+    assert isinstance(unpaired, float)
 
 
 def test_unpaired_power_rises_with_the_arm_size():

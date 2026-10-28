@@ -24,8 +24,12 @@ tenth of the final value.
 That figure is computed over prefixes, so it is a property of the order the
 retrainings happen to be listed in as much as of the estimator, and an audit was
 right to say so. Repeating it over two thousand orderings of the same ten readings
-puts the **median ordering at 8**, and in **9.4% of orderings** the estimate has
-still not settled by the tenth retraining. So ten is the smallest defensible budget
+puts the **median ordering at 8**, and in **9.4% of orderings** the estimate first
+settles only at the tenth retraining, which is as late as this measurement can
+express: the test is against the final estimate, so the last reading satisfies it
+against itself by construction and no ordering can be reported as never settling.
+Settling only at the last reading is the measurable form of not having settled. So
+ten is the smallest defensible budget
 rather than a comfortable one, and the honest reading is that a team doing this
 properly should expect to need more, not fewer.
 

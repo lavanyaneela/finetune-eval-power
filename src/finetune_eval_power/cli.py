@@ -182,10 +182,23 @@ def command_power(arguments: argparse.Namespace) -> int:
         return EXIT_DETECTABLE
 
     needed = suite_size_for(claim, operating.discordance, rule)
-    required = f"{needed} cases" if needed is not None else "more cases than this tool will search"
+    if needed is None:
+        # Code 1 is pinned as meaning the suite size that would work is printed.
+        # When the search reaches its ceiling without finding one, there is no size
+        # to print, and "no suite size inside anything this tool will consider" is
+        # the refusal, not the answer. It printed "more cases than this tool will
+        # search" under code 1 until an audit reached the branch.
+        print(
+            f"\nREFUSED: a {claim:.2f} point regression is below this suite's floor "
+            f"of {format_floor(floor)} points, and no suite size this tool will "
+            "search reaches it at the measured discordance. There is no size to "
+            "recommend."
+        )
+        return EXIT_REFUSED
     print(
         f"\nNO: a {claim:.2f} point regression is below this suite's floor of "
-        f"{floor:.2f} points. Detecting it at the measured discordance needs {required}."
+        f"{format_floor(floor)} points. Detecting it at the measured discordance "
+        f"needs {needed} cases."
     )
     return EXIT_NOT_DETECTABLE
 
@@ -216,7 +229,16 @@ def command_blind(arguments: argparse.Namespace) -> int:
         f"no usable suite power, of which {analysis.held_out_slices} it never samples and "
         f"{analysis.underpowered_covered_slices} whose cases change verdict too rarely"
     )
-    print(f"slices that moved the other way, interval clear of zero: {analysis.improving_slices}")
+    print(
+        f"slices that moved the other way, interval clear of zero: "
+        f"{analysis.improving_slices}, which is {analysis.improving_regions} regions "
+        "once nesting is removed"
+    )
+    print(
+        "the same count at the referee's rate of changed verdicts rather than the "
+        f"suite's: {analysis.slices_without_power_at_probe_rate} of "
+        f"{analysis.slices_total} with no usable power, which is the flattering one"
+    )
     # The sizes were printed nowhere, while the defense guide pointed at this
     # command for them and told its reader never to say a number that is not on the
     # screen. Only this command and the HTML report carry them now.

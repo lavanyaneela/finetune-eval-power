@@ -11,8 +11,12 @@ from __future__ import annotations
 
 import builtins
 import importlib
+import re
+from pathlib import Path
 
 import pytest
+
+import finetune_eval_power
 
 BLOCKED = ("tensorflow", "keras", "mlflow")
 
@@ -99,9 +103,26 @@ def test_a_disabled_tracker_still_yields_and_still_accepts_metrics(without_train
 
 
 def test_the_training_module_is_the_only_one_that_needs_the_extra():
-    """Stated as a test so the boundary cannot quietly move: if some analysis module
-    grows a Keras import, the parametrised test above fails and names it."""
-    import finetune_eval_power.models.training as training
+    """The boundary, asserted rather than named.
 
-    source = training.__file__
-    assert source.endswith("training.py")
+    The framework is confined to `models/`, which is the package a core install
+    never imports and the one the coverage denominator excludes.
+
+    This imported the training module and asserted its filename ended in
+    training.py, which is a tautology, and its docstring conceded the real work was
+    done by the test above it. The property is that the training module is the only
+    one whose source mentions the deep learning framework, so a framework import
+    appearing anywhere else fails here and names the file.
+    """
+    package = Path(finetune_eval_power.__file__).parent
+    offenders = sorted(
+        path.relative_to(package).as_posix()
+        for path in package.rglob("*.py")
+        if re.search(r"^\s*(?:import|from)\s+keras\b", path.read_text(encoding="utf-8"), re.M)
+    )
+    assert offenders == ["models/architectures.py", "models/training.py"], (
+        "the deep learning framework is imported outside models/, which is the "
+        "package a core install does not need and the one excluded from the "
+        f"coverage denominator: {offenders}"
+    )
+    assert all(name.startswith("models/") for name in offenders)

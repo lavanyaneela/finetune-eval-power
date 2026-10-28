@@ -49,15 +49,17 @@ particular direction: using it moved five slices out of "no usable power" and
 published 19 blind slices where the suite's own behaviour says 24. A convention that
 makes the instrument under test look better is not a neutral one.
 
-The probe-rate floor is still computed, under a name that says so, and exactly one
-published figure uses it: the floor for the worst missed class at the probe's rate,
-quoted in a sentence that says in words which rate it is. The README sets it beside
+The probe-rate floor is still computed, under a name that says so, and two published
+figures use it. One is the floor for the worst missed class at the probe's rate,
+quoted in a sentence that says in words which rate it is. The other is the count of
+blind slices the probe's rate would report, published next to the suite's count so
+the size of the choice is visible rather than argued about. The README sets it beside
 the suite-rate floor for the same class so the disagreement is visible, and the
 conclusion there is built to survive either choice.
 
-What remains genuinely uncertain is that a rate estimated from roughly a hundred
-suite cases across the captured retrainings is noisy, and the floors inherit that
-noise. This
+What remains genuinely uncertain is that these rates are estimated from the suite's
+own cases for each slice, which run from about a hundred to the whole suite, and a
+rate from the thin end is noisy. The floors inherit that noise. This
 repository does not quantify that, and it is the first thing to add.
 
 ## The effect sizes are about these models

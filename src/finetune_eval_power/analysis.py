@@ -323,7 +323,13 @@ class ArmAnalysis:
 
     @property
     def never_settles_share_pct(self) -> float:
-        """How often the estimate has not settled by the last retraining.
+        """How often the estimate first settles only at the last retraining.
+
+        Not "never settles", which this estimator cannot express: the test is
+        against the final estimate, so the last reading always satisfies it against
+        itself. Settling only at the last reading is the measurable form of the
+        same thing, and the name is kept short at the cost of being loose, which
+        the ADR spells out.
 
         The uncomfortable half of the settling measurement: on this budget it is
         about one ordering in ten, which says ten retrainings is the minimum

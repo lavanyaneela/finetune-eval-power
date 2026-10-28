@@ -187,13 +187,26 @@ def test_a_corrupted_figure_is_caught(tmp_path, monkeypatch):
     assert any("stale" in problem for problem in problems)
 
 
-def test_the_duration_sweep_covers_untracked_files_too():
+def test_the_duration_sweep_covers_untracked_files_too(tmp_path):
     """A new file is invisible to a tracked-only sweep until it is committed, and
-    then it fails the next clone instead of this one."""
+    then it fails the next clone instead of this one.
+
+    This asserted that README.md, which is tracked, was in the list, and that the
+    list had more than twenty entries. It created no untracked file and so never
+    exercised the property it is named for.
+    """
     sweep = _load("check_durations")
-    names = [path.name for path in sweep.tracked_files()]
-    assert "README.md" in names
-    assert len(names) > 20
+    fresh = checker.ROOT / "docs" / "untracked-sweep-probe.md"
+    assert not fresh.exists()
+    try:
+        fresh.write_text("A note.\n", encoding="utf-8")
+        names = [path.name for path in sweep.tracked_files()]
+        assert fresh.name in names, (
+            "a file that has never been committed is not in the sweep, so a "
+            "duration added to a new document would pass until it was committed"
+        )
+    finally:
+        fresh.unlink(missing_ok=True)
 
 
 def test_the_repository_publishes_no_absolute_duration():
@@ -255,7 +268,24 @@ def test_every_markdown_document_in_the_repository_is_a_checked_document():
     # full of invented figures, and every one passed `make verify`. A document a
     # reader reads has to be a document the checker reads, whatever it is called,
     # so the rule is about where a file lives rather than how it is spelled.
-    prose = {".md", ".markdown", ".mdown", ".txt", ".rst", ""}
+    # Every extension GitHub renders as a document. An audit put invented figures
+    # in docs/results.adoc and docs/results.html and both passed, and .html was
+    # named in this test's own docstring as a hole it had closed.
+    prose = {
+        ".md",
+        ".markdown",
+        ".mdown",
+        ".txt",
+        ".rst",
+        ".adoc",
+        ".asciidoc",
+        ".org",
+        ".textile",
+        ".mediawiki",
+        ".html",
+        ".htm",
+        "",
+    }
     # Anywhere in the repository, not only the top level and docs/. An audit put
     # invented figures in experiments/RESULTS.md and docs/evidence/NOTES.md, both
     # of which render on GitHub, and both passed. A prose file is a document
@@ -311,14 +341,26 @@ def test_a_pinned_line_that_is_edited_fails_the_build(tmp_path, monkeypatch):
     assert checker.check_literals() != []
 
 
-def test_an_exemption_is_refused_in_a_document_it_is_not_allowed_in():
+def test_an_exemption_is_refused_in_a_document_it_is_not_allowed_in(tmp_path):
     """`80`, `95` and `1.96` were accepted in any sentence of any document, which
-    let "the suite resolves 80 distinct capabilities" pass. An exemption now names
-    where it is allowed."""
+    let "the suite resolves 80 distinct capabilities" pass.
+
+    This only asserted that each exemption names at least one document. It never
+    put an exemption in a document it is not allowed in, which is the refusal the
+    name promises and the fix the audit asked for.
+    """
+    payload = checker.load_metrics()
+    documents = payload["checked_documents"]
     for value, (_reason, allowed) in checker.REVERSE_EXEMPTIONS.items():
         assert allowed, f"exemption {value} allows no document, so it guards nothing"
         for name in allowed:
-            assert name in checker.load_metrics()["checked_documents"]
+            assert name in documents
+        outside = next(name for name in documents if name not in allowed)
+        probe = tmp_path / "probe.md"
+        probe.write_text(f"A sentence with {value} in it.\n", encoding="utf-8")
+        problems = checker._reverse_one(probe, outside, set(payload["rendered"].values()), set())
+        assert problems, f"{value} was accepted in {outside}, where it is not exempt"
+        assert "exempt in" in problems[0]
 
 
 def test_the_coverage_denominator_is_exactly_what_the_readme_says_it_is():
@@ -333,18 +375,33 @@ def test_the_coverage_denominator_is_exactly_what_the_readme_says_it_is():
     import tomllib
 
     config = tomllib.loads((checker.ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    coverage = config["tool"]["coverage"]
-    # Both keys. The test read `run.omit` alone, and an audit removed the core
-    # power modules from the denominator through `report.omit`, which coverage
-    # honours identically, and published a genuinely measured 100.0%.
-    omitted = set(coverage["run"].get("omit", [])) | set(coverage.get("report", {}).get("omit", []))
-    assert omitted == {
-        "*/finetune_eval_power/models/*",
-        "*/finetune_eval_power/sweep.py",
-        "*/finetune_eval_power/tracking/*",
+    # The WHOLE coverage configuration, not a key at a time. It was `run.omit`
+    # alone, so an audit moved the denominator through `report.omit`; it was then
+    # both omit keys, so the next audit moved it through `report.exclude_also` and
+    # published a genuinely measured, genuinely false 100.0%. Coverage has several
+    # ways to drop code from a denominator, and naming them one by one is a game
+    # the checker loses, so the expected configuration is pinned entire and a new
+    # key is a deliberate edit here.
+    assert config["tool"]["coverage"] == {
+        "run": {
+            "branch": True,
+            "source": ["finetune_eval_power"],
+            "omit": [
+                "*/finetune_eval_power/models/*",
+                "*/finetune_eval_power/sweep.py",
+                "*/finetune_eval_power/tracking/*",
+            ],
+        },
+        "report": {
+            "exclude_lines": [
+                "pragma: no cover",
+                "if TYPE_CHECKING:",
+                "raise NotImplementedError",
+            ],
+        },
     }, (
-        "the coverage denominator changed. The README names the excluded modules, "
-        "so either change that sentence or put this back"
+        "the coverage configuration changed. The README names what is excluded "
+        "from the denominator, so either change that sentence or put this back"
     )
     readme = (checker.ROOT / "README.md").read_text(encoding="utf-8")
     assert "the training, sweep and tracking modules are excluded from its denominator" in readme
