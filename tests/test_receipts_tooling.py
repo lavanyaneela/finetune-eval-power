@@ -268,23 +268,31 @@ def test_every_markdown_document_in_the_repository_is_a_checked_document():
     # full of invented figures, and every one passed `make verify`. A document a
     # reader reads has to be a document the checker reads, whatever it is called,
     # so the rule is about where a file lives rather than how it is spelled.
-    # Every extension GitHub renders as a document. An audit put invented figures
-    # in docs/results.adoc and docs/results.html and both passed, and .html was
-    # named in this test's own docstring as a hole it had closed.
-    prose = {
-        ".md",
-        ".markdown",
-        ".mdown",
-        ".txt",
-        ".rst",
-        ".adoc",
-        ".asciidoc",
-        ".org",
-        ".textile",
-        ".mediawiki",
-        ".html",
-        ".htm",
-        "",
+    # An allow-list of prose extensions loses this game: it was extended after one
+    # audit for .html and .adoc, and the next audit used .mkdn and .ipynb. The rule
+    # is inverted, so a file is a document unless it is something this repository
+    # recognises as not one. A new extension is then checked by default, and adding
+    # an exclusion is a visible decision rather than an oversight.
+    not_prose = {
+        ".py",
+        ".toml",
+        ".cfg",
+        ".ini",
+        ".yml",
+        ".yaml",
+        ".json",
+        ".xml",
+        ".npy",
+        ".npz",
+        ".png",
+        ".gif",
+        ".mp4",
+        ".webm",
+        ".svg",
+        ".css",
+        ".js",
+        ".lock",
+        ".sh",
     }
     # Anywhere in the repository, not only the top level and docs/. An audit put
     # invented figures in experiments/RESULTS.md and docs/evidence/NOTES.md, both
@@ -294,7 +302,7 @@ def test_every_markdown_document_in_the_repository_is_a_checked_document():
         name
         for name in listed
         if not name.startswith(("node_modules/", "reports/"))
-        and pathlib.PurePosixPath(name).suffix.lower() in prose
+        and pathlib.PurePosixPath(name).suffix.lower() not in not_prose
         # Build files and the licence are not prose a reader takes figures from.
         # Named rather than pattern-matched, so adding one is a visible decision.
         and name not in {"LICENSE", ".gitignore", "Makefile"}
@@ -374,6 +382,15 @@ def test_the_coverage_denominator_is_exactly_what_the_readme_says_it_is():
     """
     import tomllib
 
+    # coverage reads .coveragerc, then setup.cfg, then tox.ini, and stops at the
+    # first file carrying coverage settings. pyproject.toml is the LAST place it
+    # looks, so pinning its contents guards nothing if one of the others exists.
+    # An audit added a setup.cfg and published a measured 100.0% around the pin.
+    for rival in (".coveragerc", "setup.cfg", "tox.ini"):
+        assert not (checker.ROOT / rival).exists(), (
+            f"{rival} outranks pyproject.toml for coverage settings, so the "
+            "configuration pinned below is not necessarily the one in force"
+        )
     config = tomllib.loads((checker.ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     # The WHOLE coverage configuration, not a key at a time. It was `run.omit`
     # alone, so an audit moved the denominator through `report.omit`; it was then

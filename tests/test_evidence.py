@@ -8,6 +8,7 @@ need Playwright and are exercised by running them, not by the suite.
 from __future__ import annotations
 
 import json
+import pathlib
 import re
 from pathlib import Path
 
@@ -304,11 +305,13 @@ def test_every_image_the_readme_shows_carries_a_digest():
     import re
 
     readme = README.read_text(encoding="utf-8")
+    # Normalised, not prefix-matched: an audit wrote "./docs/evidence/headline.png"
+    # and the guard did not recognise it as being under docs/ at all.
     referenced = {
-        path
+        pathlib.PurePosixPath(path).as_posix().removeprefix("./")
         for path in re.findall(r"!\[[^\]]*\]\(([^)]+)\)", readme)
         + re.findall(r'<img[^>]+src="([^"]+)"', readme)
-        if path.startswith("docs/")
+        if not path.startswith(("http://", "https://"))
     }
     shots = json.loads((EVIDENCE / "manifest.json").read_text(encoding="utf-8"))["shots"]
     digests = {f"docs/evidence/{shot['file']}": shot["sha256"] for shot in shots}
@@ -341,11 +344,14 @@ def test_the_guard_tests_are_in_the_selection_make_verify_runs():
         text=True,
         check=False,
     ).stdout
-    for guard in (
-        "test_the_coverage_denominator_is_exactly_what_the_readme_says_it_is",
-        "test_every_markdown_document_in_the_repository_is_a_checked_document",
-        "test_the_exit_code_table_is_pinned_as_text_and_matches_what_the_cli_returns",
-        "test_each_committed_screenshot_is_the_image_the_capture_recorded",
-        "test_every_image_the_readme_shows_carries_a_digest",
-    ):
-        assert guard in listed, f"{guard} is not in the selection make verify runs"
+    # Every test in these two modules, found by reading them, rather than a list of
+    # names that an audit simply stepped outside of by marking a sixth test slow.
+    import re as _re
+
+    for module in ("tests/test_evidence.py", "tests/test_receipts_tooling.py"):
+        source = (ROOT / module).read_text(encoding="utf-8")
+        for name in _re.findall(r"^def (test_\w+)", source, _re.M):
+            assert name in listed, (
+                f"{name} is defined in {module} and is not in the selection "
+                "make verify runs, so it guards nothing"
+            )

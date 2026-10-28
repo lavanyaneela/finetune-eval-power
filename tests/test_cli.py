@@ -335,3 +335,33 @@ def test_closing_the_pipe_early_does_not_produce_a_documented_exit_code():
         f"a closed pipe returned {first.returncode}, which is one of the four "
         "documented codes and therefore says something false"
     )
+
+
+def test_a_claim_needing_more_cases_than_the_search_covers_is_refused(tmp_path, vision_arm, capsys):
+    """The third route into code 2, and the only line in the CLI with no test.
+
+    A suite whose cases change verdict often has a floor, and a claim far below
+    that floor needs a suite larger than the search ceiling. There is then no size
+    to print, which is what separates a refusal from code 1, and the branch
+    returned 1 until an audit reached it. The pinned exit-code row named two routes
+    while the code had three.
+    """
+    runs = build_synthetic_runs(
+        vision_arm, suite_drop_cases=60, suite_gain_cases=60, held_out_drop_fraction=0.0
+    )
+    runs.write(tmp_path / "vision")
+    code = run(["power", "--claim", "0.001"], tmp_path)
+    captured = capsys.readouterr().out
+    assert code == EXIT_REFUSED, captured
+    assert "no suite size this tool will search" in captured
+    assert "needs" not in captured.split("REFUSED")[1]
+
+
+def test_a_claim_too_small_to_print_is_still_printed_exactly(tmp_path, vision_arm, capsys):
+    """`{claim:.2f}` rendered a claim of 0.001 as "a 0.00 point regression", which
+    is a figure the user did not type and cannot act on."""
+    build_synthetic_runs(vision_arm, suite_drop_cases=24, rng_seed=1).write(tmp_path / "vision")
+    run(["power", "--claim", "0.001"], tmp_path)
+    captured = capsys.readouterr().out
+    assert "0.00 point" not in captured
+    assert "0.001" in captured

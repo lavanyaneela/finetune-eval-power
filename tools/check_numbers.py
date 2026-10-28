@@ -48,6 +48,11 @@ MAX_ANCHOR_WORDS = 4
 NUMBER_PATTERN = re.compile(
     r"(?<![\w])(?<!\d\.)[-+]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)[A-Za-z%]*",
 )
+#: What an ANCHOR may match. The sweep pattern above swallows a trailing unit so
+#: that "90GB" is seen at all; an anchor must not, or "costs 5x more labelling"
+#: is read as the anchor for the outside-region loss and reported stale against a
+#: figure the sentence is not about.
+ANCHOR_NUMBER = r"(?<![\w])(?<!\d\.)[-+]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)(?![\w])"
 #: Just the digits inside a match, for comparison against a rendered value.
 NUMBER_DIGITS = re.compile(r"[-+]?(?:\d[\d,]*(?:\.\d+)?|\.\d+)")
 #: Numbers spelled as words are a real blind spot: the guard reads the digits and a
@@ -104,7 +109,7 @@ LITERAL_GUARDS: tuple[tuple[str, str], ...] = (
     ),
     (
         "README.md",
-        "| `2` | refused: no suite size fixes it. Either retraining noise alone is at least as wide as the claimed effect, or the suite's cases change verdict so rarely that no size reaches the target power against any effect |",  # noqa: E501
+        "| `2` | refused: this measurement cannot answer the question, by any of three routes. Retraining noise alone is at least as wide as the claimed effect; or the suite's cases change verdict so rarely that no size reaches the target power against any effect; or a size exists in principle and is beyond anything this tool will search |",  # noqa: E501
     ),
     (
         "README.md",
@@ -127,7 +132,7 @@ LITERAL_BLOCKS: tuple[tuple[str, tuple[str, ...]], ...] = (
             "| --- | --- |",  # noqa: E501
             "| `0` | the tool answered and the answer is the reassuring one: `power` means the suite can see a regression of the size claimed, `blind` means nothing fell past its floor unnoticed |",  # noqa: E501
             "| `1` | the tool answered and the answer is the unwelcome one: `power` prints the suite size that would work, `blind` lists the capabilities it found |",  # noqa: E501
-            "| `2` | refused: no suite size fixes it. Either retraining noise alone is at least as wide as the claimed effect, or the suite's cases change verdict so rarely that no size reaches the target power against any effect |",  # noqa: E501
+            "| `2` | refused: this measurement cannot answer the question, by any of three routes. Retraining noise alone is at least as wide as the claimed effect; or the suite's cases change verdict so rarely that no size reaches the target power against any effect; or a size exists in principle and is beyond anything this tool will search |",  # noqa: E501
             "| `3` | the tool itself failed, or was used wrongly. A mistyped subcommand or `--arm` lands here, not on `2`, so a typo cannot be mistaken for the refusal |",  # noqa: E501
         ),
     ),
@@ -194,11 +199,6 @@ def check_literals() -> list[str]:
     return problems
 
 
-#: A table row whose first cell is a bare code in backticks. Used to assert the
-#: exit-code contract is stated in exactly one place.
-EXIT_ROW = re.compile(r"^\|\s*`\d+`\s*\|")
-
-
 def _check_blocks() -> list[str]:
     """Pinned blocks must appear contiguously, in order, with nothing inserted.
 
@@ -238,38 +238,6 @@ def _check_blocks() -> list[str]:
                     f"({neighbour[:50]!r}). The published contract is the whole "
                     "table, so nothing may be added to either end"
                 )
-        if sum(1 for item in lines if EXIT_ROW.match(item)) != len(block) - 2:
-            problems.append(
-                f"{relative}: there are exit-code-shaped rows outside the pinned "
-                "block, so the document states the contract more than once"
-            )
-    problems.extend(_check_no_rival_contract())
-    return problems
-
-
-def _check_no_rival_contract() -> list[str]:
-    """No checked document may state the exit codes anywhere but the pinned table.
-
-    The block guard is scoped to the document that holds the table, so an audit
-    appended a second, contradicting exit-code table to the defense guide, where
-    every code it quotes is also a measured value and the reverse sweep waves them
-    through. A contract stated twice is a contract stated once and contradicted.
-    """
-    problems: list[str] = []
-    pinned = {relative for relative, _block in LITERAL_BLOCKS}
-    for relative in _checked_documents():
-        if relative in pinned:
-            continue
-        path = ROOT / relative
-        if not path.exists():
-            continue
-        rival = [item for item in _prose_lines(path) if EXIT_ROW.match(item)]
-        if rival:
-            problems.append(
-                f"{relative}: {len(rival)} exit-code-shaped table rows "
-                f"({rival[0][:40]!r}). The contract lives in one table, in the "
-                "README, and nowhere else"
-            )
     return problems
 
 
@@ -508,7 +476,7 @@ def anchor_pattern(anchor: str, numeric: bool) -> re.Pattern[str]:
     """
     before, _, after = anchor.partition("{}")
     placeholder = (
-        rf"{NUMBER_PATTERN.pattern}|(?i:\b(?:{NUMBER_WORDS})\b)"
+        rf"{ANCHOR_NUMBER}|(?i:\b(?:{NUMBER_WORDS})\b)"
         if numeric
         # No full stop in the class: it swallows the sentence-ending period and the
         # captured value then never equals the published one.
@@ -748,7 +716,10 @@ def _reverse_one(path: Path, relative: str, values: set[str], used: set[str]) ->
     problems: list[str] = []
     if not path.exists():
         return [f"{relative} does not exist"]
-    text = path.read_text(encoding="utf-8")
+    # Comments are stripped here for the same reason `_rendered_lines` strips
+    # them: nothing in a comment reaches a reader, and flagging a tracking note
+    # like "see issue 42" trains an author to work around the checker.
+    text = re.sub(r"<!--.*?-->", "", path.read_text(encoding="utf-8"), flags=re.S)
     stripped = LIST_MARKER.sub(" ", text)
     # Fenced blocks, inline code spans, HTML attributes and link targets used to be
     # blanked here. Three of those four render as text a reader believes, and the

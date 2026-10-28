@@ -10,11 +10,13 @@ a team reading a green pipeline cannot tell which one it got.
     1  the tool answered, and the answer is the unwelcome one: `power` means the
        suite cannot see it and prints the suite size that could, `blind` means it
        found capabilities that regressed unflagged and lists them.
-    2  refused: no suite size fixes this, by either of two routes. Retraining
-       noise alone is larger than the claimed effect, and the number of
-       retrainings that would settle it is printed; or the suite's cases change
-       verdict so rarely that no size reaches the target power against any
-       effect, and there is no size to print.
+    2  refused: this measurement cannot answer the question, by any of three
+       routes. Retraining noise alone is larger than the claimed effect, and the
+       number of retrainings that would settle it is printed; or the suite's
+       cases change verdict so rarely that no size reaches the target power
+       against any effect; or a size exists in principle and lies beyond
+       anything this tool will search. None of the three has a size to print,
+       which is what separates them from code 1.
     3  the tool itself failed, or was used wrongly. A mistyped subcommand or
        `--arm` lands here rather than on 2, which would otherwise make a typo
        indistinguishable from the refusal this whole tool is about.
@@ -81,6 +83,17 @@ def _finite_points(value: str) -> float:
     return number
 
 
+def _points(value: float) -> str:
+    """A claimed effect, printed with enough digits to be the number asked for.
+
+    `{:.2f}` turned `--claim 0.001` into "a 0.00 point regression", which is a
+    figure the user did not type. Trailing zeros are trimmed so the ordinary case
+    still reads as 2.00 rather than 2.0000.
+    """
+    text = f"{value:.4f}".rstrip("0")
+    return text + "0" if text.endswith(".") else text
+
+
 def _direction(drop_points: float) -> str:
     """The word that goes beside a signed drop, including the word for zero.
 
@@ -119,7 +132,7 @@ def command_power(arguments: argparse.Namespace) -> int:
     print(f"retrainings          {len(analysis.seeds)}")
     print(f"freeze depth         {analysis.operating_depth} (shallowest the suite allows)")
     print(f"suite discordance    {operating.discordance:.4f}")
-    print(f"claimed effect       {claim:.2f} points")
+    print(f"claimed effect       {_points(claim)} points")
     print(
         f"retraining spread    {variance.standard_deviation_points:.3f} points standard "
         f"deviation over {variance.seeds} retrainings"
@@ -135,7 +148,7 @@ def command_power(arguments: argparse.Namespace) -> int:
         print(
             f"\nREFUSED: retraining noise alone reaches "
             f"{format_floor(variance.noise_floor_points)} points either side of the "
-            f"measurement, which is wider than the {claim:.2f} point effect being claimed."
+            f"measurement, which is wider than the {_points(claim)} point effect being claimed."
         )
         print(
             "No suite size resolves this. The eval suite is not the binding "
@@ -178,7 +191,7 @@ def command_power(arguments: argparse.Namespace) -> int:
     # command is the one the defense guide tells the candidate to run live.
     print(f"minimum detectable   {format_floor(floor)} points at {rule.target_power:.0%} power")
     if claim >= floor:
-        print(f"\nYES: a {claim:.2f} point regression is above this suite's floor.")
+        print(f"\nYES: a {_points(claim)} point regression is above this suite's floor.")
         return EXIT_DETECTABLE
 
     needed = suite_size_for(claim, operating.discordance, rule)
@@ -189,14 +202,14 @@ def command_power(arguments: argparse.Namespace) -> int:
         # the refusal, not the answer. It printed "more cases than this tool will
         # search" under code 1 until an audit reached the branch.
         print(
-            f"\nREFUSED: a {claim:.2f} point regression is below this suite's floor "
+            f"\nREFUSED: a {_points(claim)} point regression is below this suite's floor "
             f"of {format_floor(floor)} points, and no suite size this tool will "
             "search reaches it at the measured discordance. There is no size to "
             "recommend."
         )
         return EXIT_REFUSED
     print(
-        f"\nNO: a {claim:.2f} point regression is below this suite's floor of "
+        f"\nNO: a {_points(claim)} point regression is below this suite's floor of "
         f"{format_floor(floor)} points. Detecting it at the measured discordance "
         f"needs {needed} cases."
     )
@@ -269,7 +282,9 @@ def command_blind(arguments: argparse.Namespace) -> int:
                 f"\nThe suite raised a regression flag in "
                 f"{operating.seeds_flagging_regression} of {operating.seeds} retrainings, "
                 "so nothing here is hidden from it. This command reports what regressed "
-                "unnoticed, and that question only arises while the suite is quiet."
+                "unnoticed, and that question only arises while the suite is quiet. "
+                "Nothing was missed because nothing could be, which is the reassuring "
+                "answer this command has to give."
             )
             return EXIT_DETECTABLE
         print("\nNo capability slice regressed beyond what the suite could resolve unflagged.")

@@ -129,7 +129,9 @@ Of **40 named capability** slices the suite has **no usable power on 24**: **16 
 at all, and **8 sampled too thinly**, meaning too few of their cases change verdict,
 which is how many cases they hold and how often those change, multiplied. They
 **all 8 name a size**: the **cheapest needs 124** cases of its own slice and the
-**dearest needs 592**, which is more than the whole suite ships. Those sizes, and
+**dearest needs 592**, which is more than the whole suite ships, though those are
+two different counts: cases of one slice against cases of the suite. Growing the
+suite in the same proportions reaches it, at roughly five times the present size. Those sizes, and
 the decision about which slices have power at all, come from each slice's rate of
 changed verdicts on the suite's own cases rather than the probe's, because the
 question is what this suite could have done. At the probe's **rate instead reports 19**,
@@ -248,7 +250,7 @@ guard nobody has seen fail should not be trusted.
   a duration is data: the demo manifest records how long each captured command took
   because the replay is paced by those numbers.
 
-## Live demo, five commands
+## Live demo, six commands
 
 ```bash
 make install                                                  # core install, no deep learning framework

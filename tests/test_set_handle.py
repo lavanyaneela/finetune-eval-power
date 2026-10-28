@@ -13,6 +13,7 @@ These tests execute it.
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import sys
@@ -22,18 +23,39 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "set_handle.py"
+PLACEHOLDER = "GITHUB_USERNAME"
 
 
 @pytest.fixture
 def clone(tmp_path: Path) -> Path:
-    """The documents only, which is everything the script touches."""
+    """The documents only, restored to the state the repository ships in.
+
+    This copied the live README, so once `make set-handle` had been run the
+    placeholder was gone, the badge already carried the real handle, and the
+    script became a no-op that failed the badge assertion. The README's own first
+    instruction therefore left the suite red, which is the breakage a sibling test
+    in `test_evidence.py` was fixed to prevent and this reintroduced through
+    another door. A fixture about the shipped state has to construct it.
+    """
     destination = tmp_path / "repo"
     (destination / "docs" / "adr").mkdir(parents=True)
-    shutil.copy(ROOT / "README.md", destination / "README.md")
-    for source in (ROOT / "docs").rglob("*.md"):
+    for source in [ROOT / "README.md", *sorted((ROOT / "docs").rglob("*.md"))]:
         target = destination / source.relative_to(ROOT)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(source, target)
+    readme = destination / "README.md"
+    text = readme.read_text(encoding="utf-8")
+    # Undo a handle that has already been filled in, so the fixture is the shipped
+    # state whether or not someone has run the target in this working tree.
+    text = re.sub(r"\[!\[ci\]\([^\n]*badge\.svg\)\]\([^\n]*\)\n", "", text)
+    text = re.sub(
+        r"https://github\.com/[^/\s]+/finetune-eval-power",
+        f"https://github.com/{PLACEHOLDER}/finetune-eval-power",
+        text,
+    )
+    readme.write_text(text, encoding="utf-8")
+    assert text.count(PLACEHOLDER) == 1
+    assert "badge.svg" not in text
     return destination
 
 

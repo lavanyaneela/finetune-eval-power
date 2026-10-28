@@ -58,7 +58,14 @@ PATTERNS = (
     # most natural way anyone writes a duration.
     # A number, optionally with a hyphenated word between it and the unit
     # ("5400 wall-clock seconds"), then the unit.
-    re.compile(rf"\b\d+(?:\.\d+)?[- ](?:[a-z]+-[a-z]+\s+)?{_UNIT}\b", re.I),
+    # `\s+` rather than a single space: markdown reflows, so a number and its unit
+    # land on separate lines by accident, which is the drift this exists to catch.
+    re.compile(rf"\b\d+(?:\.\d+)?[-\s]\s*(?:[a-z]+-[a-z]+\s+)?{_UNIT}\b", re.I),
+    # And the hyphenated compound: "a one-hour job", "a ten-minute read".
+    re.compile(
+        rf"\b(?:an?|\d+|{_COUNT})-(?:second|minute|hour|day|week|month)s?\b",
+        re.I,
+    ),
     # Glued to the unit, which is how a duration is most often written in a note:
     # "40s", "2m 30s", "90m". Bare "m" is excluded because it is also metres and
     # this repository publishes no distances.
