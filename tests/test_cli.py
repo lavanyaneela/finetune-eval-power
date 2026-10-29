@@ -318,23 +318,36 @@ def test_closing_the_pipe_early_does_not_produce_a_documented_exit_code():
     """`blind | head` used to exit 0, which is pinned as meaning nothing fell past
     the suite's floor unnoticed, on a measurement with eight missed slices. The
     codes are the product here, so none of them may be produced by something that
-    is not an answer. 141 is the shell's convention for death by SIGPIPE."""
+    is not an answer.
+
+    The reader's end of the pipe is closed before the command starts, rather than
+    by racing a `head -3` against the command's final flush. That race is what the
+    first version of this test did, and it is a race the test loses on a fast
+    machine: the whole output is well under the pipe buffer, so if `head` has not
+    exited yet the write simply succeeds and the command exits 1, honestly. It
+    passed here and failed on every CI runner, which is the worst way round.
+    Closing the read end up front makes the first write fail whatever the timing.
+    """
+    import os
+    import signal
     import subprocess
     import sys
 
-    first = subprocess.Popen(
+    read_end, write_end = os.pipe()
+    process = subprocess.Popen(
         [sys.executable, "-m", "finetune_eval_power.cli", "blind", "--arm", "vision"],
-        stdout=subprocess.PIPE,
+        stdout=write_end,
         stderr=subprocess.DEVNULL,
     )
-    second = subprocess.Popen(["head", "-3"], stdin=first.stdout, stdout=subprocess.DEVNULL)
-    first.stdout.close()
-    second.wait()
-    first.wait()
-    assert first.returncode not in (0, 1, 2, 3), (
-        f"a closed pipe returned {first.returncode}, which is one of the four "
+    os.close(write_end)
+    os.close(read_end)
+    process.wait()
+    assert process.returncode not in (0, 1, 2, 3), (
+        f"a closed pipe returned {process.returncode}, which is one of the four "
         "documented codes and therefore says something false"
     )
+    # Negative when Python reports the signal directly, 128 + n through a shell.
+    assert process.returncode in (-signal.SIGPIPE, 128 + signal.SIGPIPE)
 
 
 def test_a_claim_needing_more_cases_than_the_search_covers_is_refused(tmp_path, vision_arm, capsys):
